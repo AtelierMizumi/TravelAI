@@ -1,5 +1,5 @@
 # ==============================================================================
-# Office, Documents & Binary Deliverables (STRICTLY FORBIDDEN IN GIT)
+# Office, Documents & Legacy Reference (STRICTLY FORBIDDEN IN GIT)
 # ==============================================================================
 *.docx
 *.doc
@@ -11,6 +11,8 @@
 *.pptx
 *.ppt
 *.csv
+travelai_original/
+
 
 # ==============================================================================
 # OS & Editor files

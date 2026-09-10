@@ -2,7 +2,10 @@
 
 ## 1. Xác Định Tác Giả Commit (Commit Authorship)
 - **Agent không bao giờ được ghi nhận commit là do AI / Agent tạo ra.**
-- Mọi commit trong Git bắt buộc phải được gán quyền tác giả cho người dùng hoặc thành viên trong nhóm 3 kỹ sư (`git config user.name` & `user.email`).
+- Mọi commit trong Git bắt buộc phải được gán quyền tác giả cho người dùng hoặc thành viên trong nhóm 3 kỹ sư:
+  - **Trần Minh Thuận**: `Minh Thuận Trần <thuanc177@gmail.com>` (Tech Lead / AI & Integration)
+  - **Hoàng Văn Đức**: `Hoàng Văn Đức <duc.hoangvan.dev@gmail.com>` (Core Backend & DB)
+  - **Lê Văn Ngọc**: `Lê Văn Ngọc <ngoc.levan.dev@gmail.com>` (Frontend & UI/UX)
 - Luôn kiểm tra cấu hình Git trước khi commit để đảm bảo tính nhất quán về danh tính kỹ sư.
 
 ## 2. Mô Phỏng Dòng Thời Gian Commit Chân Thực (Realistic Timeline)
