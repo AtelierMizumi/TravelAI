@@ -1,0 +1,97 @@
+version: '3.8'
+
+services:
+  # ============================================================================
+  # Relational Database: PostgreSQL 16
+  # ============================================================================
+  postgres:
+    image: postgres:16-alpine
+    container_name: travelai-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: travelai_db
+      POSTGRES_USER: travelai_user
+      POSTGRES_PASSWORD: travelai_secure_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U travelai_user -d travelai_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - travelai-network
+
+  # ============================================================================
+  # AI Microservice: Python FastAPI + Google Cloud Vision SDK
+  # ============================================================================
+  ai-service:
+    build:
+      context: ./services/ai
+      dockerfile: Dockerfile
+    container_name: travelai-ai-service
+    restart: unless-stopped
+    environment:
+      - PORT=8000
+      - ENVIRONMENT=development
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/credentials/google-vision-key.json
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./services/ai:/app
+    networks:
+      - travelai-network
+
+  # ============================================================================
+  # Core Business Backend: Java 17 + Spring Boot 3
+  # ============================================================================
+  backend:
+    build:
+      context: ./services/core
+      dockerfile: Dockerfile
+    container_name: travelai-backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      ai-service:
+        condition: service_started
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/travelai_db
+      - SPRING_DATASOURCE_USERNAME=travelai_user
+      - SPRING_DATASOURCE_PASSWORD=travelai_secure_password
+      - AI_SERVICE_URL=http://ai-service:8000
+    ports:
+      - "8080:8080"
+    networks:
+      - travelai-network
+
+  # ============================================================================
+  # Presentation Layer: React 18 + Vite SPA Client
+  # ============================================================================
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: travelai-client
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "3000:3000"
+    environment:
+      - VITE_API_BASE_URL=http://localhost:8080
+      - VITE_AI_SERVICE_URL=http://localhost:8000
+    networks:
+      - travelai-network
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  travelai-network:
+    driver: bridge
