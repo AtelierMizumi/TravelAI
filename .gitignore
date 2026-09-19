@@ -95,7 +95,9 @@ target/
 .project
 .classpath
 .settings/
-.mvn/
+.mvn/*
+!.mvn/wrapper/
+!.mvn/wrapper/maven-wrapper.properties
 bin/
 build/
 *.jar
