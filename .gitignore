@@ -1,5 +1,5 @@
 # ==============================================================================
-# Office, Documents & Legacy Reference (STRICTLY FORBIDDEN IN GIT)
+# Office, Documents & Local Reference Quarantine (STRICTLY FORBIDDEN IN GIT)
 # ==============================================================================
 *.docx
 *.doc
@@ -11,7 +11,11 @@
 *.pptx
 *.ppt
 *.csv
+local_references/
+ProjectManagementLearningMaterial/
 travelai_original/
+_references/
+.references/
 
 
 # ==============================================================================

@@ -10,12 +10,12 @@
 
 The TravelAI system MUST be presented 100% as a professional software startup / enterprise platform designed, architected, and engineered entirely **from scratch**.
 
-### 1.1. Absolute Quarantine of Legacy Reference (`travelai_original/`)
-- The `travelai_original/` directory is strictly classified as a **Blackbox Quarantine Zone**:
-  - It exists exclusively as a local reference on the developer's workstation.
+### 1.1. Absolute Quarantine of Local Reference (`local_references/` & Legacy Materials)
+- The `local_references/` directory (containing `learning_materials/`, `legacy_source/`, and `legacy_specs/`) is strictly classified as a **Local-Only Blackbox Quarantine Zone**:
+  - It exists exclusively as a local reference on the developer's workstation for learning slides, course materials, legacy baseline code, and draft notes.
   - **ABSOLUTELY FORBIDDEN** to copy legacy code verbatim, import legacy configuration debt, or replicate obsolete structures into the official repository without comprehensive modernization refactoring.
-  - **MANDATORY INVARIANT**: `travelai_original/` MUST remain in `.gitignore` at all times.
-  - Any attempt to stage (`git add`) `travelai_original/` is a P0 critical violation.
+  - **MANDATORY INVARIANT**: `local_references/` and `travelai_original/` MUST remain in `.gitignore` at all times.
+  - Any attempt to stage (`git add`) `local_references/` is a P0 critical violation.
 
 ### 1.2. Linguistic Sanitization & Blacklist
 All generated text, commit messages, PR descriptions, and architectural documents must NEVER contain academic or legacy keywords. Use enterprise engineering equivalents:

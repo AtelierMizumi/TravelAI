@@ -10,7 +10,7 @@
 
 1. **Clean-Room Source Hygiene & Zero-Leakage Quarantine**:
    - **STRICTLY PROHIBITED** to `git add`, `commit`, or `push` any binary or office document files: `*.docx`, `*.doc`, `*.xlsx`, `*.xls`, `*.ods`, `*.pdf`, `*.pptx`, `*.csv`.
-   - The reference directory `travelai_original/` is a local-only quarantine zone and **MUST REMAIN PERMANENTLY GITIGNORED**. Never index or commit it.
+   - The reference directory `local_references/` (including `legacy_source/`, `legacy_specs/`, `learning_materials/`) is a local-only quarantine zone and **MUST REMAIN PERMANENTLY GITIGNORED**. Never index or commit it.
    - Always run and inspect `git status` prior to committing to ensure zero untracked garbage.
    - *References*: [01_provenance_quarantine_and_persona.md](.agents/rules/01_provenance_quarantine_and_persona.md) & [04_file_hygiene_and_repository_purity.md](.agents/rules/04_file_hygiene_and_repository_purity.md).
 

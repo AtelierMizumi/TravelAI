@@ -76,8 +76,21 @@ git commit -m "docs(arch): update microservices sequence diagram (#2)"
 
 ### 3. Vệ sinh kho mã nguồn (BẮT BUỘC):
 - **TUYỆT ĐỐI KHÔNG** commit các file văn phòng (`.docx`, `.xlsx`, `.ods`, `.pdf`) vào repo.
-- Thư mục nền cũ (`travelai_original/`) đã được cấu hình trong `.gitignore`, không bao giờ được đưa lên Git.
+- Thư mục tài liệu ngoài lề (`local_references/`, `travelai_original/`) đã được cấu hình vĩnh viễn trong `.gitignore`.
 - Mọi code đều phải được viết mới, tái cấu trúc hoặc tối ưu hóa sạch sẽ theo kiến trúc chuẩn.
+
+### 4. Quản lý tài liệu tham khảo cá nhân (`local_references/`):
+Để thuận tiện cho việc học tập, nghiên cứu các bài giảng lý thuyết và đối chiếu mã nguồn cũ mà không làm ảnh hưởng đến tính trong sạch của Git repository, dự án quy chuẩn thư mục **`local_references/`**:
+```
+local_references/
+├── learning_materials/   # Slide bài giảng môn học, sách PDF, tài liệu quản trị dự án (Week-01 -> Week-07)
+├── legacy_source/        # Mã nguồn tham khảo cũ (baseline) để đối chiếu giải thuật / logic nghiệp vụ
+└── legacy_specs/         # Bản nháp yêu cầu, tài liệu thô, file WBS (.xlsx, .ods)
+```
+- **Nguyên tắc vận hành**:
+  - Thư mục `local_references/` nằm trong `.gitignore` vĩnh viễn. Mọi thành viên tự do thêm/bớt slide, giáo trình, note cá nhân mà không sợ tạo rác Git hay gây merge conflict.
+  - **Không bao giờ dùng `git add -f`** để ép Git theo dõi thư mục này.
+  - Các tài liệu đặc tả chính thức của hệ thống (SRS, Architecture, API Contract) bắt buộc phải được biên soạn bằng Markdown và lưu trữ chuẩn mực trong thư mục `docs/`.
 
 ---
 
