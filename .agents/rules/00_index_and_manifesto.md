@@ -43,16 +43,16 @@ When resolving operational conflicts or ambiguity during task execution, the fol
 
 ## 3. FRAMEWORK MODULE DIRECTORY
 
-The governance rules are modularized into six specialized sub-frameworks:
+The governance rules are modularized into six specialized sub-frameworks (all referenced via portable relative paths):
 
 | Module File | Domain | Core Enforcements |
 |---|---|---|
-| [`01_provenance_quarantine_and_persona.md`](file:///home/thuanc177/Projects/School/TravelAI/.agents/rules/01_provenance_quarantine_and_persona.md) | **Provenance & Persona** | Total quarantine of legacy reports, zero leak of school context, authentic startup/enterprise persona. |
-| [`02_team_topology_and_role_boundaries.md`](file:///home/thuanc177/Projects/School/TravelAI/.agents/rules/02_team_topology_and_role_boundaries.md) | **Team & Scope** | 3-member RACI matrix, strict isolation of Trần Minh Thuận's tasks, peer delegation rules. |
-| [`03_git_governance_and_temporal_engine.md`](file:///home/thuanc177/Projects/School/TravelAI/.agents/rules/03_git_governance_and_temporal_engine.md) | **Git & Timeline** | Temporal simulation engine, human-paced commits, Conventional Commits 1.0.0, zero-bot attribution. |
-| [`04_file_hygiene_and_repository_purity.md`](file:///home/thuanc177/Projects/School/TravelAI/.agents/rules/04_file_hygiene_and_repository_purity.md) | **File Hygiene** | Absolute ban on `.docx`, `.xlsx`, `.pdf`; directory sanitation; pre-commit verification protocol. |
-| [`05_technical_architecture_and_code_standards.md`](file:///home/thuanc177/Projects/School/TravelAI/.agents/rules/05_technical_architecture_and_code_standards.md) | **Tech Standards** | Spring Boot 3, FastAPI, React 18, PostgreSQL 16, RFC 7807 error format, Docker orchestration. |
-| [`06_agile_lifecycle_and_definition_of_done.md`](file:///home/thuanc177/Projects/School/TravelAI/.agents/rules/06_agile_lifecycle_and_definition_of_done.md) | **Agile & DoD** | 1 session/week (4-6h) sprint cadence, Definition of Ready, Definition of Done, Issue closing. |
+| [`01_provenance_quarantine_and_persona.md`](./01_provenance_quarantine_and_persona.md) | **Provenance & Persona** | Total quarantine of legacy reports, zero leak of school context, authentic startup/enterprise persona. |
+| [`02_team_topology_and_role_boundaries.md`](./02_team_topology_and_role_boundaries.md) | **Team & Scope** | 3-member RACI matrix, strict isolation of Trần Minh Thuận's tasks, peer delegation rules. |
+| [`03_git_governance_and_temporal_engine.md`](./03_git_governance_and_temporal_engine.md) | **Git & Timeline** | Temporal simulation engine, human-paced commits, Conventional Commits 1.0.0, zero-bot attribution. |
+| [`04_file_hygiene_and_repository_purity.md`](./04_file_hygiene_and_repository_purity.md) | **File Hygiene** | Absolute ban on `.docx`, `.xlsx`, `.pdf`; directory sanitation; pre-commit verification protocol. |
+| [`05_technical_architecture_and_code_standards.md`](./05_technical_architecture_and_code_standards.md) | **Tech Standards** | Spring Boot 3, FastAPI, React 18, PostgreSQL 16, RFC 7807 error format, Docker orchestration. |
+| [`06_agile_lifecycle_and_definition_of_done.md`](./06_agile_lifecycle_and_definition_of_done.md) | **Agile & DoD** | 1 session/week (4-6h) sprint cadence, Definition of Ready, Definition of Done, Issue closing. |
 
 ---
 

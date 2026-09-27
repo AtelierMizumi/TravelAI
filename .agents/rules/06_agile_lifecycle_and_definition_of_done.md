@@ -1,105 +1,105 @@
-# 📈 VÒNG ĐỜI SPRINT & TIÊU CHUẨN HOÀN THÀNH (AGILE LIFECYCLE & DEFINITION OF DONE)
+# 📈 AGILE LIFECYCLE & DEFINITION OF DONE
 ## RULESET 06: CADENCE EXECUTION & ACCEPTANCE CRITERIA ENFORCEMENT
 
 > **ID**: `TAGF-RULE-006`  
-> **Phạm vi**: Điều phối Sprint, chuyển đổi trạng thái task trên GitHub Project Board #2, tiêu chuẩn DoR & DoD.
+> **Scope**: Sprint coordination, GitHub Project Board #2 status transitions, DoR & DoD standards.
 
 ---
 
-## 1. TIÊU CHUẨN SẴN SÀNG (DEFINITION OF READY - DoR)
+## 1. DEFINITION OF READY (DoR)
 
-Một gói công việc WBS chỉ được phép bắt đầu lập trình khi thỏa mãn đồng thời 4 điều kiện:
-1. **Rõ ràng phạm vi**: Có mô tả mục tiêu, sản phẩm bàn giao (Deliverables) cụ thể trong issue.
-2. **Tiêu chí nghiệm thu rõ ràng**: Có ít nhất 2 điều kiện Acceptance Criteria đo lường được.
-3. **Phụ thuộc đã giải quyết (Dependencies Resolved)**: Các gói công việc tiền đề đã hoàn thành hoặc có stub/mock sẵn sàng.
-4. **Đúng người đúng việc**: Được phân công chính xác cho một trong 3 kỹ sư (Thuận, Đức hoặc Ngọc).
+A WBS work package may only transition from `Todo` to `In Progress` when it simultaneously satisfies four prerequisites:
+1. **Unambiguous Scope**: Stated objective, deliverables, and boundary in the issue.
+2. **Measurable Acceptance Criteria**: At least two verifiable pass/fail conditions.
+3. **Dependencies Resolved**: Upstream work packages completed or mock stubs provided.
+4. **Engineer Assigned**: Strictly routed to the designated engineer (Thuận, Đức, or Ngọc).
 
 ---
 
-## 2. TIÊU CHUẨN HOÀN THÀNH (DEFINITION OF DONE - DoD)
+## 2. DEFINITION OF DONE (DoD)
 
-Một gói công việc WBS chỉ được phép chuyển trạng thái sang **`Done`** và đóng Issue khi thỏa mãn đầy đủ Checklist sau:
+A WBS work package may only transition to `Done` and close its linked GitHub Issue when the following checklist is 100% satisfied:
 
 ```markdown
-- [ ] Code tuân thủ kiến trúc phân tầng (Clean Layered Architecture)
-- [ ] Không có file tài liệu văn phòng (*.docx, *.xlsx, *.pdf) nào bị commit
-- [ ] Không có console.log, print debug hoặc mã nguồn rác chưa dọn dẹp
-- [ ] API endpoint trả về đúng cấu trúc JSON và có xử lý lỗi theo chuẩn RFC 7807
-- [ ] Đã chạy thử nghiệm cục bộ và xác nhận hoạt động chính xác
-- [ ] Commit tuân thủ Conventional Commits có gắn mã Issue: `<type>(<scope>): <desc> (#<id>)`
-- [ ] Thẻ trên GitHub Project Board #2 được cập nhật sang cột "Done"
-- [ ] Issue liên kết được đóng thành công trên GitHub
+- [ ] Code conforms to Clean Layered Architecture conventions
+- [ ] Zero office/binary files (*.docx, *.xlsx, *.pdf) staged or committed
+- [ ] Zero lingering debug logs (console.log, print, System.out.println)
+- [ ] API endpoints return schema-compliant JSON with RFC 7807 error formatting
+- [ ] Local build and execution verification successfully passed
+- [ ] Conventional Commit authored with Issue ID reference: `<type>(<scope>): <desc> (#<id>)`
+- [ ] Card on GitHub Project Board #2 transitioned to "Done" column
+- [ ] Linked GitHub Issue officially closed with resolution note
 ```
 
 ---
 
-## 3. QUY TRÌNH THỰC HIỆN 1 BUỔI / TUẦN (WEEKLY SPRINT SESSION PROTOCOL)
+## 3. WEEKLY SPRINT SESSION PROTOCOL (1 SESSION / WEEK: 4-6 HOURS)
 
-Khi bước vào buổi làm việc tập trung hàng tuần, Agent và nhóm kỹ sư thực hiện theo chu trình khép kín:
+When executing weekly focused development sessions, the team follows a synchronized 4-phase protocol:
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
-│                      CHU TRÌNH 4 BƯỚC BUỔI LÀM VIỆC TUẦN                    │
+│                       WEEKLY 4-PHASE SPRINT PROTOCOL                        │
 ├─────────────────────────────────────────────────────────────────────────────┤
-│ BƯỚC 1: SYNC-UP & KÉO VIỆC (00:00 - 00:15)                                  │
-│ - Mở Project #2: https://github.com/users/AtelierMizumi/projects/2          │
-│ - Xác nhận các Issue thuộc Sprint hiện tại đang ở Todo                       │
-│ - Kéo các Issue được phân công sang cột "In Progress"                       │
+│ PHASE 1: SYNC-UP & TASK CLAIMING (00:00 - 00:15)                            │
+│ - Open Project #2: https://github.com/users/AtelierMizumi/projects/2        │
+│ - Confirm current sprint tasks in "Todo"                                    │
+│ - Drag assigned work packages to "In Progress"                              │
 ├─────────────────────────────────────────────────────────────────────────────┤
-│ BƯỚC 2: DEEP WORK & CODING (00:15 - 03:30)                                  │
-│ - Tạo nhánh: git checkout -b feat/wbs-<id>-<ten>                            │
-│ - Lập trình tính năng, viết unit test, kiểm tra chạy thử                    │
-│ - Tuyệt đối không commit file tài liệu cũ hoặc file văn phòng               │
+│ PHASE 2: DEEP WORK & CODING (00:15 - 03:30)                                 │
+│ - Checkout branch: git checkout -b feat/wbs-<id>-<slug>                     │
+│ - Implement features, write unit tests, verify local runtime                │
+│ - Enforce zero office/binary file hygiene                                   │
 ├─────────────────────────────────────────────────────────────────────────────┤
-│ BƯỚC 3: CODE REVIEW & MERGE (03:30 - 04:00)                                 │
-│ - Đẩy nhánh lên remote: git push -u origin feat/wbs-...                     │
-│ - Tạo Pull Request gắn mã (#<issue_id>)                                     │
-│ - Thành viên khác review chéo, kiểm tra DoD, merge vào main                 │
+│ PHASE 3: CODE REVIEW & MERGE (03:30 - 04:00)                                │
+│ - Push branch: git push -u origin feat/wbs-...                              │
+│ - Create Pull Request with (#<issue_id>)                                    │
+│ - Cross-peer review, verify DoD, merge into main                            │
 ├─────────────────────────────────────────────────────────────────────────────┤
-│ BƯỚC 4: WRAP-UP & PROJECT SYNC (04:00 - 04:15)                              │
-│ - Kéo thẻ trên GitHub Project #2 sang cột "Done"                            │
-│ - Kiểm tra Issue đã tự động đóng                                            │
-│ - Ghi nhận thành quả Sprint và sẵn sàng cho tuần tiếp theo                  │
+│ PHASE 4: WRAP-UP & PROJECT SYNC (04:00 - 04:15)                             │
+│ - Transition Project #2 card to "Done"                                      │
+│ - Verify linked issue is automatically closed                               │
+│ - Record sprint milestone progress                                          │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 4. MA TRẬN TIẾN ĐỘ 6 SPRINTS & CHECKLIST NGHIỆM THU
+## 4. 6-SPRINT PRODUCTION SCHEDULE & TRACEABILITY MATRIX
 
-### 🔹 Sprint 1 (Tuần 1 - 2): Khởi Động & Kiến Trúc
-- [x] `[WBS 1.1.1]` Khởi động & xác định yêu cầu (Trần Minh Thuận) -> **Issue #1 (Closed)**
-- [x] `[WBS 1.1.2]` Thiết kế kiến trúc hệ thống đa dịch vụ (Trần Minh Thuận) -> **Issue #2 (Closed)**
-- [ ] `[WBS 1.1.3]` Thiết kế CSDL & mô hình dữ liệu PostgreSQL (Hoàng Văn Đức) -> **Issue #3**
+### 🔹 Sprint 1 (Weeks 1 - 2): Initiation & Architecture
+- [x] `[WBS 1.1.1]` Project Initiation & Requirements (Trần Minh Thuận) -> **Issue #1 (Closed)**
+- [x] `[WBS 1.1.2]` Microservice Architecture Design (Trần Minh Thuận) -> **Issue #2 (Closed)**
+- [ ] `[WBS 1.1.3]` Relational DB Schema & PostgreSQL (Hoàng Văn Đức) -> **Issue #3**
 
-### 🔹 Sprint 2 (Tuần 3 - 4): Xác Thực & Nền Tảng AI Service *(Hiện tại)*
-- [ ] `[WBS 1.2.1]` Đăng ký / đăng nhập (Hoàng Văn Đức BE + Lê Văn Ngọc FE) -> **Issue #4**
-- [ ] `[WBS 1.2.2]` Profile & bảo mật JWT (Hoàng Văn Đức BE + Lê Văn Ngọc FE) -> **Issue #5**
-- [ ] `[WBS 1.3.1]` Upload & tiền xử lý ảnh (Trần Minh Thuận) -> **Issue #6**
-- [ ] `[WBS 1.3.2]` AI Service bằng FastAPI (Trần Minh Thuận) -> **Issue #7**
+### 🔹 Sprint 2 (Weeks 3 - 4): Auth & AI Microservice Foundation *(Current Sprint)*
+- [ ] `[WBS 1.2.1]` User Registration & Login (Hoàng Văn Đức BE + Lê Văn Ngọc FE) -> **Issue #4**
+- [ ] `[WBS 1.2.2]` User Profile & JWT Security (Hoàng Văn Đức BE + Lê Văn Ngọc FE) -> **Issue #5**
+- [ ] `[WBS 1.3.1]` Image Upload & Preprocessing Pipeline (Trần Minh Thuận) -> **Issue #6**
+- [ ] `[WBS 1.3.2]` FastAPI AI Microservice Engine (Trần Minh Thuận) -> **Issue #7**
 
-### 🔹 Sprint 3 (Tuần 5 - 6): AI Landmark & Khám Phá
-- [ ] `[WBS 1.3.3]` Tích hợp Google Vision API (Trần Minh Thuận) -> **Issue #8**
-- [ ] `[WBS 1.3.4]` Hiển thị kết quả nhận diện (Lê Văn Ngọc) -> **Issue #9**
-- [ ] `[WBS 1.5.1]` Khám phá & tìm kiếm địa điểm (Lê Văn Ngọc FE + Hoàng Văn Đức BE) -> **Issue #10**
+### 🔹 Sprint 3 (Weeks 5 - 6): AI Vision & Destination Discovery
+- [ ] `[WBS 1.3.3]` Google Cloud Vision API Integration (Trần Minh Thuận) -> **Issue #8**
+- [ ] `[WBS 1.3.4]` AI Recognition Results Interface (Lê Văn Ngọc) -> **Issue #9**
+- [ ] `[WBS 1.5.1]` Travel Destination Discovery & Search (Lê Văn Ngọc FE + Hoàng Văn Đức BE) -> **Issue #10**
 
-### 🔹 Sprint 4 (Tuần 7 - 8): Review, Booking & Quản Trị *(100% Core MVP)*
-- [ ] `[WBS 1.4.3]` Viết & hiển thị Review (Lê Văn Ngọc) -> **Issue #11**
-- [ ] `[WBS 1.5.4]` Đặt Tour / Khách sạn & thanh toán (Hoàng Văn Đức BE + Lê Văn Ngọc FE) -> **Issue #12**
-- [ ] `[WBS 1.6.1]` Dashboard quản trị (Hoàng Văn Đức BE + Lê Văn Ngọc FE) -> **Issue #13**
-- [ ] `[WBS 1.6.2]` Quản lý người dùng (Hoàng Văn Đức BE + Lê Văn Ngọc FE) -> **Issue #14**
-- [ ] `[WBS 1.6.3]` Quản lý địa danh (Hoàng Văn Đức BE + Lê Văn Ngọc FE) -> **Issue #15**
+### 🔹 Sprint 4 (Weeks 7 - 8): Reviews, Booking & Admin Portal *(100% Core MVP)*
+- [ ] `[WBS 1.4.3]` Community Review & Rating System (Lê Văn Ngọc) -> **Issue #11**
+- [ ] `[WBS 1.5.4]` Tour / Hotel Reservation & Payment (Hoàng Văn Đức BE + Lê Văn Ngọc FE) -> **Issue #12**
+- [ ] `[WBS 1.6.1]` Executive Admin Dashboard (Hoàng Văn Đức BE + Lê Văn Ngọc FE) -> **Issue #13**
+- [ ] `[WBS 1.6.2]` User & Access Management (Hoàng Văn Đức BE + Lê Văn Ngọc FE) -> **Issue #14**
+- [ ] `[WBS 1.6.3]` Landmark & Place Catalog Management (Hoàng Văn Đức BE + Lê Văn Ngọc FE) -> **Issue #15**
 
-### 🔹 Sprint 5 (Tuần 9 - 10): Mạng Xã Hội, Chat Realtime & Mở Rộng
-- [ ] `[WBS 1.4.1]` Đăng bài & chia sẻ trải nghiệm (Lê Văn Ngọc FE + Hoàng Văn Đức BE) -> **Issue #16**
-- [ ] `[WBS 1.4.2]` Like / Comment / Follow (Lê Văn Ngọc) -> **Issue #17**
-- [ ] `[WBS 1.4.4]` Chat thời gian thực WebSocket (Hoàng Văn Đức BE + Lê Văn Ngọc FE) -> **Issue #18**
-- [ ] `[WBS 1.5.2]` Danh sách & chi tiết Tour (Lê Văn Ngọc) -> **Issue #19**
-- [ ] `[WBS 1.5.3]` Danh sách & chi tiết Khách sạn (Lê Văn Ngọc) -> **Issue #20**
-- [ ] `[WBS 1.6.4]` Quản lý đặt chỗ (Hoàng Văn Đức) -> **Issue #21**
-- [ ] `[WBS 1.6.5]` Kiểm duyệt bài viết & cài đặt (Lê Văn Ngọc UI + Hoàng Văn Đức BE) -> **Issue #22**
+### 🔹 Sprint 5 (Weeks 9 - 10): Social Feed, Realtime Chat & Catalog Expansion
+- [ ] `[WBS 1.4.1]` Travel Story Posting & Feed (Lê Văn Ngọc FE + Hoàng Văn Đức BE) -> **Issue #16**
+- [ ] `[WBS 1.4.2]` Like / Comment / Follow Interactions (Lê Văn Ngọc) -> **Issue #17**
+- [ ] `[WBS 1.4.4]` Real-time WebSocket STOMP Chat (Hoàng Văn Đức BE + Lê Văn Ngọc FE) -> **Issue #18**
+- [ ] `[WBS 1.5.2]` Tour Package Catalog & Itinerary (Lê Văn Ngọc) -> **Issue #19**
+- [ ] `[WBS 1.5.3]` Hotel Catalog & Room Showcase (Lê Văn Ngọc) -> **Issue #20**
+- [ ] `[WBS 1.6.4]` Reservation Booking Admin Portal (Hoàng Văn Đức) -> **Issue #21**
+- [ ] `[WBS 1.6.5]` Content Moderation & Platform Config (Lê Văn Ngọc UI + Hoàng Văn Đức BE) -> **Issue #22**
 
-### 🔹 Sprint 6 (Tuần 11 - 12): Kiểm Thử, Tối Ưu, Docker & Bàn Giao
-- [ ] `[WBS 1.7.1]` Kiểm thử tích hợp & chức năng (Cả nhóm) -> **Issue #23**
-- [ ] `[WBS 1.7.2]` Kiểm thử hiệu năng, bảo mật, responsive (Cả nhóm) -> **Issue #24**
-- [ ] `[WBS 1.7.3]` Triển khai Cloud, Docker & bàn giao (Trần Minh Thuận) -> **Issue #25**
+### 🔹 Sprint 6 (Weeks 11 - 12): QA, Load Testing, Docker & Cloud Release
+- [ ] `[WBS 1.7.1]` Cross-Service End-to-End Integration Testing (All Engineers) -> **Issue #23**
+- [ ] `[WBS 1.7.2]` Performance, Load & Security Hardening (All Engineers) -> **Issue #24**
+- [ ] `[WBS 1.7.3]` Multi-Container Docker Cloud Deployment (Trần Minh Thuận) -> **Issue #25**

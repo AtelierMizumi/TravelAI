@@ -1,81 +1,81 @@
-# 💻 QUY CHUẨN KIẾN TRÚC & TIÊU CHUẨN MÃ NGUỒN (ARCHITECTURE & CODE STANDARDS)
-## RULESET 05: ENTERPRISE TECH STACK & QUALITY SPECIFICATIONS
+# 💻 TECHNICAL ARCHITECTURE & CODE STANDARDS
+## RULESET 05: ENTERPRISE TECH STACK SPECIFICATIONS
 
 > **ID**: `TAGF-RULE-005`  
-> **Phạm vi**: Mọi file mã nguồn Java, Python, JavaScript/React, Dockerfile, SQL.
+> **Scope**: Java, Python, JavaScript/React, Dockerfile, SQL source code.
 
 ---
 
-## 1. TIÊU CHUẨN FRONTEND (REACTJS 18 + VITE)
+## 1. FRONTEND QUALITY STANDARDS (REACT 18 + VITE)
 
-- **Ngôn ngữ & Framework**: React 18+, Vite, modern ES6+ / JSX.
-- **Styling**: TailwindCSS với design tokens rõ ràng, kết hợp Lucide React Icons.
-- **Cấu trúc thư mục `client/src/`**:
+- **Runtime & Tooling**: React 18+, Vite, modern ES6+ / JSX.
+- **Styling & UI Tokens**: TailwindCSS utility framework with curated design tokens, Lucide React Icons.
+- **Directory Layout (`client/src/`)**:
   ```text
   client/src/
-  ├── components/       # UI Components tái sử dụng (Button, Modal, Card, Navbar)
-  ├── pages/            # Màn hình định tuyến chính (Home, Recognize, Places, Booking)
-  ├── services/         # Tầng giao tiếp HTTP API (Axios instance, interceptors, endpoints)
+  ├── components/       # Reusable Atomic UI Elements (Button, Modal, Card, Navbar)
+  ├── pages/            # Top-level Route Views (Home, Recognize, Places, Booking)
+  ├── services/         # HTTP Clients (Axios instance, interceptors, API endpoints)
   ├── hooks/            # Custom React Hooks
-  ├── context/          # State toàn cục (AuthContext, CartContext, ThemeContext)
-  └── utils/            # Helper functions, formatters (tiền tệ, ngày tháng)
+  ├── context/          # Global Context Providers (AuthContext, CartContext, ThemeContext)
+  └── utils/            # Pure helpers and formatters (currency, date-time, string)
   ```
-- **Quy tắc Code**:
-  - Không hardcode API URL trực tiếp trong component; bắt buộc qua `import.meta.env.VITE_API_BASE_URL`.
-  - Bắt buộc xử lý cả 3 trạng thái: `loading` (Skeleton loader), `error` (Toast / Alert thông báo thân thiện) và `success`.
-  - Tuyệt đối không để sót `console.log` debug trong mã nguồn chuẩn bị commit.
+- **Code Standards**:
+  - API URLs MUST be sourced from `import.meta.env.VITE_API_BASE_URL`.
+  - Component states MUST handle all three operational conditions: `loading` (Skeleton Loader), `error` (Toast Notification / Error Boundary), and `success`.
+  - Zero debug `console.log` statements permitted in committed code.
 
 ---
 
-## 2. TIÊU CHUẨN CORE BACKEND (JAVA SPRING BOOT 3)
+## 2. CORE BACKEND QUALITY STANDARDS (JAVA SPRING BOOT 3)
 
-- **Ngôn ngữ & Framework**: Java 17 (hoặc 21), Spring Boot 3.x, Spring Data JPA, Spring Security 6.
-- **Kiến trúc phân tầng (Clean Layered Architecture)**:
+- **Runtime & Framework**: Java 17+, Spring Boot 3.x, Spring Data JPA, Spring Security 6.
+- **Layered Clean Architecture**:
   ```text
   Controller Layer  -->  Service Layer (Interface + Impl)  -->  Repository Layer (JPA)  -->  Entity Layer
           │                       │
           ▼                       ▼
      DTO (Request/Response)  Custom Business Exceptions
   ```
-- **Bảo mật & Phiên làm việc**:
-  - Stateless JWT Authentication thông qua `JwtAuthenticationFilter` kế thừa `OncePerRequestFilter`.
-  - Phân quyền endpoint bằng `@PreAuthorize("hasRole('ADMIN')")` hoặc SecurityFilterChain matchers.
-- **Quy chuẩn Xử lý Ngoại lệ Toàn cục (Global Exception Handler)**:
-  - Mọi controller exception phải được bắt qua `@RestControllerAdvice`.
-  - Định dạng JSON lỗi trả về theo chuẩn **RFC 7807 (Problem Details for HTTP APIs)**:
+- **Authentication & RBAC**:
+  - Stateless JWT authentication via `JwtAuthenticationFilter` extending `OncePerRequestFilter`.
+  - Method-level authorization via `@PreAuthorize("hasRole('ADMIN')")` or SecurityFilterChain URL matchers.
+- **Global Exception Handling (RFC 7807)**:
+  - All exceptions intercepted via `@RestControllerAdvice`.
+  - Return JSON error payloads adhering to **RFC 7807 Problem Details**:
     ```json
     {
       "type": "https://travelai.vn/errors/bad-request",
       "title": "Invalid Input Data",
       "status": 400,
-      "detail": "Email đã tồn tại trong hệ thống.",
+      "detail": "Email already registered in system.",
       "timestamp": "2026-09-27T10:00:00Z"
     }
     ```
-- **Tối ưu hóa Database Truy vấn**:
-  - Sử dụng `@EntityGraph` hoặc `JOIN FETCH` để triệt tiêu lỗi N+1 Query.
-  - Đánh Index trên các cột thường xuyên tìm kiếm / lọc (`name`, `province`, `category_id`, `user_id`).
+- **Database Query Optimization**:
+  - Eliminate N+1 query antipatterns using `@EntityGraph` or `JOIN FETCH`.
+  - Enforce database indexing on frequently filtered columns (`name`, `province`, `category_id`, `user_id`).
 
 ---
 
-## 3. TIÊU CHUẨN AI MICROSERVICE (PYTHON FASTAPI)
+## 3. AI MICROSERVICE STANDARDS (PYTHON FASTAPI)
 
-- **Ngôn ngữ & Framework**: Python 3.11+, FastAPI, Pydantic v2.
-- **Xử lý Hình ảnh**:
-  - Tiếp nhận file ảnh qua `UploadFile = File(...)`.
-  - Kiểm tra MIME type (`image/jpeg`, `image/png`, `image/webp`) và kích thước tối đa 10MB bằng luồng byte trong bộ nhớ (không lưu file rác vào đĩa nếu không cần thiết).
-  - Sử dụng `Pillow` / `OpenCV` để resize tối ưu (ví dụ: max width 1920px) trước khi gửi đến Google Cloud Vision API để tiết kiệm băng thông và giảm latency.
-- **Tích hợp Google Cloud Vision API**:
-  - Khởi tạo client singleton: `vision.ImageAnnotatorClient()`.
-  - Thiết lập timeout tối đa 5.0 giây; nếu timeout, fallback sang cơ chế nhãn Web Detection hoặc trả về kết quả dự phòng an toàn, **tuyệt đối không để crash service**.
+- **Runtime & Tooling**: Python 3.11+, FastAPI, Pydantic v2.
+- **Image Processing Pipeline**:
+  - Ingest multipart files via `UploadFile = File(...)`.
+  - Validate MIME types (`image/jpeg`, `image/png`, `image/webp`) and limit payloads to `< 10MB` in memory streams.
+  - Utilize `Pillow` / `OpenCV` to normalize dimensions (e.g., maximum width 1920px) before invoking Google Cloud Vision API to minimize latency and bandwidth.
+- **Google Cloud Vision API Client**:
+  - Initialize singleton client: `vision.ImageAnnotatorClient()`.
+  - Enforce a 5.0-second timeout budget; if timeout occurs, trigger web-detection fallback or return an error payload safely **without crashing the worker process**.
 
 ---
 
-## 4. TIÊU CHUẨN CONTAINER HÓA (DOCKER & DOCKER COMPOSE)
+## 4. CONTAINERIZATION & DOCKER COMPOSE
 
-- Mọi service (`client`, `services/core`, `services/ai`) đều phải có `Dockerfile` riêng sử dụng kỹ thuật **Multi-stage Build** để tối ưu hóa dung lượng image (dùng `alpine` hoặc `slim`).
-- Tệp `docker-compose.yml` ở root phải sẵn sàng khởi chạy toàn bộ 4 container chỉ với một lệnh:
+- Every service (`client`, `services/core`, `services/ai`) must provide a multi-stage `Dockerfile` leveraging minimal base images (`alpine` or `slim`).
+- The root `docker-compose.yml` must orchestrate all four containers with a single command:
   ```bash
   docker compose up -d
   ```
-- Kiểm tra tính sẵn sàng bằng `healthcheck` cho PostgreSQL trước khi khởi động Core Backend.
+- Enforce service dependency ordering using PostgreSQL `healthcheck` before launching Core Backend.

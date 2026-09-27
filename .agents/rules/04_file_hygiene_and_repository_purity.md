@@ -1,15 +1,15 @@
-# 🧹 VỆ SINH MÃ NGUỒN & CÁCH LY TÀI SẢN NHỊ PHÂN (FILE HYGIENE & REPO PURITY)
-## RULESET 04: STRICT EXCLUSION & CLEAN DIRECTORY TAXONOMY
+# 🧹 FILE HYGIENE & REPOSITORY PURITY
+## RULESET 04: STRICT BINARY EXCLUSION & CLEAN DIRECTORY TAXONOMY
 
 > **ID**: `TAGF-RULE-004`  
-> **Phạm vi**: Cấu hình Git index, .gitignore, cấu trúc thư mục, quy chuẩn asset đa phương tiện.
+> **Scope**: Git index configuration, .gitignore, workspace filesystem layout, media assets.
 
 ---
 
-## 1. NGUYÊN TẮC BẤT KHẢ XÂM PHẠM: KHÔNG TÀI LIỆU VĂN PHÒNG / NHỊ PHÂN TRONG GIT
+## 1. IMMUTABLE INVARIANT: ZERO OFFICE / BINARY DOCUMENTS IN GIT
 
-### 1.1. Danh Sách Đuôi File Bị Cấm Tuyệt Đối (Blacklisted Extensions)
-Bất kỳ file nào có định dạng sau đây nếu xuất hiện trong `git status` (staged hoặc untracked) đều là dấu hiệu vi phạm và phải bị loại bỏ ngay lập tức:
+### 1.1. Explicit File Extension Blacklist
+Any file matching the following patterns appearing in `git status` (staged or untracked) represents a critical safety violation:
 
 ```text
 *.docx, *.doc       # Microsoft Word Documents
@@ -17,54 +17,54 @@ Bất kỳ file nào có định dạng sau đây nếu xuất hiện trong `git
 *.ods, *.odt        # OpenDocument Spreadsheets & Texts
 *.pdf               # PDF Reports / Presentations
 *.pptx, *.ppt       # PowerPoint Slides
-*.csv               # Raw uncompressed CSV dumps (sử dụng database seeder thay thế)
-*.zip, *.rar, *.tar # Archive files (trừ khi là asset đặc thù kiểm thử được cấu hình riêng)
-*.jar, *.war        # Compiled Java binaries (chỉ build trong Docker hoặc CI/CD)
+*.csv               # Raw uncompressed CSV dumps (use database seeders instead)
+*.zip, *.rar, *.tar # Archive files (unless explicitly configured binary test fixtures)
+*.jar, *.war        # Compiled Java binaries (built inside Docker / CI only)
 *.pyc, *.pyo        # Compiled Python bytecode
 ```
 
-### 1.2. Biện Pháp Khắc Phục Nếu Lỡ Track File Rác
-Nếu phát hiện một file văn phòng hoặc file nhị phân lọt vào Git Index:
+### 1.2. Recovery Protocol If Blacklisted Files Are Tracked
+If a blacklisted document or binary is inadvertently indexed:
 ```bash
-# 1. Hủy tracking ngay lập tức nhưng vẫn giữ file trên ổ cứng local
-git rm -rf --cached <ten-file-hoac-thu-muc>
+# 1. Unstage immediately without deleting local file on disk
+git rm -rf --cached <path-to-file-or-dir>
 
-# 2. Cập nhật .gitignore để chặn vĩnh viễn
-echo "<pattern>" >> .gitignore
+# 2. Verify .gitignore rule presence
+grep -q "<pattern>" .gitignore || echo "<pattern>" >> .gitignore
 
-# 3. Kiểm tra lại trạng thái
+# 3. Verify clean index status
 git status
 ```
 
 ---
 
-## 2. CẤU TRÚC THƯ MỤC CHUẨN DOANH NGHIỆP (CLEAN DIRECTORY TAXONOMY)
+## 2. ENTERPRISE REPOSITORY DIRECTORY LAYOUT
 
-Kho mã nguồn TravelAI được tổ chức theo mô hình **Monorepo đa dịch vụ (Multi-Service Monorepo)**:
+The TravelAI codebase is organized as a clean **Multi-Service Monorepo**:
 
 ```text
 TravelAI/
-├── .agents/                    # Hệ thống quy chuẩn thông minh của Agent
-│   └── rules/                  # Bộ quy chuẩn TAGF-v2.0 (00 đến 06)
-├── .github/                    # Cấu hình GitHub Actions, PR templates, Issue templates
-├── client/                     # Frontend SPA: React 18, Vite, TailwindCSS
+├── .agents/                    # Agent Governance & Rules System
+│   └── rules/                  # Modular TAGF-v2.0 Rulebooks (00 through 06)
+├── .github/                    # GitHub Workflows (CI/CD), PR & Issue Templates
+├── client/                     # High-Performance Frontend SPA (React 18 + Vite)
 ├── services/
-│   ├── ai/                     # AI Microservice: Python 3.11, FastAPI, Google Vision SDK
-│   └── core/                   # Core Business Backend: Java 17, Spring Boot 3
-├── docs/                       # Tài liệu kỹ thuật Markdown chuẩn
-│   ├── architecture/           # Sơ đồ kiến trúc, sequence diagrams, API contracts
-│   └── specs/                  # Đặc tả yêu cầu phần mềm (SRS), dữ liệu nghiệp vụ
-├── .gitignore                  # Bộ lọc loại trừ toàn diện
-├── AGENTS.md                   # Chỉ thị vận hành tối cao cho Agent
-├── COLABORATION.md             # Cẩm nang làm việc nhóm 3 kỹ sư (1 buổi/tuần)
-├── docker-compose.yml          # Điều phối 4 container (db, ai-service, backend, client)
-└── README.md                   # Bảng điều khiển tài liệu trung tâm
+│   ├── ai/                     # AI Microservice (Python 3.11 + FastAPI + Vision SDK)
+│   └── core/                   # Core Business Backend (Java 17 + Spring Boot 3)
+├── docs/                       # Technical Markdown Documentation
+│   ├── architecture/           # System Architecture, Sequence Diagrams, API Contracts
+│   └── specs/                  # Software Requirements Specification (SRS)
+├── .gitignore                  # Comprehensive Multi-Stack Exclusion Filter
+├── AGENTS.md                   # Supreme Agent Operational Directives
+├── COLABORATION.md             # 3-Engineer Collaboration Guidebook (1 session/week)
+├── docker-compose.yml          # Local 4-Container Orchestration (db, ai, core, client)
+└── README.md                   # Central Technical Dashboard & Showcase
 ```
 
 ---
 
-## 3. TIÊU CHUẨN TÀI NGUYÊN ĐỒ HỌA (ASSET INTEGRITY)
+## 3. MEDIA ASSET CONVENTIONS
 
-- Hình ảnh UI chỉ được lưu trữ trong thư mục `client/public/` hoặc `client/src/assets/`.
-- Định dạng bắt buộc: `.svg` (ưu tiên cho icon, logo vector), `.webp` (ưu tiên cho ảnh nền du lịch), `.png` (ảnh nén tối ưu).
-- Dung lượng mỗi ảnh UI tĩnh không được vượt quá **500 KB** (tránh làm phình to Git database).
+- Static UI assets must reside strictly within `client/public/` or `client/src/assets/`.
+- Permitted formats: `.svg` (vector icons & logos), `.webp` (compressed travel hero photography), optimized `.png`.
+- Single asset file size budget: `< 500 KB` per image to avoid Git LFS bloat.
