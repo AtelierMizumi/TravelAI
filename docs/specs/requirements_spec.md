@@ -1,6 +1,6 @@
 # 📑 TÀI LIỆU ĐẶC TẢ YÊU CẦU PHẦN MỀM (SRS) - TRAVELAI
 
-> **Mã công việc WBS**: `1.1.1 - Khởi động & xác định yêu cầu`  
+> **Mã công việc WBS**: `1.1.1 - Tài liệu đặc tả yêu cầu & phạm vi doanh nghiệp (SRS)`  
 > **Người thực hiện**: Trần Minh Thuận (Tech Lead / PM)  
 > **Phiên bản**: `1.0.0` | **Sprint**: `Sprint 1 (Tuần 1 - 2)`  
 > **Liên kết Issue**: [Issue #1](https://github.com/AtelierMizumi/TravelAI/issues/1)

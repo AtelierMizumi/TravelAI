@@ -9,9 +9,9 @@
 
 | Thành Viên | Vai Trò Chính | GitHub & Email | Trách Nhiệm Kỹ Thuật | Phân Hệ Phụ Trách Trong WBS |
 |---|---|---|---|---|
-| **Trần Minh Thuận** | **Tech Lead, AI & Integration, PM** | `@AtelierMizumi`<br>`thuanc177@gmail.com` | Kiến trúc tổng thể, đặc tả yêu cầu, FastAPI AI Microservice, Google Cloud Vision API, Docker & CI/CD Cloud. | `1.1.1`, `1.1.2`, `1.3.1`, `1.3.2`, `1.3.3`, `1.7.3` |
-| **Hoàng Văn Đức** | **Core Backend & Database Engineer** | `@duchayslay`<br>`hoangvanduc290805@gmail.com` | Spring Boot 3, thiết kế lược đồ CSDL PostgreSQL, bảo mật JWT/RBAC, Booking Engine, WebSocket Chat backend, Admin API. | `1.1.3`, `1.2.1` (BE), `1.2.2` (BE), `1.4.4` (BE), `1.5.1` (BE), `1.5.4` (BE), `1.6.1-1.6.4` (BE) |
-| **Lê Văn Ngọc** | **Frontend & UI/UX Specialist** | `@ngoctapcodee`<br>`ngoc492005@gmail.com` | ReactJS 18, Vite, TailwindCSS, giao diện AI nhận diện, trang khám phá địa điểm, đánh giá review, mạng xã hội và chat. | `1.2.1` (FE), `1.2.2` (FE), `1.3.4`, `1.4.1`, `1.4.2`, `1.4.3`, `1.4.4` (FE), `1.5.1-1.5.4` (FE), `1.6.1-1.6.5` (FE) |
+| **Trần Minh Thuận** | **Lead Architect & AI/Data Engineer, PM** | `@AtelierMizumi`<br>`thuanc177@gmail.com` | Kiến trúc tổng thể, đặc tả yêu cầu SRS, mô hình CSDL PostgreSQL Enterprise, FastAPI AI Microservice, Google Cloud Vision SDK, Docker & CI/CD Cloud. | `1.1.1`, `1.1.2`, `1.1.3`, `1.3.1`, `1.3.2`, `1.8.2` |
+| **Hoàng Văn Đức** | **Senior Backend & Security Engineer** | `@duchayslay`<br>`hoangvanduc290805@gmail.com` | Spring Boot 3 Core, bảo mật JWT/OAuth2, Tour & Hotel Catalog, Booking Engine & Payment, Review Service, WebSocket Chat Backend, Admin APIs (Location, Partners, RBAC, Audit). | `1.2.1`, `1.4.2`, `1.4.3`, `1.5.1`, `1.6.1`, `1.6.3`, `1.7.2`, `1.7.3`, `1.7.4`, `1.7.5` |
+| **Lê Văn Ngọc** | **Senior Frontend & QA Engineer** | `@ngoctapcodee`<br>`ngoc492005@gmail.com` | React 18 SPA + Vite, TailwindCSS Design System, User Profile UI, AI Recognition Results UI, Location Discovery UI, My Bookings Portal, Social Travel Feed, Admin Analytics & Config, Testing & E2E Suites. | `1.2.2`, `1.3.3`, `1.4.1`, `1.5.2`, `1.6.2`, `1.7.1`, `1.7.6`, `1.8.1` |
 
 ---
 
@@ -94,16 +94,16 @@ local_references/
 
 ---
 
-## 🚀 4. Lộ Trình 6 Sprints & Bảng Phân Công Nhiệm Vụ
+## 🚀 4. Lộ Trình 6 Sprints & Bảng Phân Công Nhiệm Vụ (TAGF-v2.0)
 
-| Sprint | Thời Gian | Mục Tiêu Cốt Lõi | Trần Minh Thuận (Lead/AI) | Hoàng Văn Đức (Core Backend) | Lê Văn Ngọc (Frontend) |
+| Sprint | Thời Gian | Mục Tiêu Cốt Lõi | Trần Minh Thuận (Lead/AI/Data) | Hoàng Văn Đức (Core Backend/Security) | Lê Văn Ngọc (Frontend/QA) |
 |---|---|---|---|---|---|
-| **Sprint 1** | 07/09 - 20/09 | Khởi động & Kiến trúc | `1.1.1` Yêu cầu, `1.1.2` Kiến trúc | `1.1.3` Thiết kế CSDL PostgreSQL | Phối hợp UX & Flow |
-| **Sprint 2** | 21/09 - 04/10 | Xác thực & AI Service | `1.3.1` Preprocessing, `1.3.2` FastAPI | `1.2.1` Auth API, `1.2.2` JWT Security | `1.2.1` UI Login, `1.2.2` UI Profile |
-| **Sprint 3** | 05/10 - 18/10 | Nhận diện AI & Khám phá | `1.3.3` Google Vision API | `1.5.1` API Khám phá địa điểm | `1.3.4` UI Kết quả AI, `1.5.1` UI Khám phá |
-| **Sprint 4** | 19/10 - 01/11 | Review, Booking & Admin *(Đạt 15/15 MVP)* | Hỗ trợ tích hợp liên dịch vụ | `1.5.4` Booking Engine, `1.6.1-1.6.3` Admin API | `1.4.3` UI Review, `1.5.4` UI Booking, `1.6.1-1.6.3` Admin UI |
-| **Sprint 5** | 02/11 - 15/11 | Mạng xã hội & Chat Realtime *(Non-MVP)* | Tối ưu hóa tải AI & Async | `1.4.4` WebSocket STOMP, `1.6.4` Booking Admin | `1.4.1-1.4.2` Social UI, `1.4.4` Chat UI, `1.5.2-1.5.3` Tour/Hotel |
-| **Sprint 6** | 16/11 - 29/11 | QA, Docker & Bàn giao | `1.7.3` Docker & Cloud DevOps | `1.7.1`, `1.7.2` Kiểm thử tải & bảo mật | `1.7.1`, `1.7.2` Kiểm thử UI & Responsive |
+| **Sprint 1** | 07/09 - 20/09 | Khởi tạo Kiến trúc, Hạ tầng Cloud & Schema CSDL | `1.1.1` Yêu cầu (SRS), `1.1.2` Kiến trúc hệ thống, `1.1.3` CSDL PostgreSQL Enterprise | `1.2.1` Auth Service JWT/OAuth2 | `1.2.2` Giao diện & API Hồ sơ cá nhân |
+| **Sprint 2** | 21/09 - 04/10 | Dịch vụ AI & Core API Nghiệp vụ Xác thực | `1.3.1` Preprocessing, `1.3.2` AI Landmark FastAPI & Vision Cloud | `1.7.2` API Quản lý danh mục địa danh | `1.3.3` UI Kết quả AI, `1.4.1` UI & API Khám phá địa điểm |
+| **Sprint 3** | 05/10 - 18/10 | Dịch vụ Lữ hành, Quản trị Cốt lõi & Đối tác | Hỗ trợ tối ưu hóa kết nối Microservices | `1.4.2` Tour Catalog, `1.4.3` Hotel Catalog, `1.7.3` Partner Admin, `1.7.4` RBAC Admin | `1.7.1` Dashboard Quản trị Analytics |
+| **Sprint 4** | 19/10 - 01/11 | Đánh giá, Mạng xã hội & Chat Thời gian thực | Hỗ trợ tích hợp WebSocket & Async | `1.6.1` Review Service, `1.6.3` WebSocket Chat Backend | `1.6.2` Social Travel Feed, `1.7.6` Cấu hình & Kiểm duyệt |
+| **Sprint 5** | 02/11 - 15/11 | Đặt chỗ & Cổng thanh toán trực tuyến | Giám sát tích hợp bảo mật giao dịch | `1.5.1` Booking Engine & Payment, `1.7.5` Đối soát giao dịch | `1.5.2` My Bookings Portal & Hủy dịch vụ |
+| **Sprint 6** | 16/11 - 29/11 | Kiểm thử Tự động E2E & Triển khai Production | `1.8.2` Đóng gói Docker & Triển khai Cloud (AWS/CI-CD) | Phối hợp kiểm thử hiệu năng & bảo mật API | `1.8.1` Bộ kịch bản & Kiểm thử tích hợp E2E Cypress |
 
 ---
 

@@ -35,7 +35,7 @@ When resolving operational conflicts or ambiguity during task execution, the fol
 │ (Spring Boot 3, FastAPI, React 18, PostgreSQL 16)      │
 ├────────────────────────────────────────────────────────┤
 │ LEVEL 4: SPRINT LIFECYCLE & DEFINITION OF DONE         │
-│ (WBS 1.1.1 - 1.7.3, GitHub Project #2 sync)            │
+│ (WBS 1.1.1 - 1.8.2, GitHub Project #2 sync)            │
 └────────────────────────────────────────────────────────┘
 ```
 

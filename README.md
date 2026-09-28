@@ -81,60 +81,59 @@ Dự án được phân bổ công việc theo mô hình Agile Scrum chuyên ngh
 
 ## 🚀 Quản Lý Dự Án & Lộ Trình Phát Triển (Agile / Scrum Roadmap)
 
-Dự án được quản lý trực tiếp thông qua **GitHub Projects**, chia thành **6 Sprints** (mỗi Sprint 2 tuần, tổng cộng 12 tuần) với **25 gói công việc (Work Packages)** tuân thủ phương pháp MoSCoW:
+Dự án được quản lý trực tiếp thông qua **GitHub Projects**, chia thành **6 Sprints** (mỗi Sprint 2 tuần, tổng cộng 12 tuần) với **24 gói công việc (Work Packages)** tuân thủ phương pháp MoSCoW:
 
 👉 **Truy cập bảng điều khiển dự án:** [**TravelAI - Project Board & Sprint Backlog**](https://github.com/users/AtelierMizumi/projects/2)
 
 ### 📌 Thống Kê Phân Bổ MoSCoW
-- **Core MVP (Must-Have)**: `15 gói công việc` (**60%**) - Hoàn thành toàn diện tại Sprint 4.
-- **Enhanced Experience (Should/Could-Have)**: `10 gói công việc` (**40%**) - Mở rộng và hoàn thiện tại Sprint 5 - 6.
+- **Core MVP (Must-Have)**: `14 gói công việc` (**58.3%**) - Trải dài từ Sprint 1 đến Sprint 6 với các tính năng cốt lõi và kiểm thử nền tảng.
+- **Enhanced Experience (Should/Could-Have)**: `10 gói công việc` (**41.7%**) - Mở rộng dịch vụ lữ hành, mạng xã hội, chat và booking.
 
 ---
 
 ### 📅 Chi Tiết 6 Sprints
 
-#### 🔹 Sprint 1 (Tuần 1 - 2): Khởi Động & Thiết Kế Kiến Trúc
+#### 🔹 Sprint 1 (Tuần 1 - 2): Khởi Tạo Kiến Trúc, Hạ Tầng Cloud & Schema CSDL
 *Trạng thái: `Done` | Thời gian: 07/09/2026 - 20/09/2026*
-- `[WBS 1.1.1]` Khởi động & xác định yêu cầu nghiệp vụ ([#1](https://github.com/AtelierMizumi/TravelAI/issues/1))
-- `[WBS 1.1.2]` Thiết kế kiến trúc hệ thống đa dịch vụ ([#2](https://github.com/AtelierMizumi/TravelAI/issues/2))
-- `[WBS 1.1.3]` Thiết kế CSDL quan hệ & mô hình dữ liệu PostgreSQL ([#3](https://github.com/AtelierMizumi/TravelAI/issues/3))
+- `[WBS 1.1.1]` Đặc tả yêu cầu & phạm vi doanh nghiệp (SRS) ([#1](https://github.com/AtelierMizumi/TravelAI/issues/1))
+- `[WBS 1.1.2]` Thiết kế kiến trúc Microservices & AI Gateway ([#2](https://github.com/AtelierMizumi/TravelAI/issues/2))
+- `[WBS 1.1.3]` Mô hình dữ liệu & Kịch bản CSDL PostgreSQL Enterprise ([#3](https://github.com/AtelierMizumi/TravelAI/issues/3))
+- `[WBS 1.2.1]` Module xác thực bảo mật doanh nghiệp (JWT/OAuth2) ([#4](https://github.com/AtelierMizumi/TravelAI/issues/4))
+- `[WBS 1.2.2]` Giao diện & API Hồ sơ cá nhân (User Profile Service) ([#5](https://github.com/AtelierMizumi/TravelAI/issues/5))
 
-#### 🔹 Sprint 2 (Tuần 3 - 4): Xác Thực Bảo Mật & Nền Tảng AI Service
+#### 🔹 Sprint 2 (Tuần 3 - 4): Dịch Vụ AI & Core API Nghiệp Vụ Xác Thực
 *Trạng thái: `In Progress` | Thời gian: 21/09/2026 - 04/10/2026*
-- `[WBS 1.2.1]` Module Đăng ký / Đăng nhập ([#4](https://github.com/AtelierMizumi/TravelAI/issues/4))
-- `[WBS 1.2.2]` Quản lý Hồ sơ người dùng & cơ chế bảo mật JWT ([#5](https://github.com/AtelierMizumi/TravelAI/issues/5))
-- `[WBS 1.3.1]` Pipeline Upload & tiền xử lý hình ảnh ([#6](https://github.com/AtelierMizumi/TravelAI/issues/6))
-- `[WBS 1.3.2]` Khung AI Microservice bằng FastAPI ([#7](https://github.com/AtelierMizumi/TravelAI/issues/7))
+- `[WBS 1.3.1]` Giao diện tiếp nhận & Bộ tiền xử lý ảnh (Image Preprocessor) ([#6](https://github.com/AtelierMizumi/TravelAI/issues/6))
+- `[WBS 1.3.2]` Dịch vụ AI nhận diện địa danh (FastAPI & Google Vision Cloud) ([#7](https://github.com/AtelierMizumi/TravelAI/issues/7))
+- `[WBS 1.3.3]` Giao diện hiển thị kết quả & Gợi ý dịch vụ thông minh ([#8](https://github.com/AtelierMizumi/TravelAI/issues/8))
+- `[WBS 1.4.1]` Giao diện & API Khám phá địa điểm du lịch (Location Discovery) ([#9](https://github.com/AtelierMizumi/TravelAI/issues/9))
+- `[WBS 1.7.2]` Module quản lý danh mục địa danh du lịch (Location Management) ([#18](https://github.com/AtelierMizumi/TravelAI/issues/18))
 
-#### 🔹 Sprint 3 (Tuần 5 - 6): AI Nhận Diện Địa Danh & Khám Phá Điểm Đến
+#### 🔹 Sprint 3 (Tuần 5 - 6): Dịch Vụ Lữ Hành, Quản Trị Cốt Lõi & Đối Tác
 *Trạng thái: `Todo` | Thời gian: 05/10/2026 - 18/10/2026*
-- `[WBS 1.3.3]` Tích hợp Google Cloud Vision API nhận diện Landmark ([#8](https://github.com/AtelierMizumi/TravelAI/issues/8))
-- `[WBS 1.3.4]` Giao diện hiển thị kết quả phân tích AI ([#9](https://github.com/AtelierMizumi/TravelAI/issues/9))
-- `[WBS 1.5.1]` Tính năng tìm kiếm & khám phá điểm đến du lịch ([#10](https://github.com/AtelierMizumi/TravelAI/issues/10))
+- `[WBS 1.4.2]` Module thông tin Tour du lịch (Tour Catalog Service) ([#10](https://github.com/AtelierMizumi/TravelAI/issues/10))
+- `[WBS 1.4.3]` Module thông tin Khách sạn & Lưu trú (Hotel Catalog Service) ([#11](https://github.com/AtelierMizumi/TravelAI/issues/11))
+- `[WBS 1.7.1]` Bảng điều khiển tổng quan quản trị (Admin Analytics Dashboard) ([#17](https://github.com/AtelierMizumi/TravelAI/issues/17))
+- `[WBS 1.7.3]` Module quản lý dịch vụ Khách sạn & Tour (Partner Services) ([#19](https://github.com/AtelierMizumi/TravelAI/issues/19))
+- `[WBS 1.7.4]` Module quản trị tài khoản người dùng & Phân quyền (RBAC Admin) ([#20](https://github.com/AtelierMizumi/TravelAI/issues/20))
 
-#### 🔹 Sprint 4 (Tuần 7 - 8): Quản Trị Cốt Lõi, Đánh Giá & Dịch Vụ Đặt Chỗ (Hoàn Thành 100% MVP)
+#### 🔹 Sprint 4 (Tuần 7 - 8): Đánh Giá, Mạng Xã Hội & Chat Thời Gian Thực
 *Trạng thái: `Todo` | Thời gian: 19/10/2026 - 01/11/2026*
-- `[WBS 1.4.3]` Viết & hiển thị đánh giá (Reviews & Ratings) ([#11](https://github.com/AtelierMizumi/TravelAI/issues/11))
-- `[WBS 1.5.4]` Luồng đặt Tour / Khách sạn & thanh toán trực tuyến ([#12](https://github.com/AtelierMizumi/TravelAI/issues/12))
-- `[WBS 1.6.1]` Dashboard điều hành trung tâm cho Quản trị viên ([#13](https://github.com/AtelierMizumi/TravelAI/issues/13))
-- `[WBS 1.6.2]` Quản trị thành viên & phân quyền hệ thống ([#14](https://github.com/AtelierMizumi/TravelAI/issues/14))
-- `[WBS 1.6.3]` Quản trị danh mục điểm du lịch & đối sánh dữ liệu ([#15](https://github.com/AtelierMizumi/TravelAI/issues/15))
+- `[WBS 1.6.1]` Module đánh giá địa danh & dịch vụ (Review & Rating Service) ([#14](https://github.com/AtelierMizumi/TravelAI/issues/14))
+- `[WBS 1.6.2]` Bảng tin chia sẻ trải nghiệm du lịch (Social Travel Feed) ([#15](https://github.com/AtelierMizumi/TravelAI/issues/15))
+- `[WBS 1.6.3]` Hệ thống tin nhắn trực tuyến qua WebSocket (Real-time Messaging) ([#16](https://github.com/AtelierMizumi/TravelAI/issues/16))
+- `[WBS 1.7.6]` Module kiểm duyệt nội dung & Cấu hình hệ thống (System Config) ([#22](https://github.com/AtelierMizumi/TravelAI/issues/22))
 
-#### 🔹 Sprint 5 (Tuần 9 - 10): Mạng Xã Hội Du Lịch & Dịch Vụ Mở Rộng
+#### 🔹 Sprint 5 (Tuần 9 - 10): Đặt Chỗ & Cổng Thanh Toán Trực Tuyến
 *Trạng thái: `Todo` | Thời gian: 02/11/2026 - 15/11/2026*
-- `[WBS 1.4.1]` Đăng bài viết chia sẻ trải nghiệm & album ảnh ([#16](https://github.com/AtelierMizumi/TravelAI/issues/16))
-- `[WBS 1.4.2]` Tương tác mạng xã hội: Like, Comment, Follow ([#17](https://github.com/AtelierMizumi/TravelAI/issues/17))
-- `[WBS 1.4.4]` Kênh Chat thời gian thực với WebSocket ([#18](https://github.com/AtelierMizumi/TravelAI/issues/18))
-- `[WBS 1.5.2]` Danh mục & chi tiết các gói Tour du lịch ([#19](https://github.com/AtelierMizumi/TravelAI/issues/19))
-- `[WBS 1.5.3]` Danh mục & chi tiết hệ thống Khách sạn lân cận ([#20](https://github.com/AtelierMizumi/TravelAI/issues/20))
-- `[WBS 1.6.4]` Hệ thống quản lý đơn đặt chỗ cho quản trị viên ([#21](https://github.com/AtelierMizumi/TravelAI/issues/21))
-- `[WBS 1.6.5]` Kiểm duyệt bài viết cộng đồng & cấu hình hệ thống ([#22](https://github.com/AtelierMizumi/TravelAI/issues/22))
+- `[WBS 1.5.1]` Quy trình đặt dịch vụ & Cổng thanh toán trực tuyến (Booking & Payment) ([#12](https://github.com/AtelierMizumi/TravelAI/issues/12))
+- `[WBS 1.5.2]` Module quản lý lịch sử đặt chỗ & Hủy dịch vụ (My Bookings Portal) ([#13](https://github.com/AtelierMizumi/TravelAI/issues/13))
+- `[WBS 1.7.5]` Module quản lý đơn đặt chỗ & Đối soát giao dịch (Booking Audit) ([#21](https://github.com/AtelierMizumi/TravelAI/issues/21))
 
-#### 🔹 Sprint 6 (Tuần 11 - 12): Kiểm Thử Toàn Diện, Triển Khai Cloud & Phát Hành
+#### 🔹 Sprint 6 (Tuần 11 - 12): Kiểm Thử Tự Động, Đóng Gói Docker & Triển Khai Cloud
 *Trạng thái: `Todo` | Thời gian: 16/11/2026 - 29/11/2026*
-- `[WBS 1.7.1]` Kiểm thử tích hợp liên dịch vụ & kiểm thử chức năng E2E ([#23](https://github.com/AtelierMizumi/TravelAI/issues/23))
-- `[WBS 1.7.2]` Kiểm thử hiệu năng, tải cao (Load Testing) & bảo mật ([#24](https://github.com/AtelierMizumi/TravelAI/issues/24))
-- `[WBS 1.7.3]` Đóng gói Docker, triển khai Cloud hạ tầng & phát hành ([#25](https://github.com/AtelierMizumi/TravelAI/issues/25))
+- `[WBS 1.8.1]` Bộ kịch bản & Kiểm thử tích hợp tự động (Integration & E2E Testing) ([#23](https://github.com/AtelierMizumi/TravelAI/issues/23))
+- `[WBS 1.8.2]` Đóng gói ứng dụng & Triển khai hạ tầng Cloud (AWS/Docker/CI-CD) ([#24](https://github.com/AtelierMizumi/TravelAI/issues/24))
 
 ---
 

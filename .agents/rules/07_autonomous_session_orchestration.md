@@ -31,9 +31,9 @@ flowchart TD
 ### Phase 1: Context & RACI Resolver
 The agent reads the input directive and resolves:
 1. **Target Engineer**:
-   - **Trần Minh Thuận**: `@AtelierMizumi` | `Minh Thuận Trần <thuanc177@gmail.com>` | Packages: `1.1.1`, `1.1.2`, `1.3.1`, `1.3.2`, `1.3.3`, `1.7.3`.
-   - **Hoàng Văn Đức**: `@duchayslay` | `Hoàng Văn Đức <hoangvanduc290805@gmail.com>` | Packages: `1.1.3`, `1.2.1`(BE), `1.2.2`(BE), `1.4.4`(BE), `1.5.1`(BE), `1.5.4`(BE), `1.6.1-1.6.4`(BE).
-   - **Lê Văn Ngọc**: `@ngoctapcodee` | `Lê Văn Ngọc <ngoc492005@gmail.com>` | Packages: `1.2.1`(FE), `1.2.2`(FE), `1.3.4`, `1.4.1`, `1.4.2`, `1.4.3`, `1.4.4`(FE), `1.5.1-1.5.4`(FE), `1.6.1-1.6.5`(FE).
+   - **Trần Minh Thuận**: `@AtelierMizumi` | `Minh Thuận Trần <thuanc177@gmail.com>` | Packages: `1.1.1`, `1.1.2`, `1.1.3`, `1.3.1`, `1.3.2`, `1.8.2`.
+   - **Hoàng Văn Đức**: `@duchayslay` | `Hoàng Văn Đức <hoangvanduc290805@gmail.com>` | Packages: `1.2.1`, `1.4.2`, `1.4.3`, `1.5.1`, `1.6.1`, `1.6.3`, `1.7.2`, `1.7.3`, `1.7.4`, `1.7.5`.
+   - **Lê Văn Ngọc**: `@ngoctapcodee` | `Lê Văn Ngọc <ngoc492005@gmail.com>` | Packages: `1.2.2`, `1.3.3`, `1.4.1`, `1.5.2`, `1.6.2`, `1.7.1`, `1.7.6`, `1.8.1`.
 2. **Target WBS & Issue #**: Match against the Sprint Schedule in [`06_agile_lifecycle_and_definition_of_done.md`](./06_agile_lifecycle_and_definition_of_done.md). If unspecified, automatically select the next uncompleted issue in the active sprint assigned to that engineer.
 3. **Temporal Window**: Determine the calendar dates of the active Sprint (Weeks 1 to 12) and schedule commits within developer working hours (`09:30 - 22:30 +0700`).
 

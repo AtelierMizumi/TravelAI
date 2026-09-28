@@ -65,41 +65,46 @@ When executing weekly focused development sessions, the team follows a synchroni
 
 ---
 
-## 4. 6-SPRINT PRODUCTION SCHEDULE & TRACEABILITY MATRIX
+## 4. 6-SPRINT PRODUCTION SCHEDULE & TRACEABILITY MATRIX (TAGF-v2.0)
 
-### 🔹 Sprint 1 (Weeks 1 - 2): Initiation & Architecture
-- [x] `[WBS 1.1.1]` Project Initiation & Requirements (Trần Minh Thuận) -> **Issue #1 (Closed)**
-- [x] `[WBS 1.1.2]` Microservice Architecture Design (Trần Minh Thuận) -> **Issue #2 (Closed)**
-- [ ] `[WBS 1.1.3]` Relational DB Schema & PostgreSQL (Hoàng Văn Đức) -> **Issue #3**
+### 🔹 Sprint 1 (Weeks 1 - 2): Initiation, Cloud Foundation & Database Schema
+*Schedule: 2026-09-07 to 2026-09-20 | Lead: Trần Minh Thuận*
+- [x] `[WBS 1.1.1]` Đặc tả yêu cầu & phạm vi doanh nghiệp (SRS) (Trần Minh Thuận) -> **Issue #1 (Closed)**
+- [x] `[WBS 1.1.2]` Thiết kế kiến trúc Microservices & AI Gateway (Trần Minh Thuận) -> **Issue #2 (Closed)**
+- [x] `[WBS 1.1.3]` Mô hình dữ liệu & Kịch bản CSDL PostgreSQL Enterprise (Trần Minh Thuận) -> **Issue #3 (Closed)**
+- [ ] `[WBS 1.2.1]` Module xác thực bảo mật doanh nghiệp (JWT/OAuth2) (Hoàng Văn Đức) -> **Issue #4**
+- [ ] `[WBS 1.2.2]` Giao diện & API Hồ sơ cá nhân (User Profile Service) (Lê Văn Ngọc) -> **Issue #5**
 
-### 🔹 Sprint 2 (Weeks 3 - 4): Auth & AI Microservice Foundation *(Current Sprint)*
-- [ ] `[WBS 1.2.1]` User Registration & Login (Hoàng Văn Đức BE + Lê Văn Ngọc FE) -> **Issue #4**
-- [ ] `[WBS 1.2.2]` User Profile & JWT Security (Hoàng Văn Đức BE + Lê Văn Ngọc FE) -> **Issue #5**
-- [ ] `[WBS 1.3.1]` Image Upload & Preprocessing Pipeline (Trần Minh Thuận) -> **Issue #6**
-- [ ] `[WBS 1.3.2]` FastAPI AI Microservice Engine (Trần Minh Thuận) -> **Issue #7**
+### 🔹 Sprint 2 (Weeks 3 - 4): Core AI Service & Location Discovery *(Current Sprint)*
+*Schedule: 2026-09-21 to 2026-10-04 | Lead: Hoàng Văn Đức*
+- [ ] `[WBS 1.3.1]` Giao diện tiếp nhận & Bộ tiền xử lý ảnh (Image Preprocessor) (Trần Minh Thuận) -> **Issue #6**
+- [ ] `[WBS 1.3.2]` Dịch vụ AI nhận diện địa danh (FastAPI & Google Vision Cloud) (Trần Minh Thuận) -> **Issue #7**
+- [ ] `[WBS 1.3.3]` Giao diện hiển thị kết quả & Gợi ý dịch vụ thông minh (Lê Văn Ngọc) -> **Issue #8**
+- [ ] `[WBS 1.4.1]` Giao diện & API Khám phá địa điểm du lịch (Location Discovery) (Lê Văn Ngọc) -> **Issue #9**
+- [ ] `[WBS 1.7.2]` Module quản lý danh mục địa danh du lịch (Location Management) (Hoàng Văn Đức) -> **Issue #18**
 
-### 🔹 Sprint 3 (Weeks 5 - 6): AI Vision & Destination Discovery
-- [ ] `[WBS 1.3.3]` Google Cloud Vision API Integration (Trần Minh Thuận) -> **Issue #8**
-- [ ] `[WBS 1.3.4]` AI Recognition Results Interface (Lê Văn Ngọc) -> **Issue #9**
-- [ ] `[WBS 1.5.1]` Travel Destination Discovery & Search (Lê Văn Ngọc FE + Hoàng Văn Đức BE) -> **Issue #10**
+### 🔹 Sprint 3 (Weeks 5 - 6): Travel Catalog & Core Administration
+*Schedule: 2026-10-05 to 2026-10-18 | Lead: Lê Văn Ngọc*
+- [ ] `[WBS 1.4.2]` Module thông tin Tour du lịch (Tour Catalog Service) (Hoàng Văn Đức) -> **Issue #10**
+- [ ] `[WBS 1.4.3]` Module thông tin Khách sạn & Lưu trú (Hotel Catalog Service) (Hoàng Văn Đức) -> **Issue #11**
+- [ ] `[WBS 1.7.1]` Bảng điều khiển tổng quan quản trị (Admin Analytics Dashboard) (Lê Văn Ngọc) -> **Issue #17**
+- [ ] `[WBS 1.7.3]` Module quản lý dịch vụ Khách sạn & Tour (Partner Services) (Hoàng Văn Đức) -> **Issue #19**
+- [ ] `[WBS 1.7.4]` Module quản trị tài khoản người dùng & Phân quyền (RBAC Admin) (Hoàng Văn Đức) -> **Issue #20**
 
-### 🔹 Sprint 4 (Weeks 7 - 8): Reviews, Booking & Admin Portal *(100% Core MVP)*
-- [ ] `[WBS 1.4.3]` Community Review & Rating System (Lê Văn Ngọc) -> **Issue #11**
-- [ ] `[WBS 1.5.4]` Tour / Hotel Reservation & Payment (Hoàng Văn Đức BE + Lê Văn Ngọc FE) -> **Issue #12**
-- [ ] `[WBS 1.6.1]` Executive Admin Dashboard (Hoàng Văn Đức BE + Lê Văn Ngọc FE) -> **Issue #13**
-- [ ] `[WBS 1.6.2]` User & Access Management (Hoàng Văn Đức BE + Lê Văn Ngọc FE) -> **Issue #14**
-- [ ] `[WBS 1.6.3]` Landmark & Place Catalog Management (Hoàng Văn Đức BE + Lê Văn Ngọc FE) -> **Issue #15**
+### 🔹 Sprint 4 (Weeks 7 - 8): Reviews, Social Feed & Real-time Messaging
+*Schedule: 2026-10-19 to 2026-11-01 | Lead: Trần Minh Thuận*
+- [ ] `[WBS 1.6.1]` Module đánh giá địa danh & dịch vụ (Review & Rating Service) (Hoàng Văn Đức) -> **Issue #14**
+- [ ] `[WBS 1.6.2]` Bảng tin chia sẻ trải nghiệm du lịch (Social Travel Feed) (Lê Văn Ngọc) -> **Issue #15**
+- [ ] `[WBS 1.6.3]` Hệ thống tin nhắn trực tuyến qua WebSocket (Real-time Messaging) (Hoàng Văn Đức) -> **Issue #16**
+- [ ] `[WBS 1.7.6]` Module kiểm duyệt nội dung & Cấu hình hệ thống (System Config) (Lê Văn Ngọc) -> **Issue #22**
 
-### 🔹 Sprint 5 (Weeks 9 - 10): Social Feed, Realtime Chat & Catalog Expansion
-- [ ] `[WBS 1.4.1]` Travel Story Posting & Feed (Lê Văn Ngọc FE + Hoàng Văn Đức BE) -> **Issue #16**
-- [ ] `[WBS 1.4.2]` Like / Comment / Follow Interactions (Lê Văn Ngọc) -> **Issue #17**
-- [ ] `[WBS 1.4.4]` Real-time WebSocket STOMP Chat (Hoàng Văn Đức BE + Lê Văn Ngọc FE) -> **Issue #18**
-- [ ] `[WBS 1.5.2]` Tour Package Catalog & Itinerary (Lê Văn Ngọc) -> **Issue #19**
-- [ ] `[WBS 1.5.3]` Hotel Catalog & Room Showcase (Lê Văn Ngọc) -> **Issue #20**
-- [ ] `[WBS 1.6.4]` Reservation Booking Admin Portal (Hoàng Văn Đức) -> **Issue #21**
-- [ ] `[WBS 1.6.5]` Content Moderation & Platform Config (Lê Văn Ngọc UI + Hoàng Văn Đức BE) -> **Issue #22**
+### 🔹 Sprint 5 (Weeks 9 - 10): Booking & Online Payment Gateway
+*Schedule: 2026-11-02 to 2026-11-15 | Lead: Hoàng Văn Đức*
+- [ ] `[WBS 1.5.1]` Quy trình đặt dịch vụ & Cổng thanh toán trực tuyến (Booking & Payment) (Hoàng Văn Đức) -> **Issue #12**
+- [ ] `[WBS 1.5.2]` Module quản lý lịch sử đặt chỗ & Hủy dịch vụ (My Bookings Portal) (Lê Văn Ngọc) -> **Issue #13**
+- [ ] `[WBS 1.7.5]` Module quản lý đơn đặt chỗ & Đối soát giao dịch (Booking Audit) (Hoàng Văn Đức) -> **Issue #21**
 
-### 🔹 Sprint 6 (Weeks 11 - 12): QA, Load Testing, Docker & Cloud Release
-- [ ] `[WBS 1.7.1]` Cross-Service End-to-End Integration Testing (All Engineers) -> **Issue #23**
-- [ ] `[WBS 1.7.2]` Performance, Load & Security Hardening (All Engineers) -> **Issue #24**
-- [ ] `[WBS 1.7.3]` Multi-Container Docker Cloud Deployment (Trần Minh Thuận) -> **Issue #25**
+### 🔹 Sprint 6 (Weeks 11 - 12): Automated Testing, Docker Packaging & Cloud Production Launch
+*Schedule: 2026-11-16 to 2026-11-29 | Lead: Lê Văn Ngọc*
+- [ ] `[WBS 1.8.1]` Bộ kịch bản & Kiểm thử tích hợp tự động (Integration & E2E Testing) (Lê Văn Ngọc) -> **Issue #23**
+- [ ] `[WBS 1.8.2]` Đóng gói ứng dụng & Triển khai hạ tầng Cloud (AWS/Docker/CI-CD) (Trần Minh Thuận) -> **Issue #24**

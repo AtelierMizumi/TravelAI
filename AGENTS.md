@@ -26,10 +26,10 @@
      - **Hoàng Văn Đức**: Core Backend & Database Engineer - GitHub: `@duchayslay`, Git: `Hoàng Văn Đức <hoangvanduc290805@gmail.com>`.
      - **Lê Văn Ngọc**: Frontend & UI/UX Specialist - GitHub: `@ngoctapcodee`, Git: `Lê Văn Ngọc <ngoc492005@gmail.com>`.
    - When executing work on behalf of Trần Minh Thuận, **STRICTLY RESTRICT** modifications to Thuận's authorized WBS packages:
-     - `1.1.1`, `1.1.2`: Architecture, Requirements, and Contracts.
-     - `1.3.1`, `1.3.2`, `1.3.3`: AI Vision Subsystem (FastAPI, Image Preprocessing, Google Cloud Vision SDK).
-     - `1.7.3`: Docker, Docker Compose & CI/CD Cloud Deployment.
-   - Do NOT autonomously execute or overwrite work belonging to Đức (Backend DB) or Ngọc (Frontend) unless explicitly requested to simulate their contributions.
+     - `1.1.1`, `1.1.2`, `1.1.3`: Architecture, Requirements, Contracts, and Database Schema DDL.
+     - `1.3.1`, `1.3.2`: AI Vision Subsystem (Image Preprocessing, FastAPI, Google Cloud Vision SDK).
+     - `1.8.2`: Multi-Service Dockerization, CI/CD Pipeline & Cloud Deployment.
+   - Do NOT autonomously execute or overwrite work belonging to Đức (Core Backend Lead) or Ngọc (Frontend & QA Lead) unless explicitly requested to simulate their contributions.
    - *References*: [02_team_topology_and_role_boundaries.md](.agents/rules/02_team_topology_and_role_boundaries.md).
 
 4. **Realistic Commit Authorship & Temporal Simulation Engine**:

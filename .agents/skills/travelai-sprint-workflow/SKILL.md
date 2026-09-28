@@ -16,9 +16,9 @@ This skill defines the complete operational procedure for executing an end-to-en
 
 | Engineer | Role | GitHub Handle | Git Author Identity | Authorized WBS Modules |
 |---|---|---|---|---|
-| **Trần Minh Thuận** *(User)* | **Tech Lead, AI & DevOps** | `@AtelierMizumi` | `Minh Thuận Trần <thuanc177@gmail.com>` | `1.1.1`, `1.1.2`, `1.3.1`, `1.3.2`, `1.3.3`, `1.7.3` (`services/ai/`, arch docs, docker) |
-| **Hoàng Văn Đức** | **Core Backend & DB** | `@duchayslay` | `Hoàng Văn Đức <hoangvanduc290805@gmail.com>` | `1.1.3`, `1.2.1`(BE), `1.2.2`(BE), `1.4.4`(BE), `1.5.1`(BE), `1.5.4`(BE), `1.6.1-1.6.4`(BE) (`services/backend/`) |
-| **Lê Văn Ngọc** | **Frontend & UI/UX** | `@ngoctapcodee` | `Lê Văn Ngọc <ngoc492005@gmail.com>` | `1.2.1`(FE), `1.2.2`(FE), `1.3.4`, `1.4.1-1.4.3`, `1.4.4`(FE), `1.5.1-1.5.4`(FE), `1.6.1-1.6.5`(FE) (`services/client/`) |
+| **Trần Minh Thuận** *(User)* | **Tech Lead, AI & DevOps** | `@AtelierMizumi` | `Minh Thuận Trần <thuanc177@gmail.com>` | `1.1.1`, `1.1.2`, `1.1.3`, `1.3.1`, `1.3.2`, `1.8.2` (`services/ai/`, arch docs, db schema, docker) |
+| **Hoàng Văn Đức** | **Core Backend & Security** | `@duchayslay` | `Hoàng Văn Đức <hoangvanduc290805@gmail.com>` | `1.2.1`, `1.4.2`, `1.4.3`, `1.5.1`, `1.6.1`, `1.6.3`, `1.7.2`, `1.7.3`, `1.7.4`, `1.7.5` (`services/backend/`) |
+| **Lê Văn Ngọc** | **Frontend & QA Lead** | `@ngoctapcodee` | `Lê Văn Ngọc <ngoc492005@gmail.com>` | `1.2.2`, `1.3.3`, `1.4.1`, `1.5.2`, `1.6.2`, `1.7.1`, `1.7.6`, `1.8.1` (`client/`, QA/E2E test suites) |
 
 ---
 

@@ -1,6 +1,6 @@
 # 🔌 ĐẶC TẢ GIAO DIỆN API LIÊN DỊCH VỤ (API CONTRACT SPECIFICATION)
 
-> **Mã công việc WBS**: `1.1.2 - Thiết kế kiến trúc hệ thống`  
+> **Mã công việc WBS**: `1.1.2 - Tài liệu thiết kế kiến trúc Microservices & AI Gateway`  
 > **Người thực hiện**: Trần Minh Thuận (Tech Lead / System Architect)  
 > **Phiên bản**: `1.0.0` | **Sprint**: `Sprint 1 (Tuần 1 - 2)`  
 > **Liên kết Issue**: [Issue #2](https://github.com/AtelierMizumi/TravelAI/issues/2)
