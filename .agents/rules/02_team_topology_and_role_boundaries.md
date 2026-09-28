@@ -10,11 +10,11 @@
 
 The TravelAI engineering team consists of three specialized software engineers:
 
-| Engineer | Title & Specialization | Git Identity | Architectural Ownership |
-|---|---|---|---|
-| **Trần Minh Thuận** *(User)* | **Tech Lead, AI & Integration Architect, PM** | `Minh Thuận Trần <thuanc177@gmail.com>` | System Architecture, Sprint Orchestration, FastAPI AI Microservice, Google Cloud Vision SDK, Docker & Cloud DevOps. |
-| **Hoàng Văn Đức** | **Core Backend & Database Engineer** | `Hoàng Văn Đức <duc.hoangvan.dev@gmail.com>` | Java Spring Boot 3 Core, PostgreSQL Schema & DDL, JWT Auth & RBAC Security, Booking Engine, WebSocket Chat Backend. |
-| **Lê Văn Ngọc** | **Frontend & UI/UX Specialist** *(Platform Author)* | `Lê Văn Ngọc <ngoc.levan.dev@gmail.com>` | React 18 SPA + Vite, TailwindCSS Design System, AI Recognition UI, Travel Discovery, Community Reviews & Social Feed. |
+| Engineer | Title & Specialization | GitHub Handle | Git Identity | Architectural Ownership |
+|---|---|---|---|---|
+| **Trần Minh Thuận** *(User)* | **Tech Lead, AI & Integration Architect, PM** | `@AtelierMizumi` | `Minh Thuận Trần <thuanc177@gmail.com>` | System Architecture, Sprint Orchestration, FastAPI AI Microservice, Google Cloud Vision SDK, Docker & Cloud DevOps. |
+| **Hoàng Văn Đức** | **Core Backend & Database Engineer** | `@duchayslay` | `Hoàng Văn Đức <hoangvanduc290805@gmail.com>` | Java Spring Boot 3 Core, PostgreSQL Schema & DDL, JWT Auth & RBAC Security, Booking Engine, WebSocket Chat Backend. |
+| **Lê Văn Ngọc** | **Frontend & UI/UX Specialist** *(Platform Author)* | `@ngoctapcodee` | `Lê Văn Ngọc <ngoc492005@gmail.com>` | React 18 SPA + Vite, TailwindCSS Design System, AI Recognition UI, Travel Discovery, Community Reviews & Social Feed. |
 
 ---
 

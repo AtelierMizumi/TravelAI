@@ -22,9 +22,9 @@
 
 3. **3-Engineer Team Topology & Scope Boundaries (RACI Matrix)**:
    - The platform is developed by three specialized software engineers:
-     - **Trần Minh Thuận** *(User)*: Tech Lead, AI & Integration Architect, PM - `Minh Thuận Trần <thuanc177@gmail.com>`.
-     - **Hoàng Văn Đức**: Core Backend & Database Engineer - `Hoàng Văn Đức <duc.hoangvan.dev@gmail.com>`.
-     - **Lê Văn Ngọc**: Frontend & UI/UX Specialist - `Lê Văn Ngọc <ngoc.levan.dev@gmail.com>`.
+     - **Trần Minh Thuận** *(User)*: Tech Lead, AI & Integration Architect, PM - GitHub: `@AtelierMizumi`, Git: `Minh Thuận Trần <thuanc177@gmail.com>`.
+     - **Hoàng Văn Đức**: Core Backend & Database Engineer - GitHub: `@duchayslay`, Git: `Hoàng Văn Đức <hoangvanduc290805@gmail.com>`.
+     - **Lê Văn Ngọc**: Frontend & UI/UX Specialist - GitHub: `@ngoctapcodee`, Git: `Lê Văn Ngọc <ngoc492005@gmail.com>`.
    - When executing work on behalf of Trần Minh Thuận, **STRICTLY RESTRICT** modifications to Thuận's authorized WBS packages:
      - `1.1.1`, `1.1.2`: Architecture, Requirements, and Contracts.
      - `1.3.1`, `1.3.2`, `1.3.3`: AI Vision Subsystem (FastAPI, Image Preprocessing, Google Cloud Vision SDK).

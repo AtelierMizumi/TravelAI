@@ -7,11 +7,11 @@
 
 ## 👥 1. Cơ Cấu Đội Ngũ & Phân Vai Trách Nhiệm
 
-| Thành Viên | Vai Trò Chính | Trách Nhiệm Kỹ Thuật | Phân Hệ Phụ Trách Trong WBS |
-|---|---|---|---|
-| **Trần Minh Thuận** | **Tech Lead, AI & Integration, PM** | Kiến trúc tổng thể, đặc tả yêu cầu, FastAPI AI Microservice, Google Cloud Vision API, Docker & CI/CD Cloud. | `1.1.1`, `1.1.2`, `1.3.1`, `1.3.2`, `1.3.3`, `1.7.3` |
-| **Hoàng Văn Đức** | **Core Backend & Database Engineer** | Spring Boot 3, thiết kế lược đồ CSDL PostgreSQL, bảo mật JWT/RBAC, Booking Engine, WebSocket Chat backend, Admin API. | `1.1.3`, `1.2.1` (BE), `1.2.2` (BE), `1.4.4` (BE), `1.5.1` (BE), `1.5.4` (BE), `1.6.1-1.6.4` (BE) |
-| **Lê Văn Ngọc** | **Frontend & UI/UX Specialist** | ReactJS 18, Vite, TailwindCSS, giao diện AI nhận diện, trang khám phá địa điểm, đánh giá review, mạng xã hội và chat. | `1.2.1` (FE), `1.2.2` (FE), `1.3.4`, `1.4.1`, `1.4.2`, `1.4.3`, `1.4.4` (FE), `1.5.1-1.5.4` (FE), `1.6.1-1.6.5` (FE) |
+| Thành Viên | Vai Trò Chính | GitHub & Email | Trách Nhiệm Kỹ Thuật | Phân Hệ Phụ Trách Trong WBS |
+|---|---|---|---|---|
+| **Trần Minh Thuận** | **Tech Lead, AI & Integration, PM** | `@AtelierMizumi`<br>`thuanc177@gmail.com` | Kiến trúc tổng thể, đặc tả yêu cầu, FastAPI AI Microservice, Google Cloud Vision API, Docker & CI/CD Cloud. | `1.1.1`, `1.1.2`, `1.3.1`, `1.3.2`, `1.3.3`, `1.7.3` |
+| **Hoàng Văn Đức** | **Core Backend & Database Engineer** | `@duchayslay`<br>`hoangvanduc290805@gmail.com` | Spring Boot 3, thiết kế lược đồ CSDL PostgreSQL, bảo mật JWT/RBAC, Booking Engine, WebSocket Chat backend, Admin API. | `1.1.3`, `1.2.1` (BE), `1.2.2` (BE), `1.4.4` (BE), `1.5.1` (BE), `1.5.4` (BE), `1.6.1-1.6.4` (BE) |
+| **Lê Văn Ngọc** | **Frontend & UI/UX Specialist** | `@ngoctapcodee`<br>`ngoc492005@gmail.com` | ReactJS 18, Vite, TailwindCSS, giao diện AI nhận diện, trang khám phá địa điểm, đánh giá review, mạng xã hội và chat. | `1.2.1` (FE), `1.2.2` (FE), `1.3.4`, `1.4.1`, `1.4.2`, `1.4.3`, `1.4.4` (FE), `1.5.1-1.5.4` (FE), `1.6.1-1.6.5` (FE) |
 
 ---
 
