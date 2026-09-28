@@ -43,7 +43,7 @@ When resolving operational conflicts or ambiguity during task execution, the fol
 
 ## 3. FRAMEWORK MODULE DIRECTORY
 
-The governance rules are modularized into six specialized sub-frameworks (all referenced via portable relative paths):
+The governance rules are modularized into seven specialized sub-frameworks (all referenced via portable relative paths):
 
 | Module File | Domain | Core Enforcements |
 |---|---|---|
@@ -53,6 +53,7 @@ The governance rules are modularized into six specialized sub-frameworks (all re
 | [`04_file_hygiene_and_repository_purity.md`](./04_file_hygiene_and_repository_purity.md) | **File Hygiene** | Absolute ban on `.docx`, `.xlsx`, `.pdf`; directory sanitation; pre-commit verification protocol. |
 | [`05_technical_architecture_and_code_standards.md`](./05_technical_architecture_and_code_standards.md) | **Tech Standards** | Spring Boot 3, FastAPI, React 18, PostgreSQL 16, RFC 7807 error format, Docker orchestration. |
 | [`06_agile_lifecycle_and_definition_of_done.md`](./06_agile_lifecycle_and_definition_of_done.md) | **Agile & DoD** | 1 session/week (4-6h) sprint cadence, Definition of Ready, Definition of Done, Issue closing. |
+| [`07_autonomous_session_orchestration.md`](./07_autonomous_session_orchestration.md) | **Autonomous Sessions** | 1-Prompt Sprint State Machine (Phases 1-7), RACI firewall, and Tech Lead review gatekeeper. |
 
 ---
 

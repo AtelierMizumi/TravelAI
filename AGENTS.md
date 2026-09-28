@@ -55,4 +55,5 @@
 6. **Acceptance Criteria & Sprint Lifecycle (DoR & DoD)**:
    - Strictly enforce Definition of Ready (DoR) and Definition of Done (DoD).
    - Synchronize completed work packages on [GitHub Project Board #2](https://github.com/users/AtelierMizumi/projects/2) by moving cards to `Done` and closing linked issues.
-   - *References*: [06_agile_lifecycle_and_definition_of_done.md](.agents/rules/06_agile_lifecycle_and_definition_of_done.md).
+   - For autonomous 1-prompt sessions, execute the 7-phase state machine and stop at the Tech Lead PR review gatekeeper.
+   - *References*: [06_agile_lifecycle_and_definition_of_done.md](.agents/rules/06_agile_lifecycle_and_definition_of_done.md) & [07_autonomous_session_orchestration.md](.agents/rules/07_autonomous_session_orchestration.md).
