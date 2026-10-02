@@ -128,6 +128,173 @@ class AuthControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(loginReq)))
                 .andExpect(status().isUnauthorized())
-                .andExpect(jsonPath("$.type", is("https://travelai.vn/errors/unauthorized")));
+                .andExpect(jsonPath("$.type", is("https://travelai.vn/errors/unauthorized")))
+                .andExpect(result -> {
+                    String contentType = result.getResponse().getContentType();
+                    assert contentType != null && contentType.contains("application/problem+json");
+                });
+    }
+
+    @Test
+    @DisplayName("POST /api/v1/auth/refresh should rotate refresh token and issue new access token")
+    void testRefreshTokenRotationSuccess() throws Exception {
+        RegisterRequest registerReq = RegisterRequest.builder()
+                .username("rotation_user")
+                .email("rotation@example.com")
+                .password("Password123!")
+                .fullName("Rotation User")
+                .build();
+
+        mockMvc.perform(post("/api/v1/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(registerReq)));
+
+        LoginRequest loginReq = LoginRequest.builder()
+                .usernameOrEmail("rotation_user")
+                .password("Password123!")
+                .build();
+
+        String loginResponseStr = mockMvc.perform(post("/api/v1/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(loginReq)))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        com.travelai.core.dto.response.AuthResponse authResponse =
+                objectMapper.readValue(loginResponseStr, com.travelai.core.dto.response.AuthResponse.class);
+        String initialRefreshToken = authResponse.getRefreshToken();
+
+        // Perform token refresh
+        com.travelai.core.dto.request.TokenRefreshRequest refreshReq =
+                new com.travelai.core.dto.request.TokenRefreshRequest(initialRefreshToken);
+
+        String refreshResponseStr = mockMvc.perform(post("/api/v1/auth/refresh")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(refreshReq)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.accessToken", notNullValue()))
+                .andExpect(jsonPath("$.refreshToken", notNullValue()))
+                .andExpect(jsonPath("$.refreshToken", not(is(initialRefreshToken))))
+                .andReturn().getResponse().getContentAsString();
+
+        com.travelai.core.dto.response.TokenRefreshResponse refreshResponse =
+                objectMapper.readValue(refreshResponseStr, com.travelai.core.dto.response.TokenRefreshResponse.class);
+
+        // Attempting to reuse the original (now rotated/invalidated) token must fail
+        mockMvc.perform(post("/api/v1/auth/refresh")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(refreshReq)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.type", is("https://travelai.vn/errors/bad-request")));
+
+        // Refresh with the newly issued token must succeed and rotate again
+        com.travelai.core.dto.request.TokenRefreshRequest secondRefreshReq =
+                new com.travelai.core.dto.request.TokenRefreshRequest(refreshResponse.getRefreshToken());
+
+        mockMvc.perform(post("/api/v1/auth/refresh")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(secondRefreshReq)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.refreshToken", not(is(refreshResponse.getRefreshToken()))));
+    }
+
+    @Test
+    @DisplayName("POST /api/v1/auth/logout without authentication should return 401 Unauthorized")
+    void testLogoutUnauthenticated() throws Exception {
+        mockMvc.perform(post("/api/v1/auth/logout")
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isUnauthorized())
+                .andExpect(jsonPath("$.type", is("https://travelai.vn/errors/unauthorized")))
+                .andExpect(result -> {
+                    String contentType = result.getResponse().getContentType();
+                    assert contentType != null && contentType.contains("application/problem+json");
+                });
+    }
+
+    @Test
+    @DisplayName("POST /api/v1/auth/logout with valid token should revoke refresh token")
+    void testLogoutSuccessAndRevokesTokens() throws Exception {
+        RegisterRequest registerReq = RegisterRequest.builder()
+                .username("logout_user")
+                .email("logout@example.com")
+                .password("Password123!")
+                .fullName("Logout User")
+                .build();
+
+        mockMvc.perform(post("/api/v1/auth/register")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(registerReq)));
+
+        LoginRequest loginReq = LoginRequest.builder()
+                .usernameOrEmail("logout_user")
+                .password("Password123!")
+                .build();
+
+        String loginResponseStr = mockMvc.perform(post("/api/v1/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(loginReq)))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString();
+
+        com.travelai.core.dto.response.AuthResponse authResponse =
+                objectMapper.readValue(loginResponseStr, com.travelai.core.dto.response.AuthResponse.class);
+
+        // Perform authenticated logout
+        mockMvc.perform(post("/api/v1/auth/logout")
+                        .header("Authorization", "Bearer " + authResponse.getAccessToken()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message", containsString("logged out successfully")));
+
+        // Attempting to refresh after logout must fail
+        com.travelai.core.dto.request.TokenRefreshRequest refreshReq =
+                new com.travelai.core.dto.request.TokenRefreshRequest(authResponse.getRefreshToken());
+
+        mockMvc.perform(post("/api/v1/auth/refresh")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(refreshReq)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("Case-insensitive email login and duplicate detection")
+    void testCaseInsensitiveEmail() throws Exception {
+        RegisterRequest registerReq = RegisterRequest.builder()
+                .username("case_user")
+                .email("MyEmail@Example.COM")
+                .password("Password123!")
+                .fullName("Case User")
+                .build();
+
+        mockMvc.perform(post("/api/v1/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(registerReq)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.email", is("myemail@example.com")));
+
+        // Duplicate check with different casing
+        RegisterRequest duplicateReq = RegisterRequest.builder()
+                .username("different_username")
+                .email("myemail@example.com")
+                .password("Password123!")
+                .fullName("Other User")
+                .build();
+
+        mockMvc.perform(post("/api/v1/auth/register")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(duplicateReq)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.detail", containsString("Email address is already in use!")));
+
+        // Login with uppercase email
+        LoginRequest loginReq = LoginRequest.builder()
+                .usernameOrEmail("MYEMAIL@EXAMPLE.COM")
+                .password("Password123!")
+                .build();
+
+        mockMvc.perform(post("/api/v1/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(loginReq)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.user.username", is("case_user")));
     }
 }
