@@ -46,10 +46,10 @@
    - *References*: [03_git_governance_and_temporal_engine.md](.agents/rules/03_git_governance_and_temporal_engine.md).
 
 5. **Technical Architecture & Code Standards**:
-   - **Frontend**: React 18, Vite, TailwindCSS, Lucide Icons, Axios.
-   - **Core Backend**: Java 17+, Spring Boot 3, Spring Data JPA, Spring Security 6, JWT, PostgreSQL 16. Error standard RFC 7807 Problem Details.
-   - **AI Microservice**: Python 3.11+, FastAPI, Pydantic v2, Google Cloud Vision SDK, Pillow/OpenCV.
-   - **Containerization**: Multi-stage Dockerfiles, root `docker-compose.yml` orchestrating all 4 containers.
+   - **Frontend**: React 18, Vite, TailwindCSS, Lucide Icons, Axios (with concurrency-safe 401 refresh queue and DOMPurify XSS defense).
+   - **Core Backend**: Java 17+, Spring Boot 3, Spring Data JPA, Spring Security 6, PostgreSQL 16. Enforce RFC 9457 / RFC 7807 (`application/problem+json`), OAuth 2.0 BCP Refresh Token Rotation (RTR), active account state guards, OWASP ASVS v4.0.3, and strict CORS origin allowlists.
+   - **AI Microservice**: Python 3.11+, FastAPI, Pydantic v2, Google Cloud Vision SDK, Pillow/OpenCV with magic byte validation and bounded streaming (< 10MB).
+   - **Containerization**: Multi-stage Dockerfiles, root `docker-compose.yml` orchestrating all 4 containers with healthcheck dependency ordering.
    - *References*: [05_technical_architecture_and_code_standards.md](.agents/rules/05_technical_architecture_and_code_standards.md).
 
 6. **Acceptance Criteria & Sprint Lifecycle (DoR & DoD)**:

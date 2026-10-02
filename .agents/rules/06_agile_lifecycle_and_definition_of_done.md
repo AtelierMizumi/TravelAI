@@ -16,20 +16,22 @@ A WBS work package may only transition from `Todo` to `In Progress` when it simu
 
 ---
 
-## 2. DEFINITION OF DONE (DoD)
+## 2. DEFINITION OF DONE (DoD) & REGULATORY COMPLIANCE GATES
 
 A WBS work package may only transition to `Done` and close its linked GitHub Issue when the following checklist is 100% satisfied:
 
 ```markdown
-- [ ] Code conforms to Clean Layered Architecture conventions
-- [ ] Zero office/binary files (*.docx, *.xlsx, *.pdf) staged or committed
-- [ ] Zero lingering debug logs (console.log, print, System.out.println)
-- [ ] API endpoints return schema-compliant JSON with RFC 7807 error formatting (application/problem+json)
-- [ ] Zero credential or token material leakage in error responses or logs
-- [ ] Refresh token rotation (RTR) and account enabled status verification implemented
-- [ ] Secure CORS policy without reflective credentials or wildcard origins
-- [ ] Local build and execution verification successfully passed
-- [ ] Comprehensive unit and integration test coverage for authentication and business flows
+- [ ] Code conforms to Clean Layered Architecture & Separation of Concerns
+- [ ] Zero office/binary files (*.docx, *.xlsx, *.pdf, *.csv) staged or committed (Quarantine Isolation)
+- [ ] Zero lingering debug logs (console.log, print, System.out.println, printStackTrace)
+- [ ] API endpoints return schema-compliant JSON with RFC 9457 / RFC 7807 error formatting (`Content-Type: application/problem+json`)
+- [ ] Zero credential, token material, or sensitive internal trace leakage in error responses or logs (OWASP ASVS V8)
+- [ ] OAuth 2.0 Security BCP compliance: Refresh Token Rotation (RTR), single-use invalidation, and account enabled status enforcement
+- [ ] Strict CORS security: explicit origin allowlist, zero wildcard `*` with `Allow-Credentials: true` (OWASP API8)
+- [ ] Input canonicalization & validation: pre-check string trimming, lowercase email normalization, strict DTO binding (OWASP API3)
+- [ ] Database schema purity: explicit UNIQUE constraints on 1-to-1 relationships, foreign key indexing, production `ddl-auto: validate`
+- [ ] Local build and execution verification successfully passed (`./mvnw clean test`, `npm run build`, `pytest`)
+- [ ] Comprehensive unit and integration test coverage for authentication, authorization, and business logic
 - [ ] Conventional Commit authored with Issue ID reference: `<type>(<scope>): <desc> (#<id>)`
 - [ ] Card on GitHub Project Board #2 transitioned to "Done" column
 - [ ] Linked GitHub Issue officially closed with resolution note
