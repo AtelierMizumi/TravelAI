@@ -24,8 +24,12 @@ A WBS work package may only transition to `Done` and close its linked GitHub Iss
 - [ ] Code conforms to Clean Layered Architecture conventions
 - [ ] Zero office/binary files (*.docx, *.xlsx, *.pdf) staged or committed
 - [ ] Zero lingering debug logs (console.log, print, System.out.println)
-- [ ] API endpoints return schema-compliant JSON with RFC 7807 error formatting
+- [ ] API endpoints return schema-compliant JSON with RFC 7807 error formatting (application/problem+json)
+- [ ] Zero credential or token material leakage in error responses or logs
+- [ ] Refresh token rotation (RTR) and account enabled status verification implemented
+- [ ] Secure CORS policy without reflective credentials or wildcard origins
 - [ ] Local build and execution verification successfully passed
+- [ ] Comprehensive unit and integration test coverage for authentication and business flows
 - [ ] Conventional Commit authored with Issue ID reference: `<type>(<scope>): <desc> (#<id>)`
 - [ ] Card on GitHub Project Board #2 transitioned to "Done" column
 - [ ] Linked GitHub Issue officially closed with resolution note
