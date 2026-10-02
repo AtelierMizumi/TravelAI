@@ -2,6 +2,7 @@ package com.travelai.core.exception;
 
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -17,6 +18,8 @@ import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    private static final MediaType PROBLEM_JSON = MediaType.parseMediaType("application/problem+json");
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationExceptions(
@@ -39,7 +42,7 @@ public class GlobalExceptionHandler {
                 .errors(errors)
                 .build();
 
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).contentType(PROBLEM_JSON).body(response);
     }
 
     @ExceptionHandler(BadRequestException.class)
@@ -55,7 +58,7 @@ public class GlobalExceptionHandler {
                 .timestamp(Instant.now())
                 .build();
 
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).contentType(PROBLEM_JSON).body(response);
     }
 
     @ExceptionHandler(ResourceNotFoundException.class)
@@ -71,7 +74,7 @@ public class GlobalExceptionHandler {
                 .timestamp(Instant.now())
                 .build();
 
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).contentType(PROBLEM_JSON).body(response);
     }
 
     @ExceptionHandler({BadCredentialsException.class, AuthenticationException.class})
@@ -87,7 +90,7 @@ public class GlobalExceptionHandler {
                 .timestamp(Instant.now())
                 .build();
 
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(response);
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).contentType(PROBLEM_JSON).body(response);
     }
 
     @ExceptionHandler(AccessDeniedException.class)
@@ -103,7 +106,7 @@ public class GlobalExceptionHandler {
                 .timestamp(Instant.now())
                 .build();
 
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).contentType(PROBLEM_JSON).body(response);
     }
 
     @ExceptionHandler(TokenRefreshException.class)
@@ -119,7 +122,7 @@ public class GlobalExceptionHandler {
                 .timestamp(Instant.now())
                 .build();
 
-        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).contentType(PROBLEM_JSON).body(response);
     }
 
     @ExceptionHandler(Exception.class)
@@ -135,6 +138,6 @@ public class GlobalExceptionHandler {
                 .timestamp(Instant.now())
                 .build();
 
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).contentType(PROBLEM_JSON).body(response);
     }
 }

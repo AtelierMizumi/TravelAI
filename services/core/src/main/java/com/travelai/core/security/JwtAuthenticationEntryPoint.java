@@ -19,7 +19,11 @@ import java.time.Instant;
 public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
     private static final Logger log = LoggerFactory.getLogger(JwtAuthenticationEntryPoint.class);
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper;
+
+    public JwtAuthenticationEntryPoint(ObjectMapper objectMapper) {
+        this.objectMapper = objectMapper;
+    }
 
     @Override
     public void commence(
@@ -29,7 +33,7 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
         log.error("Unauthorized error occurred: {}", authException.getMessage());
 
-        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        response.setContentType("application/problem+json");
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 
         ErrorResponse errorResponse = ErrorResponse.builder()
@@ -41,7 +45,6 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
                 .timestamp(Instant.now())
                 .build();
 
-        objectMapper.findAndRegisterModules();
         objectMapper.writeValue(response.getOutputStream(), errorResponse);
     }
 }

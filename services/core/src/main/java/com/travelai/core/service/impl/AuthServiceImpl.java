@@ -58,11 +58,14 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public UserResponse register(RegisterRequest registerRequest) {
-        if (userRepository.existsByUsername(registerRequest.getUsername())) {
+        String normalizedUsername = registerRequest.getUsername() != null ? registerRequest.getUsername().trim() : "";
+        String normalizedEmail = registerRequest.getEmail() != null ? registerRequest.getEmail().trim().toLowerCase() : "";
+
+        if (userRepository.existsByUsername(normalizedUsername)) {
             throw new BadRequestException("Username is already taken!");
         }
 
-        if (userRepository.existsByEmail(registerRequest.getEmail())) {
+        if (userRepository.existsByEmail(normalizedEmail)) {
             throw new BadRequestException("Email address is already in use!");
         }
 
@@ -70,10 +73,10 @@ public class AuthServiceImpl implements AuthService {
                 .orElseGet(() -> roleRepository.save(Role.builder().name(RoleName.ROLE_USER).build()));
 
         User user = User.builder()
-                .username(registerRequest.getUsername().trim())
-                .email(registerRequest.getEmail().trim().toLowerCase())
+                .username(normalizedUsername)
+                .email(normalizedEmail)
                 .password(passwordEncoder.encode(registerRequest.getPassword()))
-                .fullName(registerRequest.getFullName().trim())
+                .fullName(registerRequest.getFullName() != null ? registerRequest.getFullName().trim() : "")
                 .phone(registerRequest.getPhone())
                 .role(userRole)
                 .enabled(true)
@@ -88,9 +91,10 @@ public class AuthServiceImpl implements AuthService {
     @Override
     @Transactional
     public AuthResponse login(LoginRequest loginRequest) {
+        String loginIdentifier = loginRequest.getUsernameOrEmail() != null ? loginRequest.getUsernameOrEmail().trim() : "";
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
-                        loginRequest.getUsernameOrEmail().trim(),
+                        loginIdentifier,
                         loginRequest.getPassword()
                 )
         );
@@ -123,14 +127,20 @@ public class AuthServiceImpl implements AuthService {
                 .map(refreshTokenService::verifyExpiration)
                 .map(RefreshToken::getUser)
                 .map(user -> {
+                    if (!Boolean.TRUE.equals(user.getEnabled())) {
+                        throw new BadRequestException("User account is disabled!");
+                    }
                     UserPrincipal userPrincipal = UserPrincipal.create(user);
                     Authentication auth = new UsernamePasswordAuthenticationToken(
                             userPrincipal, null, userPrincipal.getAuthorities());
                     String token = tokenProvider.generateTokenFromUsername(user.getUsername(), auth);
 
+                    // Enforce Refresh Token Rotation (RTR): revoke current token and issue replacement
+                    RefreshToken newRefreshToken = refreshTokenService.createRefreshToken(user);
+
                     return TokenRefreshResponse.builder()
                             .accessToken(token)
-                            .refreshToken(requestRefreshToken)
+                            .refreshToken(newRefreshToken.getToken())
                             .tokenType("Bearer")
                             .expiresIn(tokenProvider.getExpirationInMs())
                             .build();
