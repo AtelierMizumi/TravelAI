@@ -82,6 +82,9 @@ export const Navbar = () => {
                 <button
                   type="button"
                   onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+                  aria-expanded={userDropdownOpen}
+                  aria-haspopup="true"
+                  aria-label="Tài khoản người dùng"
                   className="flex items-center space-x-2 p-1 rounded-full hover:ring-2 hover:ring-brand-500/20 transition-all focus:outline-none"
                 >
                   <img
@@ -146,8 +149,11 @@ export const Navbar = () => {
           {/* Mobile menu button */}
           <div className="flex items-center md:hidden">
             <button
+              type="button"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="p-2 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+              aria-label={mobileMenuOpen ? 'Đóng menu điều hướng' : 'Mở menu điều hướng'}
+              aria-expanded={mobileMenuOpen}
+              className="p-2 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-brand-500"
             >
               {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>

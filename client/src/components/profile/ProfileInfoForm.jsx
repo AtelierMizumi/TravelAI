@@ -73,7 +73,10 @@ export const ProfileInfoForm = ({ user, onUpdate, isUpdating }) => {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Full Name */}
           <div>
-            <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">
+            <label
+              htmlFor="profile-fullName"
+              className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2 cursor-pointer"
+            >
               Họ và tên
             </label>
             <div className="relative">
@@ -82,6 +85,7 @@ export const ProfileInfoForm = ({ user, onUpdate, isUpdating }) => {
               </div>
               <input
                 type="text"
+                id="profile-fullName"
                 name="fullName"
                 value={formData.fullName}
                 onChange={handleChange}
@@ -94,7 +98,10 @@ export const ProfileInfoForm = ({ user, onUpdate, isUpdating }) => {
 
           {/* Email (Read only) */}
           <div>
-            <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">
+            <label
+              htmlFor="profile-email"
+              className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2"
+            >
               Địa chỉ Email
             </label>
             <div className="relative">
@@ -103,6 +110,7 @@ export const ProfileInfoForm = ({ user, onUpdate, isUpdating }) => {
               </div>
               <input
                 type="email"
+                id="profile-email"
                 value={user?.email || ''}
                 disabled
                 className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-gray-500 text-sm cursor-not-allowed"
@@ -115,7 +123,10 @@ export const ProfileInfoForm = ({ user, onUpdate, isUpdating }) => {
 
           {/* Phone Number */}
           <div>
-            <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">
+            <label
+              htmlFor="profile-phone"
+              className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2 cursor-pointer"
+            >
               Số điện thoại
             </label>
             <div className="relative">
@@ -124,6 +135,7 @@ export const ProfileInfoForm = ({ user, onUpdate, isUpdating }) => {
               </div>
               <input
                 type="tel"
+                id="profile-phone"
                 name="phone"
                 value={formData.phone}
                 onChange={handleChange}
@@ -135,7 +147,10 @@ export const ProfileInfoForm = ({ user, onUpdate, isUpdating }) => {
 
           {/* Location */}
           <div>
-            <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">
+            <label
+              htmlFor="profile-location"
+              className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2 cursor-pointer"
+            >
               Tỉnh / Thành phố sinh sống
             </label>
             <div className="relative">
@@ -144,6 +159,7 @@ export const ProfileInfoForm = ({ user, onUpdate, isUpdating }) => {
               </div>
               <input
                 type="text"
+                id="profile-location"
                 name="location"
                 value={formData.location}
                 onChange={handleChange}
@@ -156,7 +172,10 @@ export const ProfileInfoForm = ({ user, onUpdate, isUpdating }) => {
 
         {/* Bio */}
         <div>
-          <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">
+          <label
+            htmlFor="profile-bio"
+            className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2 cursor-pointer"
+          >
             Giới thiệu bản thân & Sở thích du lịch
           </label>
           <div className="relative">
@@ -164,6 +183,7 @@ export const ProfileInfoForm = ({ user, onUpdate, isUpdating }) => {
               <FileText className="w-4 h-4" />
             </div>
             <textarea
+              id="profile-bio"
               name="bio"
               rows={4}
               value={formData.bio}
