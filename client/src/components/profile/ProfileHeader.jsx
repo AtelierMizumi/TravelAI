@@ -14,6 +14,8 @@ export const ProfileHeader = ({ user, onAvatarChange, isUploadingAvatar }) => {
     if (file) {
       onAvatarChange(file);
     }
+    // Reset input value so selecting the same file triggers onChange after retry
+    e.target.value = '';
   };
 
   const defaultAvatar =
@@ -36,6 +38,7 @@ export const ProfileHeader = ({ user, onAvatarChange, isUploadingAvatar }) => {
             type="button"
             onClick={() => fileInputRef.current?.click()}
             disabled={isUploadingAvatar}
+            aria-label="Đổi ảnh đại diện"
             className="absolute -bottom-2 -right-2 p-2 rounded-xl bg-brand-600 text-white shadow-md hover:bg-brand-700 transition-all focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-75"
             title="Đổi ảnh đại diện"
           >

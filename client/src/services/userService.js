@@ -19,9 +19,18 @@ const getGenericDemoProfile = () => ({
   tripsCount: 4,
 });
 
-// Check whether offline demo fallback should be allowed (only in local development without active token)
-const isOfflineDevMode = () => {
-  return import.meta.env.DEV && !localStorage.getItem('travelai_token');
+// Check whether offline demo fallback should be allowed
+// Only allow fallback on confirmed backend-unavailable conditions (network error, status 0, 502/503)
+// or when explicitly opted in via 'travelai_demo_mode' flag, preventing real 4xx/5xx errors from being masked.
+const shouldFallbackToDemo = (err) => {
+  if (localStorage.getItem('travelai_demo_mode') === 'true') {
+    return true;
+  }
+  const isDevWithoutToken = import.meta.env.DEV && !localStorage.getItem('travelai_token');
+  const isBackendUnavailable =
+    err?.isNetworkError || err?.status === 0 || err?.status === 502 || err?.status === 503;
+
+  return isDevWithoutToken && isBackendUnavailable;
 };
 
 export const userService = {
@@ -30,8 +39,7 @@ export const userService = {
       const response = await api.get('/users/me');
       return response.data;
     } catch (err) {
-      // In offline dev mode only, allow standalone demo preview
-      if (isOfflineDevMode()) {
+      if (shouldFallbackToDemo(err)) {
         const stored = localStorage.getItem(MOCK_STORAGE_KEY);
         if (stored) {
           try {
@@ -44,7 +52,7 @@ export const userService = {
         localStorage.setItem(MOCK_STORAGE_KEY, JSON.stringify(demoUser));
         return demoUser;
       }
-      // Rethrow normalized error in standard mode so UI surfaces real server status
+      // Rethrow normalized RFC 7807 error so UI surfaces real server status
       throw err;
     }
   },
@@ -54,7 +62,7 @@ export const userService = {
       const response = await api.put('/users/me', profileData);
       return response.data;
     } catch (err) {
-      if (isOfflineDevMode()) {
+      if (shouldFallbackToDemo(err)) {
         const current = await this.getProfile();
         const updated = { ...current, ...profileData };
         localStorage.setItem(MOCK_STORAGE_KEY, JSON.stringify(updated));
@@ -74,16 +82,25 @@ export const userService = {
       });
       return response.data;
     } catch (err) {
-      if (isOfflineDevMode()) {
-        // Use durable Base64 Data URL instead of transient blob: URL to prevent broken images on reload
+      if (shouldFallbackToDemo(err)) {
+        // Use durable Base64 Data URL with quota-exceeded exception guard
         return new Promise((resolve, reject) => {
           const reader = new FileReader();
           reader.onload = async () => {
-            const avatarUrl = reader.result;
-            const current = await this.getProfile();
-            const updated = { ...current, avatarUrl };
-            localStorage.setItem(MOCK_STORAGE_KEY, JSON.stringify(updated));
-            resolve({ avatarUrl });
+            try {
+              const avatarUrl = reader.result;
+              const current = await this.getProfile();
+              const updated = { ...current, avatarUrl };
+              localStorage.setItem(MOCK_STORAGE_KEY, JSON.stringify(updated));
+              resolve({ avatarUrl });
+            } catch (storageErr) {
+              reject({
+                status: 400,
+                title: 'Lỗi lưu trữ ảnh',
+                detail:
+                  'Kích thước ảnh vượt quá dung lượng lưu trữ trình duyệt (QuotaExceeded). Vui lòng chọn ảnh nhỏ hơn.',
+              });
+            }
           };
           reader.onerror = () => {
             reject({
@@ -107,7 +124,7 @@ export const userService = {
       });
       return response.data;
     } catch (err) {
-      if (isOfflineDevMode()) {
+      if (shouldFallbackToDemo(err)) {
         if (currentPassword === 'wrong') {
           throw {
             status: 400,
@@ -126,7 +143,7 @@ export const userService = {
       const response = await api.get('/users/me/activities');
       return response.data;
     } catch (err) {
-      if (isOfflineDevMode()) {
+      if (shouldFallbackToDemo(err)) {
         return [
           {
             id: 1,

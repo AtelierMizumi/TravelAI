@@ -101,7 +101,10 @@ export const SecuritySettings = () => {
       <form onSubmit={handleSubmit} className="space-y-6 max-w-xl">
         {/* Current Password */}
         <div>
-          <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">
+          <label
+            htmlFor="security-currentPassword"
+            className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2 cursor-pointer"
+          >
             Mật khẩu hiện tại
           </label>
           <div className="relative">
@@ -110,6 +113,7 @@ export const SecuritySettings = () => {
             </div>
             <input
               type="password"
+              id="security-currentPassword"
               name="currentPassword"
               value={passwords.currentPassword}
               onChange={handleChange}
@@ -122,7 +126,10 @@ export const SecuritySettings = () => {
 
         {/* New Password */}
         <div>
-          <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">
+          <label
+            htmlFor="security-newPassword"
+            className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2 cursor-pointer"
+          >
             Mật khẩu mới
           </label>
           <div className="relative">
@@ -131,6 +138,7 @@ export const SecuritySettings = () => {
             </div>
             <input
               type="password"
+              id="security-newPassword"
               name="newPassword"
               value={passwords.newPassword}
               onChange={handleChange}
@@ -143,7 +151,10 @@ export const SecuritySettings = () => {
 
         {/* Confirm New Password */}
         <div>
-          <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">
+          <label
+            htmlFor="security-confirmPassword"
+            className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2 cursor-pointer"
+          >
             Xác nhận mật khẩu mới
           </label>
           <div className="relative">
@@ -152,6 +163,7 @@ export const SecuritySettings = () => {
             </div>
             <input
               type="password"
+              id="security-confirmPassword"
               name="confirmPassword"
               value={passwords.confirmPassword}
               onChange={handleChange}
