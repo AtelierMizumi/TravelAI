@@ -14,8 +14,20 @@ def get_preprocessor_service(
     return ImagePreprocessor(settings=settings)
 
 
+_landmark_service_instance: LandmarkRecognitionService | None = None
+
+
 def get_landmark_recognition_service(
     settings: Settings = Depends(get_settings),
 ) -> LandmarkRecognitionService:
-    """Dependency provider for LandmarkRecognitionService."""
-    return LandmarkRecognitionService(settings=settings)
+    """Dependency provider for singleton LandmarkRecognitionService."""
+    global _landmark_service_instance
+    if _landmark_service_instance is None or _landmark_service_instance.settings != settings:
+        _landmark_service_instance = LandmarkRecognitionService(settings=settings)
+    return _landmark_service_instance
+
+
+def reset_landmark_recognition_service() -> None:
+    """Reset the singleton instance (useful in test harnesses)."""
+    global _landmark_service_instance
+    _landmark_service_instance = None

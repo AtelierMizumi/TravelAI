@@ -22,6 +22,8 @@ class Settings(BaseSettings):
     # Vision Provider Settings
     vision_mock_enabled: bool = True
     google_application_credentials: str | None = None
+    vision_timeout_seconds: float = 5.0
+    vision_max_history_entries: int = 100
 
     # CORS
     cors_origins: list[str] = ["*"]
