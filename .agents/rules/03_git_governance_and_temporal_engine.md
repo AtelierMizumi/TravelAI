@@ -91,3 +91,8 @@ gitGraph
 2. **Pull Request Protocol**:
    - PR description must include: *Summary of changes, Test scenarios executed, Acceptance Criteria checklist*.
    - Include auto-closing directive: `Closes #<issue_id>`.
+3. **Review Thread Policy & AI Reviewers (Copilot)**:
+   - Branch ruleset maintains `required_review_thread_resolution: false` on `main`.
+   - Automated reviews from GitHub Copilot act as non-blocking architectural & security advisory inputs.
+   - Engineers resolve identified issues through code commits and verification tests; manual click-resolution of individual Copilot comment threads is **NOT** a merge precondition, preventing workflow bottlenecks.
+
