@@ -36,7 +36,7 @@ class PreprocessResult(BaseModel):
 class LandmarkRecognitionResult(BaseModel):
     """Recognition result for a detected landmark."""
 
-    landmark_name: str = Field(..., description="Identified landmark name")
+    landmark_name: str | None = Field(None, description="Identified landmark name")
     confidence: float = Field(..., description="Detection confidence score between 0.0 and 1.0")
     latitude: float | None = Field(None, description="Landmark geographic latitude if available")
     longitude: float | None = Field(None, description="Landmark geographic longitude if available")
@@ -47,4 +47,37 @@ class LandmarkRecognitionResult(BaseModel):
     metadata: ImageMetadata | None = Field(
         None,
         description="Preprocessing metadata of the analyzed image",
+    )
+    success: bool = Field(default=True, description="Indicates if recognition succeeded")
+    description: str | None = Field(None, description="Landmark description or details")
+    matched_keywords: list[str] = Field(
+        default_factory=list, description="Matched keywords or labels"
+    )
+    detection_type: str = Field(
+        default="LANDMARK_DETECTION",
+        description="Detection method (LANDMARK_DETECTION, WEB_DETECTION, UNKNOWN)",
+    )
+
+
+class RecognitionHistoryEntry(BaseModel):
+    """Audit record of a landmark recognition request."""
+
+    id: str = Field(..., description="Unique request identification UUID")
+    timestamp: str = Field(..., description="ISO 8601 timestamp of recognition")
+    landmark_name: str | None = Field(None, description="Recognized landmark name")
+    confidence: float = Field(..., description="Confidence score")
+    latitude: float | None = Field(None, description="Latitude")
+    longitude: float | None = Field(None, description="Longitude")
+    detection_type: str = Field(..., description="Detection method used")
+    success: bool = Field(..., description="Success flag")
+    latency_ms: float = Field(..., description="Processing latency in milliseconds")
+    image_metadata: ImageMetadata | None = Field(None, description="Image metadata")
+
+
+class RecognitionHistoryResponse(BaseModel):
+    """Response containing recognition history records."""
+
+    total: int = Field(..., description="Total recorded history items")
+    items: list[RecognitionHistoryEntry] = Field(
+        default_factory=list, description="List of recognition history entries"
     )
