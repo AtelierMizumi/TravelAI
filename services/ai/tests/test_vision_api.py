@@ -146,3 +146,39 @@ def test_preprocess_endpoint(client: TestClient, sample_png_rgba_bytes: bytes) -
     assert metadata["format"] == "JPEG"
     assert metadata["original_width"] == 300
     assert metadata["original_height"] == 200
+
+
+def test_recognition_history_flow(client: TestClient, sample_jpeg_bytes: bytes) -> None:
+    """POST /recognize records history, GET /history retrieves it, and DELETE clears it."""
+    # Step 1: Clear history
+    del_resp = client.delete("/api/v1/vision/history")
+    assert del_resp.status_code == 200
+
+    # Step 2: Check history is empty
+    hist_resp = client.get("/api/v1/vision/history")
+    assert hist_resp.status_code == 200
+    assert hist_resp.json()["total"] == 0
+    assert len(hist_resp.json()["items"]) == 0
+
+    # Step 3: Perform recognition
+    files = {"image": ("landmark.jpg", io.BytesIO(sample_jpeg_bytes), "image/jpeg")}
+    rec_resp = client.post("/api/v1/vision/recognize", files=files)
+    assert rec_resp.status_code == 200
+
+    # Step 4: Verify history has 1 entry with audit details
+    hist_resp2 = client.get("/api/v1/vision/history")
+    assert hist_resp2.status_code == 200
+    data = hist_resp2.json()
+    assert data["total"] >= 1
+    latest = data["items"][0]
+    assert latest["landmark_name"] == "Hồ Gươm (Tháp Rùa)"
+    assert latest["confidence"] == 0.94
+    assert latest["success"] is True
+    assert latest["detection_type"] == "LANDMARK_DETECTION"
+    assert latest["latency_ms"] >= 0
+    assert latest["image_metadata"] is not None
+
+    # Step 5: Clear history
+    client.delete("/api/v1/vision/history")
+    hist_resp3 = client.get("/api/v1/vision/history")
+    assert hist_resp3.json()["total"] == 0

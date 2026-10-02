@@ -73,3 +73,37 @@ class UnprocessableImageException(ProblemDetailsException):
             type_uri="https://api.travelai.internal/errors/unprocessable-image",
             instance=instance,
         )
+
+
+class VisionTimeoutException(ProblemDetailsException):
+    """Exception raised when upstream Google Cloud Vision API request times out (HTTP 504)."""
+
+    def __init__(
+        self,
+        detail: str = "Vision recognition provider timed out while analyzing the image.",
+        instance: str | None = None,
+    ) -> None:
+        super().__init__(
+            status_code=504,
+            title="Gateway Timeout",
+            detail=detail,
+            type_uri="https://api.travelai.internal/errors/vision-timeout",
+            instance=instance,
+        )
+
+
+class VisionProviderException(ProblemDetailsException):
+    """Exception raised when upstream Google Cloud Vision API returns an error (HTTP 502)."""
+
+    def __init__(
+        self,
+        detail: str = "Vision recognition provider encountered an error.",
+        instance: str | None = None,
+    ) -> None:
+        super().__init__(
+            status_code=502,
+            title="Bad Gateway",
+            detail=detail,
+            type_uri="https://api.travelai.internal/errors/vision-provider-error",
+            instance=instance,
+        )
