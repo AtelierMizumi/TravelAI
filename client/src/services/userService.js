@@ -97,6 +97,9 @@ export const userService = {
       const response = await api.get('/users/me/activities');
       return response.data;
     } catch (err) {
+      if (!import.meta.env.DEV) {
+        throw err;
+      }
       return [
         {
           id: 1,
