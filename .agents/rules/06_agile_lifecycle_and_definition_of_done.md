@@ -78,19 +78,22 @@ When executing weekly focused development sessions, the team follows a synchroni
 - [x] `[WBS 1.1.1]` Đặc tả yêu cầu & phạm vi doanh nghiệp (SRS) (Trần Minh Thuận) -> **Issue #1 (Closed)**
 - [x] `[WBS 1.1.2]` Thiết kế kiến trúc Microservices & AI Gateway (Trần Minh Thuận) -> **Issue #2 (Closed)**
 - [x] `[WBS 1.1.3]` Mô hình dữ liệu & Kịch bản CSDL PostgreSQL Enterprise (Trần Minh Thuận) -> **Issue #3 (Closed)**
-- [ ] `[WBS 1.2.1]` Module xác thực bảo mật doanh nghiệp (JWT/OAuth2) (Hoàng Văn Đức) -> **Issue #4**
-- [ ] `[WBS 1.2.2]` Giao diện & API Hồ sơ cá nhân (User Profile Service) (Lê Văn Ngọc) -> **Issue #5**
+- [x] `[WBS 1.2.1]` Module xác thực bảo mật doanh nghiệp (JWT/OAuth2) (Hoàng Văn Đức) -> **Issue #4 (Closed)**
+- [x] `[WBS 1.2.2]` Giao diện & API Hồ sơ cá nhân (User Profile Service) (Lê Văn Ngọc) -> **Issue #5 (Closed)**
 
-### 🔹 Sprint 2 (Weeks 3 - 4): Core AI Service & Location Discovery *(Current Sprint)*
+### 🔹 Sprint 2 (Weeks 3 - 4): Core AI Service & Location Discovery
 *Schedule: 2026-09-21 to 2026-10-04 | Lead: Hoàng Văn Đức*
-- [ ] `[WBS 1.3.1]` Giao diện tiếp nhận & Bộ tiền xử lý ảnh (Image Preprocessor) (Trần Minh Thuận) -> **Issue #6**
-- [ ] `[WBS 1.3.2]` Dịch vụ AI nhận diện địa danh (FastAPI & Google Vision Cloud) (Trần Minh Thuận) -> **Issue #7**
-- [ ] `[WBS 1.3.3]` Giao diện hiển thị kết quả & Gợi ý dịch vụ thông minh (Lê Văn Ngọc) -> **Issue #8**
-- [ ] `[WBS 1.4.1]` Giao diện & API Khám phá địa điểm du lịch (Location Discovery) (Lê Văn Ngọc) -> **Issue #9**
-- [ ] `[WBS 1.7.2]` Module quản lý danh mục địa danh du lịch (Location Management) (Hoàng Văn Đức) -> **Issue #18**
+- [x] `[WBS 1.3.1]` Giao diện tiếp nhận & Bộ tiền xử lý ảnh (Image Preprocessor) (Trần Minh Thuận) -> **Issue #6 (Closed)**
+- [x] `[WBS 1.3.2]` Dịch vụ AI nhận diện địa danh (FastAPI & Google Vision Cloud) (Trần Minh Thuận) -> **Issue #7 (Closed)**
+- [ ] `[WBS 1.3.3]` Giao diện hiển thị kết quả & Gợi ý dịch vụ thông minh (Lê Văn Ngọc) -> **Issue #8 (Rolled over to Sprint 3)**
+- [ ] `[WBS 1.4.1]` Giao diện & API Khám phá địa điểm du lịch (Location Discovery) (Lê Văn Ngọc) -> **Issue #9 (Rolled over to Sprint 3)**
+- [ ] `[WBS 1.7.2]` Module quản lý danh mục địa danh du lịch (Location Management) (Hoàng Văn Đức) -> **Issue #18 (Rolled over to Sprint 3)**
 
-### 🔹 Sprint 3 (Weeks 5 - 6): Travel Catalog & Core Administration
+### 🔹 Sprint 3 (Weeks 5 - 6): AI Nhận diện, Khám phá địa điểm & Core Catalog *(Current Sprint)*
 *Schedule: 2026-10-05 to 2026-10-18 | Lead: Lê Văn Ngọc*
+- [ ] `[WBS 1.7.2]` Module quản lý danh mục địa danh du lịch (Location Management - P0) (Hoàng Văn Đức) -> **Issue #18**
+- [ ] `[WBS 1.3.3]` Giao diện hiển thị kết quả & Gợi ý dịch vụ thông minh (AI Results UI - P0) (Lê Văn Ngọc) -> **Issue #8**
+- [ ] `[WBS 1.4.1]` Giao diện & API Khám phá địa điểm du lịch (Location Discovery - P0) (Lê Văn Ngọc) -> **Issue #9**
 - [ ] `[WBS 1.4.2]` Module thông tin Tour du lịch (Tour Catalog Service) (Hoàng Văn Đức) -> **Issue #10**
 - [ ] `[WBS 1.4.3]` Module thông tin Khách sạn & Lưu trú (Hotel Catalog Service) (Hoàng Văn Đức) -> **Issue #11**
 - [ ] `[WBS 1.7.1]` Bảng điều khiển tổng quan quản trị (Admin Analytics Dashboard) (Lê Văn Ngọc) -> **Issue #17**
