@@ -18,13 +18,13 @@ Core Business & Security microservice for the TravelAI platform.
 ## 🏛️ Clean Layered Architecture
 ```
 com.travelai.core
-├── controller/         # REST Controllers (AuthController, HealthController)
+├── controller/         # REST Controllers (AuthController, LocationController, HealthController)
 ├── dto/
-│   ├── request/        # Request Payloads (RegisterRequest, LoginRequest, TokenRefreshRequest)
-│   └── response/       # Response Payloads (AuthResponse, TokenRefreshResponse, UserResponse)
+│   ├── request/        # Request Payloads (RegisterRequest, LoginRequest, LocationRequest...)
+│   └── response/       # Response Payloads (AuthResponse, LocationResponse, UserResponse...)
 ├── exception/          # RFC 7807 GlobalExceptionHandler and Custom Exceptions
-├── model/entity/       # JPA Entities (User, Role, RefreshToken)
-├── repository/         # Spring Data JPA Repositories
+├── model/entity/       # JPA Entities (User, Role, RefreshToken, Location)
+├── repository/         # Spring Data JPA Repositories (UserRepository, LocationRepository...)
 ├── security/           # JWT Provider, Auth Filter, UserDetails, SecurityConfig
 └── service/            # Business Interfaces & Service Implementations
 ```
@@ -42,14 +42,21 @@ com.travelai.core
 - `POST /api/v1/auth/refresh`: Rotate and refresh access token via valid refresh token (Public, 200 OK)
 - `POST /api/v1/auth/logout`: Revoke active refresh token (Authenticated, 200 OK)
 
+### 3. Location Management (WBS 1.7.2)
+- `GET /api/v1/locations`: Get paginated locations list with keyword search, province/category filters (Public, 200 OK)
+- `GET /api/v1/locations/{id}`: Get location details by ID (Public, 200 OK / 404 RFC 7807)
+- `POST /api/v1/locations`: Admin create new destination location (Admin Role, 201 Created)
+- `PUT /api/v1/locations/{id}`: Admin update location information (Admin Role, 200 OK)
+- `DELETE /api/v1/locations/{id}`: Admin delete location (Admin Role, 204 No Content)
+
 ---
 
 ## 🧪 Local Testing
 ```bash
 ./mvnw test
 ```
-All 7 unit and integration tests validate:
-- 201 Created on registration
-- 400 Bad Request with RFC 7807 on duplicate email/username
-- 401 Unauthorized on invalid credentials
-- JWT signature generation and token parsing
+All unit and integration tests validate:
+- Authentication, registration, JWT tokens, duplicate user/email checks
+- Location CRUD operations, pagination, search by province/keyword
+- Role-based access control (Admin endpoints vs Public endpoints)
+- RFC 7807 Problem Details error compliance
