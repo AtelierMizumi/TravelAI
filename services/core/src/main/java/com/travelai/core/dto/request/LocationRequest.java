@@ -30,6 +30,8 @@ public class LocationRequest {
 
     private String category;
 
+    @DecimalMin(value = "0.0", message = "Rating must be >= 0.0")
+    @DecimalMax(value = "5.0", message = "Rating must be <= 5.0")
     private Double rating;
 
     public LocationRequest() {

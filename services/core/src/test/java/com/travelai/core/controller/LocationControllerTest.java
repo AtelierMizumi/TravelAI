@@ -187,4 +187,40 @@ class LocationControllerTest {
         mockMvc.perform(get("/api/v1/locations/{id}", temp.getId()))
                 .andExpect(status().isNotFound());
     }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    @DisplayName("POST /api/v1/locations with rating > 5.0 should return 400 validation error")
+    void testCreateLocation_InvalidRatingReturns400() throws Exception {
+        LocationRequest request = LocationRequest.builder()
+                .name("Địa danh thử nghiệm rating lỗi")
+                .province("Hà Nội")
+                .rating(6.5)
+                .build();
+
+        mockMvc.perform(post("/api/v1/locations")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.type", is("https://travelai.vn/errors/validation-error")))
+                .andExpect(jsonPath("$.errors.rating", containsString("5.0")));
+    }
+
+    @Test
+    @DisplayName("GET /api/v1/locations with invalid sort property should fallback gracefully")
+    void testGetLocations_InvalidSortFallsBackGracefully() throws Exception {
+        mockMvc.perform(get("/api/v1/locations")
+                        .param("sort", "malicious_column,asc"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", not(empty())));
+    }
+
+    @Test
+    @DisplayName("GET /api/v1/locations with excessive page size should be clamped safely")
+    void testGetLocations_LargePageSizeClamped() throws Exception {
+        mockMvc.perform(get("/api/v1/locations")
+                        .param("size", "1000"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.size", lessThanOrEqualTo(100)));
+    }
 }

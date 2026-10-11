@@ -7,6 +7,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -17,6 +18,8 @@ import java.time.LocalDateTime;
     @Index(name = "idx_locations_name", columnList = "name"),
     @Index(name = "idx_locations_province", columnList = "province"),
     @Index(name = "idx_locations_category", columnList = "category")
+}, uniqueConstraints = {
+    @UniqueConstraint(name = "uk_locations_name", columnNames = {"name"})
 })
 public class Location {
 
@@ -24,7 +27,7 @@ public class Location {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "name", nullable = false, length = 150)
+    @Column(name = "name", nullable = false, unique = true, length = 150)
     private String name;
 
     @Column(name = "province", nullable = false, length = 100)
