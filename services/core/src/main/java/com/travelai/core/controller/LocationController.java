@@ -21,9 +21,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Set;
+
 @RestController
 @RequestMapping("/api/v1/locations")
 public class LocationController {
+
+    private static final Set<String> ALLOWED_SORT_PROPERTIES = Set.of(
+            "id", "name", "province", "category", "rating", "reviewCount", "createdAt", "updatedAt"
+    );
 
     private final LocationService locationService;
 
@@ -40,13 +46,20 @@ public class LocationController {
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "id,desc") String sort) {
 
+        int safePage = Math.max(0, page);
+        int safeSize = Math.min(Math.max(1, size), 100);
+
         String[] sortParams = sort.split(",");
-        String sortProperty = sortParams[0];
-        Sort.Direction direction = (sortParams.length > 1 && sortParams[1].equalsIgnoreCase("asc"))
+        String sortProperty = sortParams[0].trim();
+        if (!ALLOWED_SORT_PROPERTIES.contains(sortProperty)) {
+            sortProperty = "id";
+        }
+
+        Sort.Direction direction = (sortParams.length > 1 && sortParams[1].trim().equalsIgnoreCase("asc"))
                 ? Sort.Direction.ASC
                 : Sort.Direction.DESC;
 
-        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortProperty));
+        Pageable pageable = PageRequest.of(safePage, safeSize, Sort.by(direction, sortProperty));
         Page<LocationResponse> locations = locationService.getLocations(keyword, province, category, pageable);
 
         return ResponseEntity.ok(locations);

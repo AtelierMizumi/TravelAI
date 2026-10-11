@@ -55,12 +55,14 @@ CREATE TABLE IF NOT EXISTS locations (
     rating DOUBLE PRECISION DEFAULT 5.0,
     review_count INTEGER DEFAULT 0,
     created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+    updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT uq_locations_name UNIQUE (name)
 );
 
 CREATE INDEX IF NOT EXISTS idx_locations_name ON locations (name);
 CREATE INDEX IF NOT EXISTS idx_locations_province ON locations (province);
 CREATE INDEX IF NOT EXISTS idx_locations_category ON locations (category);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_locations_name_unique ON locations (LOWER(name));
 
 -- 5. Seed Standard Roles
 INSERT INTO roles (name) VALUES ('ROLE_USER') ON CONFLICT (name) DO NOTHING;
@@ -75,4 +77,4 @@ VALUES
 ('Quần thể danh thắng Tràng An', 'Ninh Bình', 'Di sản hỗn hợp văn hóa và thiên nhiên thế giới nổi tiếng với hệ thống hang động xuyên thủy và thung lũng đá vôi ngập nước.', 'https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&w=1200&q=80', 20.2506, 105.9149, 'Di sản thiên nhiên', 4.8, 85),
 ('Hồ Hoàn Kiếm', 'Hà Nội', 'Trái tim thủ đô ngàn năm văn hiến, gắn liền với truyền thuyết rùa thần trả gươm và tháp Rùa cổ kính.', 'https://images.unsplash.com/photo-1599827552599-eeddd595b1e9?auto=format&fit=crop&w=1200&q=80', 21.0285, 105.8542, 'Di tích lịch sử', 4.7, 110),
 ('Chợ Bến Thành', 'Hồ Chí Minh', 'Biểu tượng thương mại lịch sử trung tâm Sài Gòn, nơi hội tụ tinh hoa ẩm thực và mua sắm truyền thống.', 'https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=1200&q=80', 10.7725, 106.6980, 'Văn hóa - Thương mại', 4.6, 74)
-ON CONFLICT DO NOTHING;
+ON CONFLICT (name) DO NOTHING;

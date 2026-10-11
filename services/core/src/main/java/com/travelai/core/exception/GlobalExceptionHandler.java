@@ -61,6 +61,26 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).contentType(PROBLEM_JSON).body(response);
     }
 
+    @ExceptionHandler({
+            IllegalArgumentException.class,
+            org.springframework.data.mapping.PropertyReferenceException.class,
+            org.springframework.web.method.annotation.MethodArgumentTypeMismatchException.class
+    })
+    public ResponseEntity<ErrorResponse> handleBadRequestTypes(
+            Exception ex, HttpServletRequest request) {
+
+        ErrorResponse response = ErrorResponse.builder()
+                .type("https://travelai.vn/errors/bad-request")
+                .title("Invalid Request Parameter")
+                .status(HttpStatus.BAD_REQUEST.value())
+                .detail(ex.getMessage())
+                .instance(request.getRequestURI())
+                .timestamp(Instant.now())
+                .build();
+
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).contentType(PROBLEM_JSON).body(response);
+    }
+
     @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<ErrorResponse> handleResourceNotFoundException(
             ResourceNotFoundException ex, HttpServletRequest request) {
