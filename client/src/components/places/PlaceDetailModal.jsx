@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { X, MapPin, Star, Compass, ExternalLink, Calendar, Heart, Share2 } from 'lucide-react';
 import { Badge } from '../ui/Badge';
 import { Button } from '../common/Button';
@@ -112,13 +113,13 @@ export const PlaceDetailModal = ({ place, onClose }) => {
 
           {/* Action Buttons */}
           <div className="pt-4 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-3">
-            <a
-              href={`/recognize`}
+            <Link
+              to="/recognize"
               className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2.5 rounded-xl bg-gradient-to-r from-brand-600 to-sky-500 text-white text-sm font-semibold shadow-md shadow-brand-500/20 hover:opacity-95 transition-all"
             >
               <Compass className="w-4 h-4 mr-2" />
               Thử nghiệm AI Scanner cho địa danh này
-            </a>
+            </Link>
 
             <Button variant="outline" size="md" onClick={onClose} className="w-full sm:w-auto">
               Đóng

@@ -4,10 +4,26 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 export const Pagination = ({ currentPage, totalPages, totalElements, onPageChange }) => {
   if (totalPages <= 1) return null;
 
-  const pages = [];
-  for (let i = 0; i < totalPages; i++) {
-    pages.push(i);
-  }
+  // Windowed pagination: show at most 5 page numbers centered around currentPage
+  const getVisiblePages = () => {
+    const maxVisible = 5;
+    if (totalPages <= maxVisible) {
+      return Array.from({ length: totalPages }, (_, i) => i);
+    }
+    let start = Math.max(0, currentPage - Math.floor(maxVisible / 2));
+    let end = start + maxVisible;
+    if (end > totalPages) {
+      end = totalPages;
+      start = Math.max(0, end - maxVisible);
+    }
+    const pages = [];
+    for (let i = start; i < end; i++) {
+      pages.push(i);
+    }
+    return pages;
+  };
+
+  const pages = getVisiblePages();
 
   return (
     <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-gray-100">
