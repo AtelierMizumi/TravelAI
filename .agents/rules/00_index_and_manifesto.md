@@ -12,7 +12,7 @@
 
 The **TravelAI Agent Governance Framework (TAGF)** establishes immutable, mathematically rigorous, and structurally unyielding operational standards for all automated coding agents, AI pair programmers, and technical contributors working within the TravelAI repository.
 
-Every contribution, line of code, architectural artifact, commit message, and system diagram MUST adhere to the principle of **Zero-Sloppiness, Absolute Authenticity, and Enterprise Scalability**. Under no circumstance shall the repository reflect academic, makeshift, or retrofitted project artifacts.
+Every contribution, line of code, architectural artifact, commit message, and system diagram MUST adhere to the principle of **Zero-Sloppiness, Honest Attribution, and Clean Deliverables**. The repository must be complete, consistent and free of drafts, reference material, secrets and development leftovers.
 
 ---
 
@@ -28,8 +28,8 @@ When resolving operational conflicts or ambiguity during task execution, the fol
 │ LEVEL 1: USER DIRECTIVES & ROLE BOUNDARIES             │
 │ (Trần Minh Thuận's personal WBS scope enforcement)     │
 ├────────────────────────────────────────────────────────┤
-│ LEVEL 2: TEMPORAL PACING & GIT GOVERNANCE              │
-│ (Realistic timestamps, Conventional Commits, No bot ID)│
+│ LEVEL 2: GIT GOVERNANCE                                │
+│ (Real timestamps/authors, Conventional Commits)        │
 ├────────────────────────────────────────────────────────┤
 │ LEVEL 3: ARCHITECTURAL & CODE STANDARDS                │
 │ (Spring Boot 3, FastAPI, React 18, PostgreSQL 16)      │
@@ -47,9 +47,9 @@ The governance rules are modularized into seven specialized sub-frameworks (all 
 
 | Module File | Domain | Core Enforcements |
 |---|---|---|
-| [`01_provenance_quarantine_and_persona.md`](./01_provenance_quarantine_and_persona.md) | **Provenance & Persona** | Total quarantine of legacy reports, zero leak of school context, authentic startup/enterprise persona. |
+| [`01_source_hygiene_and_release_readiness.md`](./01_source_hygiene_and_release_readiness.md) | **Source Refinement** | Local reference quarantine, release-readiness checklist (no drafts, secrets, debug leftovers), honest AI-assistance policy. |
 | [`02_team_topology_and_role_boundaries.md`](./02_team_topology_and_role_boundaries.md) | **Team & Scope** | 3-member RACI matrix, strict isolation of Trần Minh Thuận's tasks, peer delegation rules. |
-| [`03_git_governance_and_temporal_engine.md`](./03_git_governance_and_temporal_engine.md) | **Git & Timeline** | Temporal simulation engine, human-paced commits, Conventional Commits 1.0.0, zero-bot attribution. |
+| [`03_git_governance.md`](./03_git_governance.md) | **Git & Schedule** | Real timestamps and authorship, identity/scope check, schedule alignment report, Conventional Commits 1.0.0, branching & PRs. |
 | [`04_file_hygiene_and_repository_purity.md`](./04_file_hygiene_and_repository_purity.md) | **File Hygiene** | Absolute ban on `.docx`, `.xlsx`, `.pdf`; directory sanitation; pre-commit verification protocol. |
 | [`05_technical_architecture_and_code_standards.md`](./05_technical_architecture_and_code_standards.md) | **Tech Standards** | Spring Boot 3, FastAPI, React 18, PostgreSQL 16, RFC 7807 error format, Docker orchestration. |
 | [`06_agile_lifecycle_and_definition_of_done.md`](./06_agile_lifecycle_and_definition_of_done.md) | **Agile & DoD** | 1 session/week (4-6h) sprint cadence, Definition of Ready, Definition of Done, Issue closing. |
@@ -62,7 +62,7 @@ The governance rules are modularized into seven specialized sub-frameworks (all 
 Before emitting any response, executing any command, or staging any code file, the agent MUST evaluate the following four Boolean assertions:
 1. `Assert(no_office_or_binary_files_staged == True)`
 2. `Assert(target_wbs_package in authorized_user_scope == True)`
-3. `Assert(commit_author != "Agent" and commit_author in engineering_team == True)`
-4. `Assert(no_mention_of_school_or_legacy_report == True)`
+3. `Assert(git_identity == engineer_named_in_task and no_date_or_author_override == True)`
+4. `Assert(no_secrets_drafts_or_local_references_staged == True)`
 
 If ANY assertion evaluates to `False`, the agent MUST abort the action and correct the state immediately.

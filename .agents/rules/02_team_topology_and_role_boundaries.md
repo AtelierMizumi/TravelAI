@@ -66,4 +66,4 @@ The TravelAI engineering team consists of three specialized software engineers:
      - `1.3.2`: Dịch vụ AI nhận diện địa danh (FastAPI & Google Vision Cloud).
      - `1.8.2`: Đóng gói ứng dụng & Triển khai hạ tầng Cloud (AWS/Docker/CI-CD).
 2. **Non-Interference Invariant**:
-   - The agent MUST NOT autonomously generate, modify, or commit code for Hoàng Văn Đức's Core Backend tasks or Lê Văn Ngọc's Frontend / QA tasks unless explicitly commanded by the user with peer simulation instructions.
+   - The agent MUST NOT autonomously generate, modify, or commit code for Hoàng Văn Đức's Core Backend tasks or Lê Văn Ngọc's Frontend / QA tasks unless the user explicitly asks for it. Such cross-scope changes are committed under the user's own identity, flagged as cross-scope in the PR description, and never attributed to another engineer.

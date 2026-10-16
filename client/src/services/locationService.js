@@ -113,6 +113,11 @@ const DEFAULT_LOCATIONS = [
 ];
 
 export const locationService = {
+  /**
+   * Search locations by keyword, province, category with pagination
+   * @param {Object} params
+   * @returns {Promise<Object>}
+   */
   async getLocations({
     keyword = '',
     province = '',
@@ -182,6 +187,11 @@ export const locationService = {
     }
   },
 
+  /**
+   * Get single location by ID
+   * @param {number|string} id
+   * @returns {Promise<Object>}
+   */
   async getLocationById(id) {
     try {
       const response = await api.get(`/v1/locations/${id}`);

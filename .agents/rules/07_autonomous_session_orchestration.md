@@ -18,7 +18,7 @@ flowchart TD
     P1 --> P2["Phase 2: Project Board & Issue Claiming"]
     P2 --> P3["Phase 3: Clean Branch Initialization"]
     P3 --> P4["Phase 4: Scope-Isolated Deep Coding & Tests"]
-    P4 --> P5["Phase 5: Temporal Commit & Push"]
+    P4 --> P5["Phase 5: Commit & Push"]
     P5 --> P6["Phase 6: PR Creation & DoD Certification"]
     P6 --> P7{"Phase 7: Human Gatekeeper Checkpoint<br/>(Tech Lead Review & Merge)"}
     P7 -->|User Merges on GitHub| P8["Wrap-up: Project Board Done & Issue Closed"]
@@ -35,7 +35,7 @@ The agent reads the input directive and resolves:
    - **Hoàng Văn Đức**: `@duchayslay` | `Hoàng Văn Đức <hoangvanduc290805@gmail.com>` | Packages: `1.2.1`, `1.4.2`, `1.4.3`, `1.5.1`, `1.6.1`, `1.6.3`, `1.7.2`, `1.7.3`, `1.7.4`, `1.7.5`.
    - **Lê Văn Ngọc**: `@ngoctapcodee` | `Lê Văn Ngọc <ngoc492005@gmail.com>` | Packages: `1.2.2`, `1.3.3`, `1.4.1`, `1.5.2`, `1.6.2`, `1.7.1`, `1.7.6`, `1.8.1`.
 2. **Target WBS & Issue #**: Match against the Sprint Schedule in [`06_agile_lifecycle_and_definition_of_done.md`](./06_agile_lifecycle_and_definition_of_done.md). If unspecified, automatically select the next uncompleted issue in the active sprint assigned to that engineer.
-3. **Temporal Window**: Determine the calendar dates of the active Sprint (Weeks 1 to 12) and schedule commits within developer working hours (`09:30 - 22:30 +0700`).
+3. **Identity & Schedule Check**: Verify `git config user.email` matches the target engineer (stop and ask if not). Determine the active sprint from today's real date and report schedule status per Ruleset 03 §3 (report only).
 
 ### Phase 2: Project Board & Issue Claiming (GitHub Sync)
 Before writing any code, the agent synchronizes state via `gh` CLI:
@@ -60,13 +60,11 @@ Before writing any code, the agent synchronizes state via `gh` CLI:
 4. **Local Verification**: Execute relevant unit/integration test harness (e.g. `pytest` for AI service, `mvn test` for Spring Boot, `npm run build` for React).
 5. **Circuit Breaker**: If tests fail, the agent has a budget of 2 auto-debugging attempts. If still failing, HALT and report errors; NEVER commit broken code.
 
-### Phase 5: Temporal Commit & Push
+### Phase 5: Commit & Push
 1. Stage modified files explicitly: `git add <paths>`.
-2. Craft Conventional Commit with Issue ID:
+2. Craft Conventional Commit with Issue ID (real timestamp, the configured git identity; no date or author overrides):
    ```bash
-   GIT_AUTHOR_DATE="YYYY-MM-DD HH:MM:SS +0700" \
-   GIT_COMMITTER_DATE="YYYY-MM-DD HH:MM:SS +0700" \
-   git commit --author="<Name> <<Email>>" -m "<type>(<scope>): <summary> (#<issue_id>)"
+   git commit -m "<type>(<scope>): <summary> (#<issue_id>)"
    ```
 3. Push to remote:
    ```bash

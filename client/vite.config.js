@@ -7,6 +7,11 @@ export default defineConfig({
     port: 3000,
     host: true,
     proxy: {
+      '/api/v1/vision': {
+        target: process.env.VITE_AI_PROXY_URL || 'http://localhost:8000',
+        changeOrigin: true,
+        secure: false,
+      },
       '/api': {
         target: process.env.VITE_BACKEND_PROXY_URL || 'http://localhost:8080',
         changeOrigin: true,
