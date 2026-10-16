@@ -3,18 +3,18 @@ name: travelai-sprint-workflow
 description: >-
   Autonomous 1-prompt sprint execution SOP for TravelAI engineers (Thuận, Đức, Ngọc).
   Orchestrates context resolution, issue claiming, branch initialization, scope-isolated
-  coding, verification, temporal commits, PR generation, and Tech Lead review gatekeeping.
+  coding, verification, commits, PR generation, and Tech Lead review gatekeeping.
 ---
 
 # 🚀 TravelAI Autonomous Sprint Execution SOP
 
-This skill defines the complete operational procedure for executing an end-to-end sprint work session triggered by **1 single prompt**. It enforces strict RACI boundaries, human-like temporal pacing, zero file-leakage hygiene, and human gatekeeping by Tech Lead Trần Minh Thuận (`@AtelierMizumi`).
+This skill defines the complete operational procedure for executing an end-to-end sprint work session triggered by **1 single prompt**. It enforces strict RACI boundaries, honest git history, zero file-leakage hygiene, and human gatekeeping by Tech Lead Trần Minh Thuận (`@AtelierMizumi`).
 
 ---
 
 ## 1. Quick Reference: Engineering Topology & RACI Matrix
 
-| Engineer | Role | GitHub Handle | Git Author Identity | Authorized WBS Modules |
+| Engineer | Role | GitHub Handle | Expected Git Identity | Authorized WBS Modules |
 |---|---|---|---|---|
 | **Trần Minh Thuận** *(User)* | **Tech Lead, AI & DevOps** | `@AtelierMizumi` | `Minh Thuận Trần <thuanc177@gmail.com>` | `1.1.1`, `1.1.2`, `1.1.3`, `1.3.1`, `1.3.2`, `1.8.2` (`services/ai/`, arch docs, db schema, docker) |
 | **Hoàng Văn Đức** | **Core Backend & Security** | `@duchayslay` | `Hoàng Văn Đức <hoangvanduc290805@gmail.com>` | `1.2.1`, `1.4.2`, `1.4.3`, `1.5.1`, `1.6.1`, `1.6.3`, `1.7.2`, `1.7.3`, `1.7.4`, `1.7.5` (`services/backend/`) |
@@ -39,7 +39,7 @@ This skill defines the complete operational procedure for executing an end-to-en
 [Prompt Trigger]
        │
        ▼
-Phase 1: Resolver (WBS, Issue #, Assignee, Temporal Window)
+Phase 1: Resolver (WBS, Issue #, Assignee, Identity & Schedule Check)
        │
        ▼
 Phase 2: Claim Issue & Update Board (Status: Todo -> In Progress)
@@ -51,7 +51,7 @@ Phase 3: Clean Branch Init (`feat/wbs-<id>-<slug>`)
 Phase 4: Scope-Isolated Deep Coding & Local Verification
        │
        ▼
-Phase 5: Temporal Commit & Remote Push (Human Pacing)
+Phase 5: Commit & Remote Push (real time, own identity)
        │
        ▼
 Phase 6: Pull Request Creation (DoD Checklist, `Closes #<id>`)
@@ -67,6 +67,8 @@ Phase 7: STOP AT GATEKEEPER ➔ Report PR link to Tech Lead for Review & Merge
    - "Ngọc" / "Frontend" -> `@ngoctapcodee`
 2. Determine target WBS package and linked GitHub Issue number (e.g., via `gh issue list -R AtelierMizumi/TravelAI`).
 3. Verify that the task matches the engineer's authorized RACI scope.
+4. Verify `git config user.email` matches the engineer's expected identity; if not, stop and ask. Do not override it.
+5. Compare today's real date with the sprint calendar (Ruleset 03 §3) and report on track / behind. Report only; never adjust dates.
 
 ### Phase 2: Claim Task & Sync Project Board #2
 1. **Assign Issue**:
@@ -110,17 +112,14 @@ Phase 7: STOP AT GATEKEEPER ➔ Report PR link to Tech Lead for Review & Merge
    - Backend: `cd services/backend && ./mvnw test`
    - Frontend: `cd services/client && npm run build`
 
-### Phase 5: Temporal Commit & Push
+### Phase 5: Commit & Push
 1. Stage modified files:
    ```bash
    git add <path/to/files>
    ```
-2. Format Conventional Commit with realistic timestamp (working hours `09:30 - 22:30` within Sprint dates):
+2. Create the Conventional Commit with the configured git identity and the real current time (never set `GIT_AUTHOR_DATE`, `GIT_COMMITTER_DATE`, `--date` or `--author`):
    ```bash
-   GIT_AUTHOR_DATE="2026-09-28 14:15:00 +0700" \
-   GIT_COMMITTER_DATE="2026-09-28 14:15:00 +0700" \
-   git commit --author="<Author Name> <<Author Email>>" \
-     -m "<type>(<scope>): <summary> (#<issue_id>)"
+   git commit -m "<type>(<scope>): <summary> (#<issue_id>)"
    ```
 3. Push topic branch:
    ```bash

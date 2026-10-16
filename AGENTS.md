@@ -8,17 +8,18 @@
 
 ## 🚨 6 IMMUTABLE OPERATIONAL INVARIANTS
 
-1. **Clean-Room Source Hygiene & Zero-Leakage Quarantine**:
+1. **Source Hygiene & Reference Quarantine**:
    - **STRICTLY PROHIBITED** to `git add`, `commit`, or `push` any binary or office document files: `*.docx`, `*.doc`, `*.xlsx`, `*.xls`, `*.ods`, `*.pdf`, `*.pptx`, `*.csv`.
-   - The reference directory `local_references/` (including `legacy_source/`, `legacy_specs/`, `learning_materials/`) is a local-only quarantine zone and **MUST REMAIN PERMANENTLY GITIGNORED**. Never index or commit it.
+   - The reference directory `local_references/` (including `legacy_source/`, `legacy_specs/`, `learning_materials/`) is a local-only area and **MUST REMAIN PERMANENTLY GITIGNORED**. Never index or commit it.
    - Always run and inspect `git status` prior to committing to ensure zero untracked garbage.
-   - *References*: [01_provenance_quarantine_and_persona.md](.agents/rules/01_provenance_quarantine_and_persona.md) & [04_file_hygiene_and_repository_purity.md](.agents/rules/04_file_hygiene_and_repository_purity.md).
+   - *References*: [01_source_hygiene_and_release_readiness.md](.agents/rules/01_source_hygiene_and_release_readiness.md) & [04_file_hygiene_and_repository_purity.md](.agents/rules/04_file_hygiene_and_repository_purity.md).
 
-2. **Enterprise From-Scratch Persona**:
-   - All code, configuration, and documentation must reflect a clean, professionally engineered system developed from scratch.
-   - **NEVER LEAK** any indicators of university coursework, retrofitting, or legacy reports.
-   - Banned terminology: "course project", "báo cáo đồ án", "đồ án chuyên ngành", "nộp tuần 3", "thầy cô", "từ file docx".
-   - *References*: [01_provenance_quarantine_and_persona.md](.agents/rules/01_provenance_quarantine_and_persona.md).
+2. **Refined, Release-Ready Source**:
+   - Keep the repository complete and clean for submission: no drafts, reference material, secrets, absolute local paths, debug output or dead code; docs must match what actually runs.
+   - Reference code is never copied as-is; re-implement or refactor it to fit the current architecture and tests.
+   - Run the refinement checklist in Ruleset 01 §3 before every PR and before the final submission.
+   - AI assistance is not hidden: do not remove or disguise assistant attribution, and follow the course policy on disclosure.
+   - *References*: [01_source_hygiene_and_release_readiness.md](.agents/rules/01_source_hygiene_and_release_readiness.md).
 
 3. **3-Engineer Team Topology & Scope Boundaries (RACI Matrix)**:
    - The platform is developed by three specialized software engineers:
@@ -29,12 +30,13 @@
      - `1.1.1`, `1.1.2`, `1.1.3`: Architecture, Requirements, Contracts, and Database Schema DDL.
      - `1.3.1`, `1.3.2`: AI Vision Subsystem (Image Preprocessing, FastAPI, Google Cloud Vision SDK).
      - `1.8.2`: Multi-Service Dockerization, CI/CD Pipeline & Cloud Deployment.
-   - Do NOT autonomously execute or overwrite work belonging to Đức (Core Backend Lead) or Ngọc (Frontend & QA Lead) unless explicitly requested to simulate their contributions.
+   - Do NOT autonomously execute or overwrite work belonging to Đức (Core Backend Lead) or Ngọc (Frontend & QA Lead) unless the user explicitly asks; such changes are committed under the user's own identity and flagged as cross-scope in the PR.
    - *References*: [02_team_topology_and_role_boundaries.md](.agents/rules/02_team_topology_and_role_boundaries.md).
 
-4. **Realistic Commit Authorship & Temporal Simulation Engine**:
-   - The agent **NEVER CLAIMS** commit authorship. Commits always belong to the user (`Minh Thuận Trần <thuanc177@gmail.com>`) or fellow team members when simulating.
-   - Emulate realistic human working cadence: **1 weekly focus session (4-6 hours) on weekends** or developer working hours (09:30 - 22:30).
+4. **Honest Git History & Schedule Check**:
+   - Commits use the real time and the configured git identity of the engineer running the session. NEVER set commit dates (`GIT_AUTHOR_DATE`, `GIT_COMMITTER_DATE`, `--date`) or authors (`--author`) and never rewrite shared history. The agent does not claim authorship.
+   - Before the first commit of a session, verify `git config user.email` matches the engineer named in the task and that the files touched belong to that engineer's WBS packages; if not, stop and ask.
+   - Compare today's real date with the sprint calendar and WBS and report the status (on track / behind); report only, never adjust dates to fit.
    - 12-Week Production Schedule across 6 Sprints:
      - Sprint 1: `2026-09-07` - `2026-09-20`
      - Sprint 2: `2026-09-21` - `2026-10-04`
@@ -43,7 +45,7 @@
      - Sprint 5: `2026-11-02` - `2026-11-15`
      - Sprint 6: `2026-11-16` - `2026-11-29`
    - Use Conventional Commits 1.0.0 with mandatory Issue ID binding: `<type>(<scope>): <summary> (#<issue_id>)`.
-   - *References*: [03_git_governance_and_temporal_engine.md](.agents/rules/03_git_governance_and_temporal_engine.md).
+   - *References*: [03_git_governance.md](.agents/rules/03_git_governance.md).
 
 5. **Technical Architecture & Code Standards**:
    - **Frontend**: React 18, Vite, TailwindCSS, Lucide Icons, Axios (with concurrency-safe 401 refresh queue and DOMPurify XSS defense).

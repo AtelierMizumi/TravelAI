@@ -1,8 +1,8 @@
 import axios from 'axios';
 
-// AI Service URL config
+// AI Service URL config - defaults to empty string so requests leverage Vite / Nginx reverse proxy
 const getAiBaseUrl = () => {
-  return import.meta.env.VITE_AI_SERVICE_URL || import.meta.env.VITE_API_BASE_URL || '';
+  return import.meta.env.VITE_AI_SERVICE_URL || '';
 };
 
 // Dedicated axios instance for AI Microservice
