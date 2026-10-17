@@ -78,3 +78,121 @@ VALUES
 ('Hồ Hoàn Kiếm', 'Hà Nội', 'Trái tim thủ đô ngàn năm văn hiến, gắn liền với truyền thuyết rùa thần trả gươm và tháp Rùa cổ kính.', 'https://images.unsplash.com/photo-1599827552599-eeddd595b1e9?auto=format&fit=crop&w=1200&q=80', 21.0285, 105.8542, 'Di tích lịch sử', 4.7, 110),
 ('Chợ Bến Thành', 'Hồ Chí Minh', 'Biểu tượng thương mại lịch sử trung tâm Sài Gòn, nơi hội tụ tinh hoa ẩm thực và mua sắm truyền thống.', 'https://images.unsplash.com/photo-1583417319070-4a69db38a482?auto=format&fit=crop&w=1200&q=80', 10.7725, 106.6980, 'Văn hóa - Thương mại', 4.6, 74)
 ON CONFLICT (name) DO NOTHING;
+
+-- 7. Create Tours Table
+CREATE TABLE IF NOT EXISTS tours (
+    id BIGSERIAL PRIMARY KEY,
+    title VARCHAR(200) NOT NULL,
+    description TEXT,
+    location_id BIGINT,
+    province VARCHAR(100),
+    duration VARCHAR(50) NOT NULL,
+    departure_dates VARCHAR(255),
+    price NUMERIC(12, 2) NOT NULL,
+    currency VARCHAR(10) DEFAULT 'VND',
+    rating DOUBLE PRECISION DEFAULT 5.0,
+    review_count INTEGER DEFAULT 0,
+    image_url VARCHAR(512),
+    highlights TEXT,
+    itinerary TEXT,
+    available_slots INTEGER DEFAULT 20,
+    status VARCHAR(32) DEFAULT 'ACTIVE',
+    created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_tours_location FOREIGN KEY (location_id) REFERENCES locations (id) ON DELETE SET NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_tours_location_id ON tours (location_id);
+CREATE INDEX IF NOT EXISTS idx_tours_province ON tours (province);
+CREATE INDEX IF NOT EXISTS idx_tours_price ON tours (price);
+CREATE INDEX IF NOT EXISTS idx_tours_status ON tours (status);
+
+-- 8. Seed Default Tours (Linked to Locations)
+INSERT INTO tours (title, description, location_id, province, duration, departure_dates, price, currency, rating, review_count, image_url, highlights, itinerary, available_slots, status)
+VALUES
+(
+    'Tour Du Thuyền 5 Sao Khám Phá Vịnh Hạ Long & Hang Sửng Sốt 2N1Đ',
+    'Trải nghiệm đẳng cấp trên vịnh di sản thế giới với du thuyền 5 sao, chèo kayak tại Hang Luồn, khám phá Hang Sửng Sốt và ngắm hoàng hôn rực rỡ.',
+    (SELECT id FROM locations WHERE name = 'Vịnh Hạ Long' LIMIT 1),
+    'Quảng Ninh',
+    '2 ngày 1 đêm',
+    'Hàng ngày',
+    2450000.00,
+    'VND',
+    4.9,
+    128,
+    'https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=1200&q=80',
+    'Phòng view biển ban công riêng, Buffet hải sản 5 sao, Hướng dẫn viên song ngữ, Vé tham quan trọn gói',
+    'Ngày 1: Hà Nội - Tuần Châu - Vịnh Hạ Long - Hang Sửng Sốt; Ngày 2: Đảo Titop - Hang Luồn - Hà Nội',
+    25,
+    'ACTIVE'
+),
+(
+    'Tour Trải Nghiệm Văn Hóa Phố Cổ Hội An & Thả Đèn Hoa Đăng 1 Ngày',
+    'Dạo bước phố cổ rực rỡ đèn lồng, ghé thăm Chùa Cầu, thưởng thức cao lầu và trải nghiệm ngồi thuyền thả hoa đăng trên sông Hoài thơ mộng.',
+    (SELECT id FROM locations WHERE name = 'Phố cổ Hội An' LIMIT 1),
+    'Quảng Nam',
+    '1 ngày',
+    'Khởi hành chiều hàng ngày',
+    650000.00,
+    'VND',
+    4.8,
+    96,
+    'https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?auto=format&fit=crop&w=1200&q=80',
+    'Vé thuyền thả đèn hoa đăng, Thưởng thức ẩm thực Hội An, Hướng dẫn viên bản địa',
+    '14:00 Đón khách tại Đà Nẵng - 15:30 Tham quan Chùa Cầu & Hội quán - 18:30 Thả đèn hoa đăng - 20:30 Trở về',
+    30,
+    'ACTIVE'
+),
+(
+    'Tour Trọn Gói Cầu Vàng Bà Nà Hills & Cáp Treo Đạt Kỷ Lục 1 Ngày',
+    'Check-in cầu Vàng bàn tay khổng lồ, trải nghiệm làng Pháp lãng mạn, hầm rượu Debay và công viên giải trí Fantasy Park.',
+    (SELECT id FROM locations WHERE name = 'Cầu Vàng - Bà Nà Hills' LIMIT 1),
+    'Đà Nẵng',
+    '1 ngày',
+    'Hàng ngày từ 07:30',
+    1150000.00,
+    'VND',
+    4.9,
+    142,
+    'https://images.unsplash.com/photo-1570789210967-2cac24afeb00?auto=format&fit=crop&w=1200&q=80',
+    'Vé cáp treo khứ hồi, Buffet trưa hơn 100 món, Xe đưa đón đời mới tận nơi',
+    '07:30 Đón khách trung tâm Đà Nẵng - 08:30 Check-in Cầu Vàng & Vườn hoa Le Jardin - 12:00 Buffet trưa - 16:30 Xuống cáp treo',
+    40,
+    'ACTIVE'
+),
+(
+    'Tour Bái Đính - Tràng An - Hang Múa 1 Ngày Khởi Hành Từ Hà Nội',
+    'Ngồi thuyền chèo tay khám phá Quần thể danh thắng Tràng An di sản UNESCO và leo đỉnh Ngọa Long ngắm toàn cảnh Tam Cốc.',
+    (SELECT id FROM locations WHERE name = 'Quần thể danh thắng Tràng An' LIMIT 1),
+    'Ninh Bình',
+    '1 ngày',
+    'Hàng ngày từ 07:00',
+    850000.00,
+    'VND',
+    4.8,
+    85,
+    'https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&w=1200&q=80',
+    'Vé thuyền nan Tràng An, Buffet đặc sản dê núi Ninh Bình, Hướng dẫn viên chuyên nghiệp',
+    '07:00 Đón tại phố cổ Hà Nội - 09:30 Viếng chùa Bái Đính - 12:30 Ăn trưa - 13:30 Đi thuyền Tràng An - 16:00 Chinh phục Hang Múa',
+    35,
+    'ACTIVE'
+),
+(
+    'City Tour Hà Nội 1 Ngày: Hồ Gươm, Lăng Bác & Văn Miếu Quốc Tử Giám',
+    'Khám phá chiều sâu ngàn năm văn hiến của thủ đô qua các di tích biểu tượng: Hồ Hoàn Kiếm, Đền Ngọc Sơn, Lăng Chủ tịch và Văn Miếu.',
+    (SELECT id FROM locations WHERE name = 'Hồ Hoàn Kiếm' LIMIT 1),
+    'Hà Nội',
+    '1 ngày',
+    'Thứ 3, 5, 7 và Chủ Nhật hàng tuần',
+    550000.00,
+    'VND',
+    4.7,
+    110,
+    'https://images.unsplash.com/photo-1599827552599-eeddd595b1e9?auto=format&fit=crop&w=1200&q=80',
+    'Bao gồm trọn gói vé tham quan, Bữa trưa bún chả đặc sản Hà Nội, Xe máy lạnh đưa đón',
+    '08:00 Đón khách - 08:30 Viếng Lăng Bác & Chùa Một Cột - 11:30 Văn Miếu - 14:30 Hồ Gươm, Đền Ngọc Sơn & Phố cổ',
+    20,
+    'ACTIVE'
+)
+ON CONFLICT DO NOTHING;

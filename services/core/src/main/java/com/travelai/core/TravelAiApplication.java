@@ -3,14 +3,19 @@ package com.travelai.core;
 import com.travelai.core.model.entity.Location;
 import com.travelai.core.model.entity.Role;
 import com.travelai.core.model.entity.RoleName;
+import com.travelai.core.model.entity.Tour;
 import com.travelai.core.repository.LocationRepository;
 import com.travelai.core.repository.RoleRepository;
+import com.travelai.core.repository.TourRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+
+import java.math.BigDecimal;
+import java.util.List;
 
 @SpringBootApplication
 public class TravelAiApplication {
@@ -110,6 +115,115 @@ public class TravelAiApplication {
                         .build());
 
                 log.info("Initialized default Vietnam location dataset (6 major landmarks)");
+            }
+        };
+    }
+
+    @Bean
+    public CommandLineRunner initTours(TourRepository tourRepository, LocationRepository locationRepository) {
+        return args -> {
+            if (tourRepository.count() == 0) {
+                locationRepository.findByNameIgnoreCase("Vịnh Hạ Long").ifPresent(loc ->
+                    tourRepository.save(Tour.builder()
+                            .title("Tour Du Thuyền 5 Sao Khám Phá Vịnh Hạ Long & Hang Sửng Sốt 2N1Đ")
+                            .description("Trải nghiệm đẳng cấp trên vịnh di sản thế giới với du thuyền 5 sao, chèo kayak tại Hang Luồn, khám phá Hang Sửng Sốt và ngắm hoàng hôn rực rỡ.")
+                            .location(loc)
+                            .province(loc.getProvince())
+                            .duration("2 ngày 1 đêm")
+                            .departureDates("Hàng ngày")
+                            .price(new BigDecimal("2450000.00"))
+                            .currency("VND")
+                            .rating(4.9)
+                            .reviewCount(128)
+                            .imageUrl("https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=1200&q=80")
+                            .highlights("Phòng view biển ban công riêng, Buffet hải sản 5 sao, Hướng dẫn viên song ngữ, Vé tham quan trọn gói")
+                            .itinerary("Ngày 1: Hà Nội - Tuần Châu - Vịnh Hạ Long - Hang Sửng Sốt; Ngày 2: Đảo Titop - Hang Luồn - Hà Nội")
+                            .availableSlots(25)
+                            .status("ACTIVE")
+                            .build())
+                );
+
+                locationRepository.findByNameIgnoreCase("Phố cổ Hội An").ifPresent(loc ->
+                    tourRepository.save(Tour.builder()
+                            .title("Tour Trải Nghiệm Văn Hóa Phố Cổ Hội An & Thả Đèn Hoa Đăng 1 Ngày")
+                            .description("Dạo bước phố cổ rực rỡ đèn lồng, ghé thăm Chùa Cầu, thưởng thức cao lầu và trải nghiệm ngồi thuyền thả hoa đăng trên sông Hoài thơ mộng.")
+                            .location(loc)
+                            .province(loc.getProvince())
+                            .duration("1 ngày")
+                            .departureDates("Khởi hành chiều hàng ngày")
+                            .price(new BigDecimal("650000.00"))
+                            .currency("VND")
+                            .rating(4.8)
+                            .reviewCount(96)
+                            .imageUrl("https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?auto=format&fit=crop&w=1200&q=80")
+                            .highlights("Vé thuyền thả đèn hoa đăng, Thưởng thức ẩm thực Hội An, Hướng dẫn viên bản địa")
+                            .itinerary("14:00 Đón khách tại Đà Nẵng - 15:30 Tham quan Chùa Cầu & Hội quán - 18:30 Thả đèn hoa đăng - 20:30 Trở về")
+                            .availableSlots(30)
+                            .status("ACTIVE")
+                            .build())
+                );
+
+                locationRepository.findByNameIgnoreCase("Cầu Vàng - Bà Nà Hills").ifPresent(loc ->
+                    tourRepository.save(Tour.builder()
+                            .title("Tour Trọn Gói Cầu Vàng Bà Nà Hills & Cáp Treo Đạt Kỷ Lục 1 Ngày")
+                            .description("Check-in cầu Vàng bàn tay khổng lồ, trải nghiệm làng Pháp lãng mạn, hầm rượu Debay và công viên giải trí Fantasy Park.")
+                            .location(loc)
+                            .province(loc.getProvince())
+                            .duration("1 ngày")
+                            .departureDates("Hàng ngày từ 07:30")
+                            .price(new BigDecimal("1150000.00"))
+                            .currency("VND")
+                            .rating(4.9)
+                            .reviewCount(142)
+                            .imageUrl("https://images.unsplash.com/photo-1570789210967-2cac24afeb00?auto=format&fit=crop&w=1200&q=80")
+                            .highlights("Vé cáp treo khứ hồi, Buffet trưa hơn 100 món, Xe đưa đón đời mới tận nơi")
+                            .itinerary("07:30 Đón khách trung tâm Đà Nẵng - 08:30 Check-in Cầu Vàng & Vườn hoa Le Jardin - 12:00 Buffet trưa - 16:30 Xuống cáp treo")
+                            .availableSlots(40)
+                            .status("ACTIVE")
+                            .build())
+                );
+
+                locationRepository.findByNameIgnoreCase("Quần thể danh thắng Tràng An").ifPresent(loc ->
+                    tourRepository.save(Tour.builder()
+                            .title("Tour Bái Đính - Tràng An - Hang Múa 1 Ngày Khởi Hành Từ Hà Nội")
+                            .description("Ngồi thuyền chèo tay khám phá Quần thể danh thắng Tràng An di sản UNESCO và leo đỉnh Ngọa Long ngắm toàn cảnh Tam Cốc.")
+                            .location(loc)
+                            .province(loc.getProvince())
+                            .duration("1 ngày")
+                            .departureDates("Hàng ngày từ 07:00")
+                            .price(new BigDecimal("850000.00"))
+                            .currency("VND")
+                            .rating(4.8)
+                            .reviewCount(85)
+                            .imageUrl("https://images.unsplash.com/photo-1509316975850-ff9c5deb0cd9?auto=format&fit=crop&w=1200&q=80")
+                            .highlights("Vé thuyền nan Tràng An, Buffet đặc sản dê núi Ninh Bình, Hướng dẫn viên chuyên nghiệp")
+                            .itinerary("07:00 Đón tại phố cổ Hà Nội - 09:30 Viếng chùa Bái Đính - 12:30 Ăn trưa - 13:30 Đi thuyền Tràng An - 16:00 Chinh phục Hang Múa")
+                            .availableSlots(35)
+                            .status("ACTIVE")
+                            .build())
+                );
+
+                locationRepository.findByNameIgnoreCase("Hồ Hoàn Kiếm").ifPresent(loc ->
+                    tourRepository.save(Tour.builder()
+                            .title("City Tour Hà Nội 1 Ngày: Hồ Gươm, Lăng Bác & Văn Miếu Quốc Tử Giám")
+                            .description("Khám phá chiều sâu ngàn năm văn hiến của thủ đô qua các di tích biểu tượng: Hồ Hoàn Kiếm, Đền Ngọc Sơn, Lăng Chủ tịch và Văn Miếu.")
+                            .location(loc)
+                            .province(loc.getProvince())
+                            .duration("1 ngày")
+                            .departureDates("Thứ 3, 5, 7 và Chủ Nhật hàng tuần")
+                            .price(new BigDecimal("550000.00"))
+                            .currency("VND")
+                            .rating(4.7)
+                            .reviewCount(110)
+                            .imageUrl("https://images.unsplash.com/photo-1599827552599-eeddd595b1e9?auto=format&fit=crop&w=1200&q=80")
+                            .highlights("Bao gồm trọn gói vé tham quan, Bữa trưa bún chả đặc sản Hà Nội, Xe máy lạnh đưa đón")
+                            .itinerary("08:00 Đón khách - 08:30 Viếng Lăng Bác & Chùa Một Cột - 11:30 Văn Miếu - 14:30 Hồ Gươm, Đền Ngọc Sơn & Phố cổ")
+                            .availableSlots(20)
+                            .status("ACTIVE")
+                            .build())
+                );
+
+                log.info("Initialized default Vietnam tour catalog dataset linked to landmarks");
             }
         };
     }
