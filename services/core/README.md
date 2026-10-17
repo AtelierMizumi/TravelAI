@@ -49,6 +49,14 @@ com.travelai.core
 - `PUT /api/v1/locations/{id}`: Admin update location information (Admin Role, 200 OK)
 - `DELETE /api/v1/locations/{id}`: Admin delete location (Admin Role, 204 No Content)
 
+### 4. Tour Catalog Service (WBS 1.4.2)
+- `GET /api/v1/tours`: Get paginated tours list with keyword search, location, province, maxPrice and duration filters (Public, 200 OK)
+- `GET /api/v1/tours/{id}`: Get tour details, price, highlights, itinerary by ID (Public, 200 OK / 404 RFC 7807)
+- `GET /api/v1/tours/by-location/{locationId}`: Get all active tours for a destination (Public, 200 OK)
+- `POST /api/v1/tours`: Admin create new tour package linked to a landmark (Admin Role, 201 Created)
+- `PUT /api/v1/tours/{id}`: Admin update tour package (Admin Role, 200 OK)
+- `DELETE /api/v1/tours/{id}`: Admin delete tour package (Admin Role, 204 No Content)
+
 ---
 
 ## 🧪 Local Testing
@@ -58,5 +66,6 @@ com.travelai.core
 All unit and integration tests validate:
 - Authentication, registration, JWT tokens, duplicate user/email checks
 - Location CRUD operations, pagination, search by province/keyword
+- Tour Catalog queries, pricing filters, landmark association, RBAC permissions
 - Role-based access control (Admin endpoints vs Public endpoints)
 - RFC 7807 Problem Details error compliance
