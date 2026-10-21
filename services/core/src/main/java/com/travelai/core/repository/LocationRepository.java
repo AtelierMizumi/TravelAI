@@ -18,9 +18,9 @@ public interface LocationRepository extends JpaRepository<Location, Long> {
     boolean existsByNameIgnoreCase(String name);
 
     @Query("SELECT l FROM Location l WHERE " +
-           "(:keyword IS NULL OR LOWER(l.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR LOWER(l.province) LIKE LOWER(CONCAT('%', :keyword, '%'))) AND " +
-           "(:province IS NULL OR LOWER(l.province) = LOWER(:province)) AND " +
-           "(:category IS NULL OR LOWER(l.category) = LOWER(:category))")
+           "(CAST(:keyword AS string) IS NULL OR LOWER(l.name) LIKE LOWER(CONCAT('%', CAST(:keyword AS string), '%')) OR LOWER(l.province) LIKE LOWER(CONCAT('%', CAST(:keyword AS string), '%'))) AND " +
+           "(CAST(:province AS string) IS NULL OR LOWER(l.province) = LOWER(CAST(:province AS string))) AND " +
+           "(CAST(:category AS string) IS NULL OR LOWER(l.category) = LOWER(CAST(:category AS string)))")
     Page<Location> searchLocations(
             @Param("keyword") String keyword,
             @Param("province") String province,
