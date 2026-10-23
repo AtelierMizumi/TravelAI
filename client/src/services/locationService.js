@@ -135,7 +135,7 @@ export const locationService = {
       params.size = size;
       params.sort = sort;
 
-      const response = await api.get('/v1/locations', { params });
+      const response = await api.get('/locations', { params });
       return response.data;
     } catch (err) {
       // In offline / standalone dev mode, provide local filtering and pagination
@@ -194,7 +194,7 @@ export const locationService = {
    */
   async getLocationById(id) {
     try {
-      const response = await api.get(`/v1/locations/${id}`);
+      const response = await api.get(`/locations/${id}`);
       return response.data;
     } catch (err) {
       if (import.meta.env.DEV) {
