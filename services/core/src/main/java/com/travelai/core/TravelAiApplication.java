@@ -1,9 +1,11 @@
 package com.travelai.core;
 
+import com.travelai.core.model.entity.Hotel;
 import com.travelai.core.model.entity.Location;
 import com.travelai.core.model.entity.Role;
 import com.travelai.core.model.entity.RoleName;
 import com.travelai.core.model.entity.Tour;
+import com.travelai.core.repository.HotelRepository;
 import com.travelai.core.repository.LocationRepository;
 import com.travelai.core.repository.RoleRepository;
 import com.travelai.core.repository.TourRepository;
@@ -227,4 +229,119 @@ public class TravelAiApplication {
             }
         };
     }
+
+    @Bean
+    public CommandLineRunner initHotels(HotelRepository hotelRepository, LocationRepository locationRepository) {
+        return args -> {
+            if (hotelRepository.count() == 0) {
+                locationRepository.findByNameIgnoreCase("Vịnh Hạ Long").ifPresent(loc ->
+                    hotelRepository.save(Hotel.builder()
+                            .name("Vinpearl Resort & Spa Hạ Long")
+                            .description("Khu nghỉ dưỡng 5 sao sang trọng hoàn toàn trên mặt biển với view 360 độ ngắm trọn vẹn Vịnh Hạ Long kỳ vĩ.")
+                            .location(loc)
+                            .province(loc.getProvince())
+                            .address("Đảo Rều, Bãi Cháy, TP. Hạ Long, Quảng Ninh")
+                            .stars(5)
+                            .pricePerNight(new BigDecimal("2200000.00"))
+                            .currency("VND")
+                            .rating(4.9)
+                            .reviewCount(156)
+                            .imageUrl("https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1200&q=80")
+                            .amenities("Hồ bơi vô cực ngoài trời, Spa Akoya cao cấp, Bãi biển riêng, Buffet sáng quốc tế, Wifi tốc độ cao")
+                            .phone("02033556868")
+                            .email("resort.halong@vinpearl.com")
+                            .availableRooms(20)
+                            .status("ACTIVE")
+                            .build())
+                );
+
+                locationRepository.findByNameIgnoreCase("Phố cổ Hội An").ifPresent(loc ->
+                    hotelRepository.save(Hotel.builder()
+                            .name("Anantara Hoi An Resort")
+                            .description("Khu nghỉ dưỡng thanh bình ven sông Thu Bồn, kiến trúc kết hợp duyên dáng giữa phong cách Pháp cổ và truyền thống Hội An.")
+                            .location(loc)
+                            .province(loc.getProvince())
+                            .address("1 Đường Phạm Hồng Thái, Cẩm Châu, Hội An, Quảng Nam")
+                            .stars(5)
+                            .pricePerNight(new BigDecimal("3150000.00"))
+                            .currency("VND")
+                            .rating(4.9)
+                            .reviewCount(118)
+                            .imageUrl("https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=1200&q=80")
+                            .amenities("Hồ bơi sân vườn nhiệt đới, Du thuyền ngắm hoàng hôn sông Thu Bồn, Lớp học nấu ăn truyền thống, Xe đạp miễn phí")
+                            .phone("02353914555")
+                            .email("hoian@anantara.com")
+                            .availableRooms(15)
+                            .status("ACTIVE")
+                            .build())
+                );
+
+                locationRepository.findByNameIgnoreCase("Cầu Vàng - Bà Nà Hills").ifPresent(loc ->
+                    hotelRepository.save(Hotel.builder()
+                            .name("Mercure Danang French Village Bana Hills")
+                            .description("Khách sạn duy nhất tọa lạc trên đỉnh Bà Nà, mang không gian kiến trúc Gothic thế kỷ 19 lãng mạn giữa mây ngàn.")
+                            .location(loc)
+                            .province(loc.getProvince())
+                            .address("Khu du lịch Bà Nà Hills, Hòa Ninh, Hòa Vang, Đà Nẵng")
+                            .stars(4)
+                            .pricePerNight(new BigDecimal("1850000.00"))
+                            .currency("VND")
+                            .rating(4.8)
+                            .reviewCount(134)
+                            .imageUrl("https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1200&q=80")
+                            .amenities("Hồ bơi nước nóng trong nhà La Piscine, Check-in Cầu Vàng sớm không đông người, Rạp chiếu phim 4D")
+                            .phone("02363799888")
+                            .email("H8488-RE@accor.com")
+                            .availableRooms(25)
+                            .status("ACTIVE")
+                            .build())
+                );
+
+                locationRepository.findByNameIgnoreCase("Quần thể danh thắng Tràng An").ifPresent(loc ->
+                    hotelRepository.save(Hotel.builder()
+                            .name("Ninh Binh Hidden Charm Hotel & Resort")
+                            .description("Tọa lạc giữa khung cảnh thiên nhiên thơ mộng gần bến thuyền Tam Cốc - Bích Động và quần thể Tràng An.")
+                            .location(loc)
+                            .province(loc.getProvince())
+                            .address("Số 9, Trung tâm du lịch Tam Cốc, Ninh Thắng, Hoa Lư, Ninh Bình")
+                            .stars(4)
+                            .pricePerNight(new BigDecimal("1250000.00"))
+                            .currency("VND")
+                            .rating(4.7)
+                            .reviewCount(89)
+                            .imageUrl("https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&w=1200&q=80")
+                            .amenities("Hồ bơi ngoài trời nhìn ra núi đá vôi, Nhà hàng ẩm thực địa phương, Spa & Massage thư giãn, Cho thuê xe đạp")
+                            .phone("02293888555")
+                            .email("info@hiddencharmresort.com")
+                            .availableRooms(18)
+                            .status("ACTIVE")
+                            .build())
+                );
+
+                locationRepository.findByNameIgnoreCase("Hồ Hoàn Kiếm").ifPresent(loc ->
+                    hotelRepository.save(Hotel.builder()
+                            .name("Sofitel Legend Metropole Hanoi")
+                            .description("Khách sạn 5 sao huyền thoại giữa trung tâm thủ đô gần Hồ Gươm, gìn giữ nét tinh hoa lịch sử từ năm 1901.")
+                            .location(loc)
+                            .province(loc.getProvince())
+                            .address("15 Phố Ngô Quyền, Hoàn Kiếm, Hà Nội")
+                            .stars(5)
+                            .pricePerNight(new BigDecimal("4600000.00"))
+                            .currency("VND")
+                            .rating(4.9)
+                            .reviewCount(210)
+                            .imageUrl("https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?auto=format&fit=crop&w=1200&q=80")
+                            .amenities("Hồ bơi ngoài trời Le Club, Hầm rượu lịch sử, Nhà hàng ẩm thực Pháp Le Beaulieu, Dịch vụ quản gia cao cấp")
+                            .phone("02438266919")
+                            .email("h1555@sofitel.com")
+                            .availableRooms(12)
+                            .status("ACTIVE")
+                            .build())
+                );
+
+                log.info("Initialized default Vietnam hotel catalog dataset linked to landmarks");
+            }
+        };
+    }
 }
+
