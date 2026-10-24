@@ -196,3 +196,194 @@ VALUES
     'ACTIVE'
 )
 ON CONFLICT DO NOTHING;
+
+-- 9. Create Hotels Table
+CREATE TABLE IF NOT EXISTS hotels (
+    id BIGSERIAL PRIMARY KEY,
+    name VARCHAR(200) NOT NULL,
+    description TEXT,
+    location_id BIGINT,
+    province VARCHAR(100),
+    address VARCHAR(255),
+    stars INTEGER DEFAULT 3,
+    price_per_night NUMERIC(12, 2) NOT NULL,
+    currency VARCHAR(10) DEFAULT 'VND',
+    rating DOUBLE PRECISION DEFAULT 5.0,
+    review_count INTEGER DEFAULT 0,
+    image_url VARCHAR(512),
+    amenities TEXT,
+    phone VARCHAR(20),
+    email VARCHAR(100),
+    available_rooms INTEGER DEFAULT 10,
+    status VARCHAR(32) DEFAULT 'ACTIVE',
+    created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_hotels_location FOREIGN KEY (location_id) REFERENCES locations (id) ON DELETE SET NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_hotels_location_id ON hotels (location_id);
+CREATE INDEX IF NOT EXISTS idx_hotels_province ON hotels (province);
+CREATE INDEX IF NOT EXISTS idx_hotels_stars ON hotels (stars);
+CREATE INDEX IF NOT EXISTS idx_hotels_price ON hotels (price_per_night);
+CREATE INDEX IF NOT EXISTS idx_hotels_status ON hotels (status);
+
+-- 10. Seed Default Hotels (Linked to Locations)
+INSERT INTO hotels (name, description, location_id, province, address, stars, price_per_night, currency, rating, review_count, image_url, amenities, phone, email, available_rooms, status)
+VALUES
+(
+    'Vinpearl Resort & Spa Hạ Long',
+    'Khu nghỉ dưỡng 5 sao sang trọng hoàn toàn trên mặt biển với view 360 độ ngắm trọn vẹn Vịnh Hạ Long kỳ vĩ.',
+    (SELECT id FROM locations WHERE name = 'Vịnh Hạ Long' LIMIT 1),
+    'Quảng Ninh',
+    'Đảo Rều, Bãi Cháy, TP. Hạ Long, Quảng Ninh',
+    5,
+    2200000.00,
+    'VND',
+    4.9,
+    156,
+    'https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=1200&q=80',
+    'Hồ bơi vô cực ngoài trời, Spa Akoya cao cấp, Bãi biển riêng, Buffet sáng quốc tế, Wifi tốc độ cao',
+    '02033556868',
+    'resort.halong@vinpearl.com',
+    20,
+    'ACTIVE'
+),
+(
+    'Anantara Hoi An Resort',
+    'Khu nghỉ dưỡng thanh bình ven sông Thu Bồn, kiến trúc kết hợp duyên dáng giữa phong cách Pháp cổ và truyền thống Hội An.',
+    (SELECT id FROM locations WHERE name = 'Phố cổ Hội An' LIMIT 1),
+    'Quảng Nam',
+    '1 Đường Phạm Hồng Thái, Cẩm Châu, Hội An, Quảng Nam',
+    5,
+    3150000.00,
+    'VND',
+    4.9,
+    118,
+    'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=1200&q=80',
+    'Hồ bơi sân vườn nhiệt đới, Du thuyền ngắm hoàng hôn sông Thu Bồn, Lớp học nấu ăn truyền thống, Xe đạp miễn phí',
+    '02353914555',
+    'hoian@anantara.com',
+    15,
+    'ACTIVE'
+),
+(
+    'Mercure Danang French Village Bana Hills',
+    'Khách sạn duy nhất tọa lạc trên đỉnh Bà Nà, mang không gian kiến trúc Gothic thế kỷ 19 lãng mạn giữa mây ngàn.',
+    (SELECT id FROM locations WHERE name = 'Cầu Vàng - Bà Nà Hills' LIMIT 1),
+    'Đà Nẵng',
+    'Khu du lịch Bà Nà Hills, Hòa Ninh, Hòa Vang, Đà Nẵng',
+    4,
+    1850000.00,
+    'VND',
+    4.8,
+    134,
+    'https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=1200&q=80',
+    'Hồ bơi nước nóng trong nhà La Piscine, Check-in Cầu Vàng sớm không đông người, Rạp chiếu phim 4D',
+    '02363799888',
+    'H8488-RE@accor.com',
+    25,
+    'ACTIVE'
+),
+(
+    'Ninh Binh Hidden Charm Hotel & Resort',
+    'Tọa lạc giữa khung cảnh thiên nhiên thơ mộng gần bến thuyền Tam Cốc - Bích Động và quần thể Tràng An.',
+    (SELECT id FROM locations WHERE name = 'Quần thể danh thắng Tràng An' LIMIT 1),
+    'Ninh Bình',
+    'Số 9, Trung tâm du lịch Tam Cốc, Ninh Thắng, Hoa Lư, Ninh Bình',
+    4,
+    1250000.00,
+    'VND',
+    4.7,
+    89,
+    'https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&w=1200&q=80',
+    'Hồ bơi ngoài trời nhìn ra núi đá vôi, Nhà hàng ẩm thực địa phương, Spa & Massage thư giãn, Cho thuê xe đạp',
+    '02293888555',
+    'info@hiddencharmresort.com',
+    18,
+    'ACTIVE'
+),
+(
+    'Sofitel Legend Metropole Hanoi',
+    'Khách sạn 5 sao huyền thoại giữa trung tâm thủ đô gần Hồ Gươm, gìn giữ nét tinh hoa lịch sử từ năm 1901.',
+    (SELECT id FROM locations WHERE name = 'Hồ Hoàn Kiếm' LIMIT 1),
+    'Hà Nội',
+    '15 Phố Ngô Quyền, Hoàn Kiếm, Hà Nội',
+    5,
+    4600000.00,
+    'VND',
+    4.9,
+    210,
+    'https://images.unsplash.com/photo-1551882547-ff40c63fe5fa?auto=format&fit=crop&w=1200&q=80',
+    'Hồ bơi ngoài trời Le Club, Hầm rượu lịch sử, Nhà hàng ẩm thực Pháp Le Beaulieu, Dịch vụ quản gia cao cấp',
+    '02438266919',
+    'h1555@sofitel.com',
+    12,
+    'ACTIVE'
+)
+ON CONFLICT DO NOTHING;
+
+-- 11. Create Bookings Table
+CREATE TABLE IF NOT EXISTS bookings (
+    id BIGSERIAL PRIMARY KEY,
+    booking_code VARCHAR(32) NOT NULL UNIQUE,
+    user_id BIGINT NOT NULL,
+    booking_type VARCHAR(20) NOT NULL,
+    status VARCHAR(32) NOT NULL DEFAULT 'PENDING',
+    total_amount NUMERIC(12, 2) NOT NULL,
+    currency VARCHAR(10) DEFAULT 'VND',
+    contact_name VARCHAR(100) NOT NULL,
+    contact_email VARCHAR(100) NOT NULL,
+    contact_phone VARCHAR(20) NOT NULL,
+    special_requests TEXT,
+    start_date DATE NOT NULL,
+    end_date DATE,
+    voucher_code VARCHAR(64),
+    created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_bookings_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_bookings_user_id ON bookings (user_id);
+CREATE INDEX IF NOT EXISTS idx_bookings_booking_code ON bookings (booking_code);
+CREATE INDEX IF NOT EXISTS idx_bookings_status ON bookings (status);
+CREATE INDEX IF NOT EXISTS idx_bookings_created_at ON bookings (created_at);
+
+-- 12. Create Booking Details Table
+CREATE TABLE IF NOT EXISTS booking_details (
+    id BIGSERIAL PRIMARY KEY,
+    booking_id BIGINT NOT NULL,
+    item_type VARCHAR(20) NOT NULL,
+    tour_id BIGINT,
+    hotel_id BIGINT,
+    item_name VARCHAR(255) NOT NULL,
+    unit_price NUMERIC(12, 2) NOT NULL,
+    quantity INTEGER NOT NULL DEFAULT 1,
+    number_of_nights INTEGER DEFAULT 1,
+    subtotal NUMERIC(12, 2) NOT NULL,
+    CONSTRAINT fk_booking_details_booking FOREIGN KEY (booking_id) REFERENCES bookings (id) ON DELETE CASCADE,
+    CONSTRAINT fk_booking_details_tour FOREIGN KEY (tour_id) REFERENCES tours (id) ON DELETE SET NULL,
+    CONSTRAINT fk_booking_details_hotel FOREIGN KEY (hotel_id) REFERENCES hotels (id) ON DELETE SET NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_booking_details_booking_id ON booking_details (booking_id);
+
+-- 13. Create Payments Table
+CREATE TABLE IF NOT EXISTS payments (
+    id BIGSERIAL PRIMARY KEY,
+    booking_id BIGINT NOT NULL,
+    transaction_code VARCHAR(64) NOT NULL UNIQUE,
+    payment_method VARCHAR(32) NOT NULL,
+    amount NUMERIC(12, 2) NOT NULL,
+    currency VARCHAR(10) DEFAULT 'VND',
+    status VARCHAR(32) NOT NULL DEFAULT 'PENDING',
+    transaction_ref VARCHAR(128),
+    payment_url VARCHAR(512),
+    paid_at TIMESTAMP WITHOUT TIME ZONE,
+    created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_payments_booking FOREIGN KEY (booking_id) REFERENCES bookings (id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_payments_booking_id ON payments (booking_id);
+CREATE INDEX IF NOT EXISTS idx_payments_transaction_code ON payments (transaction_code);
+CREATE INDEX IF NOT EXISTS idx_payments_status ON payments (status);
+
