@@ -196,3 +196,25 @@ VALUES
     'ACTIVE'
 )
 ON CONFLICT DO NOTHING;
+
+-- 9. Create Reviews Table
+CREATE TABLE IF NOT EXISTS reviews (
+    id BIGSERIAL PRIMARY KEY,
+    user_id BIGINT NOT NULL,
+    location_id BIGINT,
+    tour_id BIGINT,
+    rating INTEGER NOT NULL CHECK (rating >= 1 AND rating <= 5),
+    comment TEXT NOT NULL,
+    images TEXT,
+    created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_reviews_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+    CONSTRAINT fk_reviews_location FOREIGN KEY (location_id) REFERENCES locations (id) ON DELETE CASCADE,
+    CONSTRAINT fk_reviews_tour FOREIGN KEY (tour_id) REFERENCES tours (id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_reviews_location_id ON reviews (location_id);
+CREATE INDEX IF NOT EXISTS idx_reviews_tour_id ON reviews (tour_id);
+CREATE INDEX IF NOT EXISTS idx_reviews_user_id ON reviews (user_id);
+CREATE INDEX IF NOT EXISTS idx_reviews_created_at ON reviews (created_at);
+
