@@ -57,6 +57,15 @@ com.travelai.core
 - `PUT /api/v1/tours/{id}`: Admin update tour package (Admin Role, 200 OK)
 - `DELETE /api/v1/tours/{id}`: Admin delete tour package (Admin Role, 204 No Content)
 
+### 5. Review & Rating Service (WBS 1.6.1)
+- `GET /api/v1/locations/{locationId}/reviews`: Get paginated reviews for a landmark with star ratings & comments (Public, 200 OK)
+- `GET /api/v1/tours/{tourId}/reviews`: Get paginated reviews for a tour package (Public, 200 OK)
+- `GET /api/v1/reviews/{id}`: Get review details by ID (Public, 200 OK / 404 RFC 7807)
+- `POST /api/v1/locations/{locationId}/reviews`: Create a review for a location (Authenticated, 201 Created)
+- `POST /api/v1/tours/{tourId}/reviews`: Create a review for a tour (Authenticated, 201 Created)
+- `PUT /api/v1/reviews/{id}`: Update review by author or admin (Authenticated, 200 OK)
+- `DELETE /api/v1/reviews/{id}`: Delete review by author or admin (Authenticated, 204 No Content)
+
 ---
 
 ## 🧪 Local Testing
@@ -67,5 +76,6 @@ All unit and integration tests validate:
 - Authentication, registration, JWT tokens, duplicate user/email checks
 - Location CRUD operations, pagination, search by province/keyword
 - Tour Catalog queries, pricing filters, landmark association, RBAC permissions
+- Review & Rating CRUD, star calculations, duplicate review prevention, authorization
 - Role-based access control (Admin endpoints vs Public endpoints)
 - RFC 7807 Problem Details error compliance
