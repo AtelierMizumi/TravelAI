@@ -57,6 +57,12 @@ com.travelai.core
 - `PUT /api/v1/tours/{id}`: Admin update tour package (Admin Role, 200 OK)
 - `DELETE /api/v1/tours/{id}`: Admin delete tour package (Admin Role, 204 No Content)
 
+### 5. User Admin & RBAC Management (WBS 1.7.4)
+- `GET /api/v1/admin/users`: Get paginated users list with keyword search (username, email, name, phone), role and status filters (Admin Role, 200 OK)
+- `GET /api/v1/admin/users/{id}`: Get detailed user profile and account status (Admin Role, 200 OK / 404 RFC 7807)
+- `PUT /api/v1/admin/users/{id}/status`: Enable/disable user account with self-lock prevention & token revocation (Admin Role, 200 OK)
+- `PUT /api/v1/admin/users/{id}/role`: Promote/demote user role (ROLE_ADMIN, ROLE_USER) with self-demote guard (Admin Role, 200 OK)
+
 ---
 
 ## 🧪 Local Testing
@@ -67,5 +73,6 @@ All unit and integration tests validate:
 - Authentication, registration, JWT tokens, duplicate user/email checks
 - Location CRUD operations, pagination, search by province/keyword
 - Tour Catalog queries, pricing filters, landmark association, RBAC permissions
+- User Admin & RBAC: search filters, account enabling/disabling, self-lock guards, token revocation
 - Role-based access control (Admin endpoints vs Public endpoints)
 - RFC 7807 Problem Details error compliance
