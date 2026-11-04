@@ -391,3 +391,24 @@ CREATE INDEX IF NOT EXISTS idx_payments_transaction_code ON payments (transactio
 CREATE INDEX IF NOT EXISTS idx_payments_status ON payments (status);
 CREATE INDEX IF NOT EXISTS idx_payments_reconciliation_status ON payments (reconciliation_status);
 
+-- 14. Create Chat Messages Table (WebSocket Real-Time Messaging)
+CREATE TABLE IF NOT EXISTS chat_messages (
+    id BIGSERIAL PRIMARY KEY,
+    sender_id BIGINT NOT NULL,
+    recipient_id BIGINT NOT NULL,
+    content TEXT NOT NULL,
+    message_type VARCHAR(32) DEFAULT 'CHAT',
+    is_read BOOLEAN NOT NULL DEFAULT FALSE,
+    read_at TIMESTAMP WITHOUT TIME ZONE,
+    conversation_id VARCHAR(64) NOT NULL,
+    created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_chat_messages_sender FOREIGN KEY (sender_id) REFERENCES users (id) ON DELETE CASCADE,
+    CONSTRAINT fk_chat_messages_recipient FOREIGN KEY (recipient_id) REFERENCES users (id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_chat_messages_conversation_id ON chat_messages (conversation_id);
+CREATE INDEX IF NOT EXISTS idx_chat_messages_sender_id ON chat_messages (sender_id);
+CREATE INDEX IF NOT EXISTS idx_chat_messages_recipient_id ON chat_messages (recipient_id);
+CREATE INDEX IF NOT EXISTS idx_chat_messages_is_read ON chat_messages (is_read);
+CREATE INDEX IF NOT EXISTS idx_chat_messages_created_at ON chat_messages (created_at);
+

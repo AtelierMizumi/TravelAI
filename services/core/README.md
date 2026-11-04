@@ -81,6 +81,17 @@ com.travelai.core
 - `GET /api/v1/admin/bookings/reconciliation`: Paginated payment transactions for reconciliation with status and keyword filters (Admin Role, 200 OK)
 - `PUT /api/v1/admin/bookings/reconciliation/{paymentId}`: Reconcile payment transaction with bank/gateway statement (Admin Role, 200 OK)
 
+### 8. Real-time Messaging via WebSocket & STOMP (WBS 1.6.3)
+- `WebSocket STOMP Endpoint`: `/ws-travelai` (SockJS & WebSocket supported)
+  - Topic destinations: `/topic/conversations.{conversationId}` (live room messages)
+  - User queues: `/user/queue/messages` (private personal message delivery)
+  - App destination: `/app/chat.send` (send STOMP message)
+- `POST /api/v1/chat/messages`: Send message via REST API and dispatch via WebSocket (Authenticated, 201 Created)
+- `GET /api/v1/chat/conversations/{partnerId}`: Get paginated chat history with traveler partner (Authenticated, 200 OK)
+- `PUT /api/v1/chat/conversations/{partnerId}/read`: Mark all incoming messages in conversation as read (Authenticated, 200 OK)
+- `GET /api/v1/chat/conversations`: Get all recent conversations with last message and unread count (Authenticated, 200 OK)
+- `GET /api/v1/chat/unread-count`: Get total unread message badge count (Authenticated, 200 OK)
+
 ---
 
 ## 🧪 Local Testing
@@ -94,8 +105,10 @@ All unit and integration tests validate:
 - Hotel & Accommodation queries, star rating, price per night filters, landmark association
 - Booking & Payment lifecycle (Tour/Hotel reservations, auto subtotal calculation, VNPay mock payment, voucher generation, access controls)
 - Booking Audit & Payment Reconciliation (Admin status transitions, operational analytics, bank statement reconciliation)
+- Real-time Messaging & Chat (WebSocket STOMP configuration, offline message persistence, unread counter, read status updates)
 - Role-based access control (Admin endpoints vs Public vs Authenticated endpoints)
 - RFC 7807 Problem Details error compliance
+
 
 
 
