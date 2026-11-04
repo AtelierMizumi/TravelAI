@@ -322,3 +322,68 @@ VALUES
 )
 ON CONFLICT DO NOTHING;
 
+-- 11. Create Bookings Table
+CREATE TABLE IF NOT EXISTS bookings (
+    id BIGSERIAL PRIMARY KEY,
+    booking_code VARCHAR(32) NOT NULL UNIQUE,
+    user_id BIGINT NOT NULL,
+    booking_type VARCHAR(20) NOT NULL,
+    status VARCHAR(32) NOT NULL DEFAULT 'PENDING',
+    total_amount NUMERIC(12, 2) NOT NULL,
+    currency VARCHAR(10) DEFAULT 'VND',
+    contact_name VARCHAR(100) NOT NULL,
+    contact_email VARCHAR(100) NOT NULL,
+    contact_phone VARCHAR(20) NOT NULL,
+    special_requests TEXT,
+    start_date DATE NOT NULL,
+    end_date DATE,
+    voucher_code VARCHAR(64),
+    created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_bookings_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_bookings_user_id ON bookings (user_id);
+CREATE INDEX IF NOT EXISTS idx_bookings_booking_code ON bookings (booking_code);
+CREATE INDEX IF NOT EXISTS idx_bookings_status ON bookings (status);
+CREATE INDEX IF NOT EXISTS idx_bookings_created_at ON bookings (created_at);
+
+-- 12. Create Booking Details Table
+CREATE TABLE IF NOT EXISTS booking_details (
+    id BIGSERIAL PRIMARY KEY,
+    booking_id BIGINT NOT NULL,
+    item_type VARCHAR(20) NOT NULL,
+    tour_id BIGINT,
+    hotel_id BIGINT,
+    item_name VARCHAR(255) NOT NULL,
+    unit_price NUMERIC(12, 2) NOT NULL,
+    quantity INTEGER NOT NULL DEFAULT 1,
+    number_of_nights INTEGER DEFAULT 1,
+    subtotal NUMERIC(12, 2) NOT NULL,
+    CONSTRAINT fk_booking_details_booking FOREIGN KEY (booking_id) REFERENCES bookings (id) ON DELETE CASCADE,
+    CONSTRAINT fk_booking_details_tour FOREIGN KEY (tour_id) REFERENCES tours (id) ON DELETE SET NULL,
+    CONSTRAINT fk_booking_details_hotel FOREIGN KEY (hotel_id) REFERENCES hotels (id) ON DELETE SET NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_booking_details_booking_id ON booking_details (booking_id);
+
+-- 13. Create Payments Table
+CREATE TABLE IF NOT EXISTS payments (
+    id BIGSERIAL PRIMARY KEY,
+    booking_id BIGINT NOT NULL,
+    transaction_code VARCHAR(64) NOT NULL UNIQUE,
+    payment_method VARCHAR(32) NOT NULL,
+    amount NUMERIC(12, 2) NOT NULL,
+    currency VARCHAR(10) DEFAULT 'VND',
+    status VARCHAR(32) NOT NULL DEFAULT 'PENDING',
+    transaction_ref VARCHAR(128),
+    payment_url VARCHAR(512),
+    paid_at TIMESTAMP WITHOUT TIME ZONE,
+    created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_payments_booking FOREIGN KEY (booking_id) REFERENCES bookings (id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_payments_booking_id ON payments (booking_id);
+CREATE INDEX IF NOT EXISTS idx_payments_transaction_code ON payments (transaction_code);
+CREATE INDEX IF NOT EXISTS idx_payments_status ON payments (status);
+
