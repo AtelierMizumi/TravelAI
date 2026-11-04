@@ -57,6 +57,14 @@ com.travelai.core
 - `PUT /api/v1/tours/{id}`: Admin update tour package (Admin Role, 200 OK)
 - `DELETE /api/v1/tours/{id}`: Admin delete tour package (Admin Role, 204 No Content)
 
+### 5. Hotel & Accommodation Catalog Service (WBS 1.4.3)
+- `GET /api/v1/hotels`: Get paginated hotels with keyword search, location, province, minStars, maxPrice, status (Public, 200 OK)
+- `GET /api/v1/hotels/{id}`: Get hotel details, stars, formatted VND price, parsed amenities, room count (Public, 200 OK / 404 RFC 7807)
+- `GET /api/v1/hotels/by-location/{locationId}`: Get all active accommodations associated with a landmark (Public, 200 OK)
+- `POST /api/v1/hotels`: Admin create new hotel linked to landmark (Admin Role, 201 Created)
+- `PUT /api/v1/hotels/{id}`: Admin update hotel information and availability (Admin Role, 200 OK)
+- `DELETE /api/v1/hotels/{id}`: Admin delete hotel (Admin Role, 204 No Content)
+
 ---
 
 ## 🧪 Local Testing
@@ -67,5 +75,7 @@ All unit and integration tests validate:
 - Authentication, registration, JWT tokens, duplicate user/email checks
 - Location CRUD operations, pagination, search by province/keyword
 - Tour Catalog queries, pricing filters, landmark association, RBAC permissions
+- Hotel & Accommodation queries, star rating, price per night filters, landmark association
 - Role-based access control (Admin endpoints vs Public endpoints)
 - RFC 7807 Problem Details error compliance
+
