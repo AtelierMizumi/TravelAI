@@ -31,4 +31,16 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             @Param("keyword") String keyword,
             Pageable pageable
     );
+
+    long countByStatus(String status);
+
+    @Query("SELECT COALESCE(SUM(b.totalAmount), 0) FROM Booking b WHERE b.status IN ('PAID', 'COMPLETED')")
+    java.math.BigDecimal calculateTotalRevenue();
+
+    @Query("SELECT COALESCE(SUM(b.totalAmount), 0) FROM Booking b WHERE b.status IN ('PAID', 'COMPLETED') AND b.bookingType = 'TOUR'")
+    java.math.BigDecimal calculateTourRevenue();
+
+    @Query("SELECT COALESCE(SUM(b.totalAmount), 0) FROM Booking b WHERE b.status IN ('PAID', 'COMPLETED') AND b.bookingType = 'HOTEL'")
+    java.math.BigDecimal calculateHotelRevenue();
 }
+

@@ -379,6 +379,9 @@ CREATE TABLE IF NOT EXISTS payments (
     transaction_ref VARCHAR(128),
     payment_url VARCHAR(512),
     paid_at TIMESTAMP WITHOUT TIME ZONE,
+    reconciliation_status VARCHAR(32) DEFAULT 'UNRECONCILED',
+    reconciled_at TIMESTAMP WITHOUT TIME ZONE,
+    audit_notes TEXT,
     created_at TIMESTAMP WITHOUT TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_payments_booking FOREIGN KEY (booking_id) REFERENCES bookings (id) ON DELETE CASCADE
 );
@@ -386,4 +389,5 @@ CREATE TABLE IF NOT EXISTS payments (
 CREATE INDEX IF NOT EXISTS idx_payments_booking_id ON payments (booking_id);
 CREATE INDEX IF NOT EXISTS idx_payments_transaction_code ON payments (transaction_code);
 CREATE INDEX IF NOT EXISTS idx_payments_status ON payments (status);
+CREATE INDEX IF NOT EXISTS idx_payments_reconciliation_status ON payments (reconciliation_status);
 

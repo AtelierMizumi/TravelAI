@@ -18,6 +18,9 @@ public class PaymentResponse {
     private String transactionRef;
     private String paymentUrl;
     private LocalDateTime paidAt;
+    private String reconciliationStatus;
+    private LocalDateTime reconciledAt;
+    private String auditNotes;
     private LocalDateTime createdAt;
 
     public PaymentResponse() {
@@ -25,7 +28,8 @@ public class PaymentResponse {
 
     public PaymentResponse(Long id, String transactionCode, String paymentMethod, BigDecimal amount,
                            String formattedAmount, String currency, String status, String transactionRef,
-                           String paymentUrl, LocalDateTime paidAt, LocalDateTime createdAt) {
+                           String paymentUrl, LocalDateTime paidAt, String reconciliationStatus,
+                           LocalDateTime reconciledAt, String auditNotes, LocalDateTime createdAt) {
         this.id = id;
         this.transactionCode = transactionCode;
         this.paymentMethod = paymentMethod;
@@ -36,6 +40,9 @@ public class PaymentResponse {
         this.transactionRef = transactionRef;
         this.paymentUrl = paymentUrl;
         this.paidAt = paidAt;
+        this.reconciliationStatus = reconciliationStatus;
+        this.reconciledAt = reconciledAt;
+        this.auditNotes = auditNotes;
         this.createdAt = createdAt;
     }
 
@@ -55,6 +62,9 @@ public class PaymentResponse {
                 payment.getTransactionRef(),
                 payment.getPaymentUrl(),
                 payment.getPaidAt(),
+                payment.getReconciliationStatus(),
+                payment.getReconciledAt(),
+                payment.getAuditNotes(),
                 payment.getCreatedAt()
         );
     }
@@ -147,6 +157,30 @@ public class PaymentResponse {
         this.paidAt = paidAt;
     }
 
+    public String getReconciliationStatus() {
+        return reconciliationStatus;
+    }
+
+    public void setReconciliationStatus(String reconciliationStatus) {
+        this.reconciliationStatus = reconciliationStatus;
+    }
+
+    public LocalDateTime getReconciledAt() {
+        return reconciledAt;
+    }
+
+    public void setReconciledAt(LocalDateTime reconciledAt) {
+        this.reconciledAt = reconciledAt;
+    }
+
+    public String getAuditNotes() {
+        return auditNotes;
+    }
+
+    public void setAuditNotes(String auditNotes) {
+        this.auditNotes = auditNotes;
+    }
+
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
@@ -155,3 +189,4 @@ public class PaymentResponse {
         this.createdAt = createdAt;
     }
 }
+

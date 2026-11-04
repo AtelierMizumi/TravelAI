@@ -44,6 +44,15 @@ public class Payment {
     @Column(name = "paid_at")
     private LocalDateTime paidAt;
 
+    @Column(name = "reconciliation_status", length = 32)
+    private String reconciliationStatus = "UNRECONCILED"; // "UNRECONCILED", "RECONCILED", "DISCREPANCY", "REFUNDED"
+
+    @Column(name = "reconciled_at")
+    private LocalDateTime reconciledAt;
+
+    @Column(name = "audit_notes", columnDefinition = "TEXT")
+    private String auditNotes;
+
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -52,7 +61,8 @@ public class Payment {
 
     public Payment(Long id, Booking booking, String transactionCode, String paymentMethod,
                    BigDecimal amount, String currency, String status, String transactionRef,
-                   String paymentUrl, LocalDateTime paidAt, LocalDateTime createdAt) {
+                   String paymentUrl, LocalDateTime paidAt, String reconciliationStatus,
+                   LocalDateTime reconciledAt, String auditNotes, LocalDateTime createdAt) {
         this.id = id;
         this.booking = booking;
         this.transactionCode = transactionCode;
@@ -63,6 +73,9 @@ public class Payment {
         this.transactionRef = transactionRef;
         this.paymentUrl = paymentUrl;
         this.paidAt = paidAt;
+        this.reconciliationStatus = reconciliationStatus != null ? reconciliationStatus : "UNRECONCILED";
+        this.reconciledAt = reconciledAt;
+        this.auditNotes = auditNotes;
         this.createdAt = createdAt;
     }
 
@@ -74,6 +87,9 @@ public class Payment {
         }
         if (this.status == null) {
             this.status = "PENDING";
+        }
+        if (this.reconciliationStatus == null) {
+            this.reconciliationStatus = "UNRECONCILED";
         }
     }
 
@@ -161,6 +177,30 @@ public class Payment {
         this.paidAt = paidAt;
     }
 
+    public String getReconciliationStatus() {
+        return reconciliationStatus;
+    }
+
+    public void setReconciliationStatus(String reconciliationStatus) {
+        this.reconciliationStatus = reconciliationStatus;
+    }
+
+    public LocalDateTime getReconciledAt() {
+        return reconciledAt;
+    }
+
+    public void setReconciledAt(LocalDateTime reconciledAt) {
+        this.reconciledAt = reconciledAt;
+    }
+
+    public String getAuditNotes() {
+        return auditNotes;
+    }
+
+    public void setAuditNotes(String auditNotes) {
+        this.auditNotes = auditNotes;
+    }
+
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }
@@ -180,6 +220,9 @@ public class Payment {
         private String transactionRef;
         private String paymentUrl;
         private LocalDateTime paidAt;
+        private String reconciliationStatus = "UNRECONCILED";
+        private LocalDateTime reconciledAt;
+        private String auditNotes;
         private LocalDateTime createdAt;
 
         public PaymentBuilder id(Long id) {
@@ -232,6 +275,21 @@ public class Payment {
             return this;
         }
 
+        public PaymentBuilder reconciliationStatus(String reconciliationStatus) {
+            this.reconciliationStatus = reconciliationStatus;
+            return this;
+        }
+
+        public PaymentBuilder reconciledAt(LocalDateTime reconciledAt) {
+            this.reconciledAt = reconciledAt;
+            return this;
+        }
+
+        public PaymentBuilder auditNotes(String auditNotes) {
+            this.auditNotes = auditNotes;
+            return this;
+        }
+
         public PaymentBuilder createdAt(LocalDateTime createdAt) {
             this.createdAt = createdAt;
             return this;
@@ -239,7 +297,9 @@ public class Payment {
 
         public Payment build() {
             return new Payment(id, booking, transactionCode, paymentMethod, amount,
-                    currency, status, transactionRef, paymentUrl, paidAt, createdAt);
+                    currency, status, transactionRef, paymentUrl, paidAt,
+                    reconciliationStatus, reconciledAt, auditNotes, createdAt);
         }
     }
 }
+

@@ -74,6 +74,13 @@ com.travelai.core
 - `PUT /api/v1/bookings/{id}/cancel`: Cancel a pending/active booking (Owner / Admin, 200 OK)
 - `GET /api/v1/bookings/admin/all`: Admin query all bookings with status and type filters (Admin Role, 200 OK)
 
+### 7. Booking Management & Payment Audit (WBS 1.7.5)
+- `GET /api/v1/admin/bookings`: Paginated bookings audit with status, bookingType, and keyword filters (Admin Role, 200 OK)
+- `PUT /api/v1/admin/bookings/{id}/status`: Admin update booking operational status (CONFIRMED, COMPLETED, CANCELLED) with audit note (Admin Role, 200 OK)
+- `GET /api/v1/admin/bookings/stats`: Operational dashboard metrics (total revenue, tour/hotel breakdown, status counts, reconciliation rate) (Admin Role, 200 OK)
+- `GET /api/v1/admin/bookings/reconciliation`: Paginated payment transactions for reconciliation with status and keyword filters (Admin Role, 200 OK)
+- `PUT /api/v1/admin/bookings/reconciliation/{paymentId}`: Reconcile payment transaction with bank/gateway statement (Admin Role, 200 OK)
+
 ---
 
 ## 🧪 Local Testing
@@ -86,7 +93,9 @@ All unit and integration tests validate:
 - Tour Catalog queries, pricing filters, landmark association, RBAC permissions
 - Hotel & Accommodation queries, star rating, price per night filters, landmark association
 - Booking & Payment lifecycle (Tour/Hotel reservations, auto subtotal calculation, VNPay mock payment, voucher generation, access controls)
+- Booking Audit & Payment Reconciliation (Admin status transitions, operational analytics, bank statement reconciliation)
 - Role-based access control (Admin endpoints vs Public vs Authenticated endpoints)
 - RFC 7807 Problem Details error compliance
+
 
 
