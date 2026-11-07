@@ -142,6 +142,7 @@ Dự án được quản lý trực tiếp thông qua **GitHub Projects**, chia 
 Yêu cầu: Docker Engine kèm plugin `docker compose`, cùng `curl`, `jq`, `python3` cho smoke test.
 
 ```bash
+cp .env.example .env              # điền POSTGRES_PASSWORD (bắt buộc, không dùng mặc định)
 docker compose up -d --build --wait   # build và chạy postgres, ai-service, backend, client
 scripts/smoke.sh                      # kiểm thử tích hợp qua cổng nginx (3000)
 docker compose down                   # dừng (thêm -v để xóa dữ liệu Postgres)
@@ -150,7 +151,7 @@ docker compose down                   # dừng (thêm -v để xóa dữ liệu 
 - Giao diện: http://localhost:3000. NGINX proxy `/api/v1/vision/` sang AI service và `/api/` sang Core Backend, nên trình duyệt chỉ làm việc với một origin.
 - Schema và dữ liệu mẫu (`services/core/src/main/resources/db/init_schema.sql`) chỉ được nạp ở lần khởi động đầu tiên của volume rỗng; đổi schema thì chạy `docker compose down -v` trước.
 - AI service mặc định chạy chế độ mô phỏng (`VISION_MOCK_ENABLED=true`), không cần khóa Google Cloud Vision.
-- Mật khẩu Postgres (`POSTGRES_PASSWORD`) và `CORS_ALLOWED_ORIGINS` có thể ghi đè bằng biến môi trường hoặc file `.env` (không commit).
+- `POSTGRES_PASSWORD` là biến bắt buộc (set trong `.env` hoặc env, xem `.env.example`; file `.env` không được commit). `CORS_ALLOWED_ORIGINS` có thể ghi đè bằng biến môi trường hoặc file `.env`.
 
 ---
 
