@@ -15,13 +15,13 @@ import java.util.List;
 public interface TourRepository extends JpaRepository<Tour, Long> {
 
     @Query("SELECT t FROM Tour t LEFT JOIN t.location l WHERE " +
-           "(:keyword IS NULL OR LOWER(t.title) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
-           "                 OR LOWER(t.description) LIKE LOWER(CONCAT('%', :keyword, '%')) " +
-           "                 OR LOWER(t.highlights) LIKE LOWER(CONCAT('%', :keyword, '%'))) AND " +
+           "(CAST(:keyword AS string) IS NULL OR LOWER(t.title) LIKE LOWER(CONCAT('%', CAST(:keyword AS string), '%')) " +
+           "                 OR LOWER(t.description) LIKE LOWER(CONCAT('%', CAST(:keyword AS string), '%')) " +
+           "                 OR LOWER(t.highlights) LIKE LOWER(CONCAT('%', CAST(:keyword AS string), '%'))) AND " +
            "(:locationId IS NULL OR l.id = :locationId) AND " +
-           "(:province IS NULL OR LOWER(t.province) = LOWER(:province) OR LOWER(l.province) = LOWER(:province)) AND " +
+           "(CAST(:province AS string) IS NULL OR LOWER(t.province) = LOWER(CAST(:province AS string)) OR LOWER(l.province) = LOWER(CAST(:province AS string))) AND " +
            "(:maxPrice IS NULL OR t.price <= :maxPrice) AND " +
-           "(:duration IS NULL OR LOWER(t.duration) LIKE LOWER(CONCAT('%', :duration, '%'))) AND " +
+           "(CAST(:duration AS string) IS NULL OR LOWER(t.duration) LIKE LOWER(CONCAT('%', CAST(:duration AS string), '%'))) AND " +
            "(:status IS NULL OR t.status = :status)")
     Page<Tour> searchTours(@Param("keyword") String keyword,
                            @Param("locationId") Long locationId,
