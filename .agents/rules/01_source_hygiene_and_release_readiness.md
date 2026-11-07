@@ -37,4 +37,4 @@ The repository is the deliverable. It must be complete, self-consistent and free
 
 - Commits belong to the engineer who runs the session and is responsible for the change; the agent does not take authorship of commits and never rewrites authorship (see Ruleset 03).
 - The engineer reviews and understands all generated code before committing it.
-- The repository does not need to hide the fact that AI tooling was used. If an assistant attribution trailer (e.g. `Co-Authored-By`) is added by the tooling, leave it as is; do not add rules or scripts that remove or disguise it. Follow the course's own policy on AI assistance and on disclosing it.
+- Commit messages carry no assistant attribution trailers (e.g. `Co-Authored-By`). Strip them before committing; the engineer who runs the session is the only author of record.

@@ -18,7 +18,7 @@
    - Keep the repository complete and clean for submission: no drafts, reference material, secrets, absolute local paths, debug output or dead code; docs must match what actually runs.
    - Reference code is never copied as-is; re-implement or refactor it to fit the current architecture and tests.
    - Run the refinement checklist in Ruleset 01 §3 before every PR and before the final submission.
-   - AI assistance is not hidden: do not remove or disguise assistant attribution, and follow the course policy on disclosure.
+   - Commit messages contain no assistant attribution trailers (e.g. `Co-Authored-By`); the committing engineer is the sole author of record.
    - *References*: [01_source_hygiene_and_release_readiness.md](.agents/rules/01_source_hygiene_and_release_readiness.md).
 
 3. **3-Engineer Team Topology & Scope Boundaries (RACI Matrix)**:
