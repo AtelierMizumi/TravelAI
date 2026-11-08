@@ -38,6 +38,17 @@ services:
     environment:
       - PORT=8000
       - VISION_MOCK_ENABLED=${VISION_MOCK_ENABLED:-true}
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/service-account.json
+    volumes:
+      # Google Cloud Vision service account key (gitignored, never committed).
+      # Place the real key at services/ai/service-account.json before using
+      # VISION_MOCK_ENABLED=false; mock mode never reads this file.
+      - ./services/ai/service-account.json:/app/service-account.json:ro
+    dns:
+      # Docker's embedded DNS cannot resolve external hosts on every dev
+      # network; set public resolvers so the Vision API stays reachable.
+      - "1.1.1.1"
+      - "8.8.8.8"
     ports:
       - "8000:8000"
     networks:
