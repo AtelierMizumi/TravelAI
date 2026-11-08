@@ -25,6 +25,10 @@ class Settings(BaseSettings):
     vision_timeout_seconds: float = 5.0
     vision_max_history_entries: int = 100
 
+    # Wikipedia Enrichment Settings (fail-open; disabled until opted in)
+    wikipedia_enabled: bool = False
+    wikipedia_timeout_seconds: float = 8.0
+
     # CORS
     cors_origins: list[str] = ["*"]
 
