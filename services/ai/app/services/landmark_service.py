@@ -2,6 +2,7 @@
 
 import asyncio
 import logging
+import os
 import time
 import uuid
 from collections import deque
@@ -58,9 +59,15 @@ class LandmarkRecognitionService:
         if self._vision_client is None:
             try:
                 if self.settings.google_application_credentials:
-                    self._vision_client = vision.ImageAnnotatorClient.from_service_account_json(
-                        self.settings.google_application_credentials
-                    )
+                    creds_value = self.settings.google_application_credentials
+                    if os.path.isfile(creds_value):
+                        self._vision_client = (
+                            vision.ImageAnnotatorClient.from_service_account_file(creds_value)
+                        )
+                    else:
+                        self._vision_client = vision.ImageAnnotatorClient.from_service_account_json(
+                            creds_value
+                        )
                 else:
                     self._vision_client = vision.ImageAnnotatorClient()
             except (GoogleAuthError, Exception) as exc:

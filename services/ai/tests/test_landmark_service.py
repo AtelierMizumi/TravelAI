@@ -3,6 +3,7 @@
 from unittest.mock import MagicMock
 
 import pytest
+from google.cloud import vision
 from PIL import Image
 
 from app.config import Settings
@@ -207,3 +208,53 @@ async def test_history_rotation_and_clear(dummy_preprocessed: PreprocessedImage)
 
     service.clear_history()
     assert len(service.get_history()) == 0
+
+
+def test_get_client_loads_credentials_from_file_path(tmp_path, monkeypatch) -> None:
+    """When GOOGLE_APPLICATION_CREDENTIALS is a file path, use from_service_account_file."""
+    key_file = tmp_path / "service-account.json"
+    key_file.write_text('{"type": "service_account"}')
+    fake_client = MagicMock()
+
+    seen = {}
+    def fake_from_file(filename):
+        seen["filename"] = filename
+        return fake_client
+
+    monkeypatch.setattr(
+        vision.ImageAnnotatorClient,
+        "from_service_account_file",
+        staticmethod(fake_from_file),
+    )
+    settings = Settings(
+        vision_mock_enabled=False,
+        google_application_credentials=str(key_file),
+    )
+    service = LandmarkRecognitionService(settings=settings)
+
+    assert service._get_client() is fake_client
+    assert seen["filename"] == str(key_file)
+
+
+def test_get_client_loads_credentials_from_json_string(monkeypatch) -> None:
+    """Inline JSON content still goes through from_service_account_json."""
+    fake_client = MagicMock()
+    seen = {}
+
+    def fake_from_json(json_str):
+        seen["json"] = json_str
+        return fake_client
+
+    monkeypatch.setattr(
+        vision.ImageAnnotatorClient,
+        "from_service_account_json",
+        staticmethod(fake_from_json),
+    )
+    settings = Settings(
+        vision_mock_enabled=False,
+        google_application_credentials='{"type": "service_account"}',
+    )
+    service = LandmarkRecognitionService(settings=settings)
+
+    assert service._get_client() is fake_client
+    assert seen["json"] == '{"type": "service_account"}'
