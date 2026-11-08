@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# Commit-msg: Conventional Commits + Issue ID, no assistant trailers (TAGF-4).
+set -u
+MSG_FILE="$1"
+SUBJECT=$(head -n 1 "$MSG_FILE")
+# Skip merge commits and comment-only messages
+[[ "$SUBJECT" =~ ^Merge\  ]] && exit 0
+[[ "$SUBJECT" =~ ^# ]] && exit 0
+if ! [[ "$SUBJECT" =~ ^(feat|fix|docs|chore|refactor|test|ci|build|perf|style|revert)(\([a-z0-9_-]+\))?:\ .+\ \([#][0-9]+\)$ ]]; then
+  echo "commit-msg: subject must match '<type>(<scope>): summary (#issue)'" >&2
+  echo "  got: $SUBJECT" >&2
+  exit 1
+fi
+if grep -qiE 'Co-Authored-By:|Generated with|Made with.*ChatGPT|Assisted by' "$MSG_FILE"; then
+  echo "commit-msg: assistant attribution trailers are forbidden (TAGF-2/4)" >&2
+  exit 1
+fi
+exit 0

@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# Pre-commit: run governance checkpoints on staged tree (TAGF-1/2).
+set -u
+cd "$(git rev-parse --show-toplevel)"
+bash scripts/governance-check.sh

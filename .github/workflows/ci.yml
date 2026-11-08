@@ -9,6 +9,18 @@ permissions:
   contents: read
 
 jobs:
+  governance:
+    name: Governance (TAGF checkpoints)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Run governance checkpoints
+        run: bash scripts/governance-check.sh origin/main
+      - name: Test governance harness
+        run: bash scripts/test-governance-check.sh
+
   backend:
     name: Core Backend (Spring Boot tests)
     runs-on: ubuntu-latest
