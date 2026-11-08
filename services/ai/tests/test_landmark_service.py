@@ -258,3 +258,91 @@ def test_get_client_loads_credentials_from_json_string(monkeypatch) -> None:
 
     assert service._get_client() is fake_client
     assert seen["json"] == '{"type": "service_account"}'
+
+
+def _annotate_response(labels=None, objects=None, ocr=""):
+    """Build a fake batch annotate response (labels/objects/OCR only)."""
+    from types import SimpleNamespace
+
+    label_annotations = [
+        SimpleNamespace(description=name, score=score) for name, score in (labels or [])
+    ]
+    object_annotations = [
+        SimpleNamespace(name=name, score=score) for name, score in (objects or [])
+    ]
+    return SimpleNamespace(
+        responses=[
+            SimpleNamespace(
+                error=SimpleNamespace(code=0, message=""),
+                label_annotations=label_annotations,
+                localized_object_annotations=object_annotations,
+                full_text_annotation=SimpleNamespace(text=ocr),
+            )
+        ]
+    )
+
+
+@pytest.mark.asyncio
+async def test_landmark_result_enriched_with_label_and_object_keywords(
+    dummy_preprocessed: PreprocessedImage,
+) -> None:
+    """Vision enrichment adds label/object names to matched_keywords."""
+    settings = Settings(vision_mock_enabled=False, google_application_credentials="/fake/path.json")
+
+    mock_client = MagicMock()
+    mock_landmark_resp = MagicMock()
+    mock_landmark_resp.error.code = 0
+    mock_landmark = MagicMock()
+    mock_landmark.description = "Turtle Tower"
+    mock_landmark.score = 0.9
+    mock_loc = MagicMock()
+    mock_loc.lat_lng.latitude = 21.03
+    mock_loc.lat_lng.longitude = 105.85
+    mock_landmark.locations = [mock_loc]
+    mock_landmark.bounding_poly.vertices = []
+    mock_landmark_resp.landmark_annotations = [mock_landmark]
+    mock_client.landmark_detection.return_value = mock_landmark_resp
+    mock_client.batch_annotate_images.return_value = _annotate_response(
+        labels=[("lake", 0.95), ("turtle", 0.8)],
+        objects=[("Turtle Tower", 0.7), ("Boat", 0.6)],
+    )
+
+    service = LandmarkRecognitionService(settings=settings, vision_client=mock_client)
+    result = await service.recognize(dummy_preprocessed)
+
+    assert result.landmark_name == "Turtle Tower"
+    assert "Turtle Tower" in result.matched_keywords
+    assert "lake" in result.matched_keywords
+    assert "Boat" in result.matched_keywords
+
+
+@pytest.mark.asyncio
+async def test_unknown_result_carries_vietnamese_scene_labels(
+    dummy_preprocessed: PreprocessedImage,
+) -> None:
+    """When no landmark/web match, scene labels populate matched_keywords."""
+    settings = Settings(vision_mock_enabled=False, google_application_credentials="/fake/path.json")
+
+    mock_client = MagicMock()
+    mock_landmark_resp = MagicMock()
+    mock_landmark_resp.error.code = 0
+    mock_landmark_resp.landmark_annotations = []
+    mock_client.landmark_detection.return_value = mock_landmark_resp
+
+    mock_web_resp = MagicMock()
+    mock_web_resp.error.code = 0
+    mock_web_resp.web_detection.best_guess_labels = []
+    mock_web_resp.web_detection.web_entities = []
+    mock_client.web_detection.return_value = mock_web_resp
+
+    mock_client.batch_annotate_images.return_value = _annotate_response(
+        labels=[("sea", 0.92), ("beach", 0.85)],
+    )
+
+    service = LandmarkRecognitionService(settings=settings, vision_client=mock_client)
+    result = await service.recognize(dummy_preprocessed)
+
+    assert result.success is False
+    assert result.detection_type == "UNKNOWN"
+    assert "biển" in result.matched_keywords
+    assert any("biển" in desc for desc in [result.description or ""])

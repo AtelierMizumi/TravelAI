@@ -20,6 +20,8 @@ from app.schemas.vision import (
     RecognitionHistoryEntry,
 )
 from app.services.preprocessor import PreprocessedImage
+from app.services.scene_analysis import scene_features
+from app.services.wikipedia_service import fetch_wikipedia_summary
 
 logger = logging.getLogger("travelai.ai.landmark")
 
@@ -139,6 +141,71 @@ class LandmarkRecognitionService:
 
         return result
 
+    async def _fetch_supplemental_signals(
+        self, client: vision.ImageAnnotatorClient, image, timeout: float
+    ) -> dict:
+        """Best-effort label/object/OCR signal fetch; never raises.
+
+        Existing mocked tests may return partial/magic structures, so parsing
+        is defensive: anything unreadable simply degrades to empty signals.
+        """
+        signals: dict = {"labels": [], "objects": [], "ocr": ""}
+        try:
+            request = vision.AnnotateImageRequest(
+                image=image,
+                features=[
+                    vision.Feature(
+                        type_=vision.Feature.Type.LABEL_DETECTION, max_results=20
+                    ),
+                    vision.Feature(
+                        type_=vision.Feature.Type.OBJECT_LOCALIZATION, max_results=15
+                    ),
+                    vision.Feature(type_=vision.Feature.Type.TEXT_DETECTION),
+                ],
+            )
+            batch = await asyncio.wait_for(
+                asyncio.to_thread(
+                    client.batch_annotate_images, requests=[request], timeout=timeout
+                ),
+                timeout=timeout,
+            )
+            response = batch.responses[0] if batch.responses else None
+            if response is None:
+                return signals
+
+            code = getattr(getattr(response, "error", None), "code", 0)
+            if isinstance(code, int) and code != 0:
+                return signals
+
+            for annotation in getattr(response, "label_annotations", None) or []:
+                if isinstance(getattr(annotation, "description", None), str):
+                    signals["labels"].append(
+                        {
+                            "name": annotation.description.strip(),
+                            "score": float(getattr(annotation, "score", 0.0) or 0.0),
+                        }
+                    )
+
+            for annotation in getattr(response, "localized_object_annotations", None) or []:
+                if isinstance(getattr(annotation, "name", None), str):
+                    signals["objects"].append(
+                        {
+                            "name": annotation.name.strip(),
+                            "score": float(getattr(annotation, "score", 0.0) or 0.0),
+                        }
+                    )
+
+            ocr_text = getattr(
+                getattr(response, "full_text_annotation", None), "text", ""
+            )
+            if isinstance(ocr_text, str):
+                signals["ocr"] = ocr_text[:1000]
+        except Exception:  # noqa: BLE001 - enrichment must never break recognition
+            logger.debug("Supplemental Vision signals unavailable", exc_info=True)
+            return {"labels": [], "objects": [], "ocr": ""}
+
+        return signals
+
     async def _recognize_with_vision(
         self, preprocessed: PreprocessedImage
     ) -> LandmarkRecognitionResult:
@@ -182,11 +249,39 @@ class LandmarkRecognitionService:
                     for vertex in top_landmark.bounding_poly.vertices
                 ]
 
-                matched_keywords = [
-                    lm.description.strip()
-                    for lm in response.landmark_annotations[:5]
-                    if lm.description
-                ]
+                matched_keywords = []
+                seen: set[str] = set()
+
+                def _add_keyword(name: str) -> None:
+                    key = name.strip().lower()
+                    if name.strip() and key not in seen:
+                        seen.add(key)
+                        matched_keywords.append(name.strip())
+
+                for annotation in response.landmark_annotations[:5]:
+                    if getattr(annotation, "description", None):
+                        _add_keyword(annotation.description)
+
+                signals = await self._fetch_supplemental_signals(client, image, timeout)
+                category, scene_title, observed = scene_features(signals)
+                for item in signals.get("labels", [])[:5]:
+                    _add_keyword(item["name"])
+                for item in signals.get("objects", [])[:3]:
+                    _add_keyword(item["name"])
+
+                description = f"Recognized landmark: {top_landmark.description.strip()}"
+                if observed:
+                    description += f" — {scene_title}: {', '.join(observed)}"
+
+                if self.settings.wikipedia_enabled and category in {"place", "nature"}:
+                    wiki = await asyncio.to_thread(
+                        fetch_wikipedia_summary,
+                        top_landmark.description.strip(),
+                        category,
+                        timeout=self.settings.wikipedia_timeout_seconds,
+                    )
+                    if wiki and wiki.get("description"):
+                        description += f"\nWikipedia ({wiki['title']}): {wiki['description']}"
 
                 return LandmarkRecognitionResult(
                     landmark_name=top_landmark.description.strip(),
@@ -196,8 +291,8 @@ class LandmarkRecognitionService:
                     bounding_poly=bounding_poly,
                     metadata=preprocessed.metadata,
                     success=True,
-                    description=f"Recognized landmark: {top_landmark.description.strip()}",
-                    matched_keywords=matched_keywords,
+                    description=description,
+                    matched_keywords=matched_keywords[:8],
                     detection_type="LANDMARK_DETECTION",
                 )
 
@@ -263,6 +358,14 @@ class LandmarkRecognitionService:
                 )
 
             # No landmark or web entity could be identified
+            signals = await self._fetch_supplemental_signals(client, image, timeout)
+            _category, scene_title, observed = scene_features(signals)
+            unknown_description = "Không nhận diện được danh lam thắng cảnh trong bức ảnh."
+            if observed:
+                unknown_description += (
+                    f" Đặc điểm nhận diện được: {', '.join(observed)}."
+                )
+
             return LandmarkRecognitionResult(
                 landmark_name=None,
                 confidence=0.0,
@@ -271,8 +374,8 @@ class LandmarkRecognitionService:
                 bounding_poly=[],
                 metadata=preprocessed.metadata,
                 success=False,
-                description="Không nhận diện được danh lam thắng cảnh trong bức ảnh.",
-                matched_keywords=[],
+                description=unknown_description,
+                matched_keywords=observed[:8],
                 detection_type="UNKNOWN",
             )
 
