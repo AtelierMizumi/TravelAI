@@ -39,6 +39,7 @@ services:
       - PORT=8000
       - VISION_MOCK_ENABLED=${VISION_MOCK_ENABLED:-true}
       - GOOGLE_APPLICATION_CREDENTIALS=/app/service-account.json
+      - WIKIPEDIA_ENABLED=${WIKIPEDIA_ENABLED:-true}
     volumes:
       # Google Cloud Vision service account key (gitignored, never committed).
       # Place the real key at services/ai/service-account.json before using
