@@ -85,6 +85,7 @@ scratch/
 *.crt
 credentials.json
 serviceAccountKey.json
+service-account.json
 client_secret*.json
 
 
