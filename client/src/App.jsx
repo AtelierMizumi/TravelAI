@@ -7,6 +7,7 @@ import { HomePage } from './pages/HomePage';
 import { ProfilePage } from './pages/ProfilePage';
 import { PlacesPage } from './pages/PlacesPage';
 import { RecognizePage } from './pages/RecognizePage';
+import { FeedPage } from './pages/FeedPage';
 
 export const App = () => {
   return (
@@ -20,6 +21,7 @@ export const App = () => {
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/places" element={<PlacesPage />} />
               <Route path="/recognize" element={<RecognizePage />} />
+              <Route path="/feed" element={<FeedPage />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </main>
