@@ -1,0 +1,194 @@
+[
+  {
+    "key": "hotel-ha-noi-old-quarter",
+    "name": "Phố Cổ Boutique Hotel",
+    "place": "ho-hoan-kiem",
+    "province": "Hà Nội",
+    "rating": 4.3,
+    "rooms": [
+      {
+        "number": "101",
+        "maxGuests": 2,
+        "price": 900000
+      },
+      {
+        "number": "102",
+        "maxGuests": 2,
+        "price": 900000
+      },
+      {
+        "number": "201",
+        "maxGuests": 4,
+        "price": 1530000
+      }
+    ]
+  },
+  {
+    "key": "hotel-ha-long-bay-view",
+    "name": "Hạ Long Bay View Hotel",
+    "place": "vinh-ha-long",
+    "province": "Quảng Ninh",
+    "rating": 4.3,
+    "rooms": [
+      {
+        "number": "101",
+        "maxGuests": 2,
+        "price": 1100000
+      },
+      {
+        "number": "102",
+        "maxGuests": 2,
+        "price": 1100000
+      },
+      {
+        "number": "201",
+        "maxGuests": 4,
+        "price": 1870000
+      }
+    ]
+  },
+  {
+    "key": "hotel-hue-riverside",
+    "name": "Huế Riverside Hotel",
+    "place": "dai-noi-hue",
+    "province": "Thừa Thiên Huế",
+    "rating": 4.3,
+    "rooms": [
+      {
+        "number": "101",
+        "maxGuests": 2,
+        "price": 850000
+      },
+      {
+        "number": "102",
+        "maxGuests": 2,
+        "price": 850000
+      },
+      {
+        "number": "201",
+        "maxGuests": 4,
+        "price": 1445000
+      }
+    ]
+  },
+  {
+    "key": "hotel-da-nang-dragon",
+    "name": "Rồng Đà Nẵng Hotel",
+    "place": "cau-rong",
+    "province": "Đà Nẵng",
+    "rating": 4.3,
+    "rooms": [
+      {
+        "number": "101",
+        "maxGuests": 2,
+        "price": 1000000
+      },
+      {
+        "number": "102",
+        "maxGuests": 2,
+        "price": 1000000
+      },
+      {
+        "number": "201",
+        "maxGuests": 4,
+        "price": 1700000
+      }
+    ]
+  },
+  {
+    "key": "hotel-hoi-an-lantern",
+    "name": "Hội An Lantern Homestay",
+    "place": "pho-co-hoi-an",
+    "province": "Quảng Nam",
+    "rating": 4.3,
+    "rooms": [
+      {
+        "number": "101",
+        "maxGuests": 2,
+        "price": 750000
+      },
+      {
+        "number": "102",
+        "maxGuests": 2,
+        "price": 750000
+      },
+      {
+        "number": "201",
+        "maxGuests": 4,
+        "price": 1275000
+      }
+    ]
+  },
+  {
+    "key": "hotel-sai-gon-center",
+    "name": "Sài Gòn Central Hotel",
+    "place": "nha-tho-duc-ba",
+    "province": "TP. Hồ Chí Minh",
+    "rating": 4.3,
+    "rooms": [
+      {
+        "number": "101",
+        "maxGuests": 2,
+        "price": 1200000
+      },
+      {
+        "number": "102",
+        "maxGuests": 2,
+        "price": 1200000
+      },
+      {
+        "number": "201",
+        "maxGuests": 4,
+        "price": 2040000
+      }
+    ]
+  },
+  {
+    "key": "hotel-phu-quoc-beach",
+    "name": "Phú Quốc Beach Resort",
+    "place": "phu-quoc",
+    "province": "Kiên Giang",
+    "rating": 4.3,
+    "rooms": [
+      {
+        "number": "101",
+        "maxGuests": 2,
+        "price": 1800000
+      },
+      {
+        "number": "102",
+        "maxGuests": 2,
+        "price": 1800000
+      },
+      {
+        "number": "201",
+        "maxGuests": 4,
+        "price": 3060000
+      }
+    ]
+  },
+  {
+    "key": "hotel-sa-pa-mist",
+    "name": "Sa Pa Mist Lodge",
+    "place": "sa-pa",
+    "province": "Lào Cai",
+    "rating": 4.3,
+    "rooms": [
+      {
+        "number": "101",
+        "maxGuests": 2,
+        "price": 800000
+      },
+      {
+        "number": "102",
+        "maxGuests": 2,
+        "price": 800000
+      },
+      {
+        "number": "201",
+        "maxGuests": 4,
+        "price": 1360000
+      }
+    ]
+  }
+]
