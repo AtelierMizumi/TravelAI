@@ -5,7 +5,7 @@ import { useResource } from "@/hooks/use-resource";
 import { api } from "@/services/api";
 import type { Settings } from "@/services/types";
 export function AdminSettings() {
-  const resource = useResource<Settings>("/system-settings");
+  const resource = useResource<Settings>("/admin/system-settings");
   return (
     <>
       <ErrorText message={resource.error} />
@@ -30,6 +30,7 @@ function SettingsEditor({
   const [email, setEmail] = useState(settings.adminEmail);
   const [maintenance, setMaintenance] = useState(settings.maintenanceMode);
   const [notifications, setNotifications] = useState(settings.systemNotify);
+  const [emailNotifications, setEmailNotifications] = useState(settings.emailNotify);
   const action = useAction();
   return (
     <Card>
@@ -56,6 +57,14 @@ function SettingsEditor({
         />
         <Text style={ui.text}>Thông báo trong hệ thống</Text>
       </View>
+      <View style={ui.row}>
+        <Switch
+          accessibilityLabel="Thông báo email"
+          value={emailNotifications}
+          onValueChange={setEmailNotifications}
+        />
+        <Text style={ui.text}>Thông báo qua email</Text>
+      </View>
       <ErrorText message={action.error} />
       <Action
         title="Lưu cấu hình"
@@ -70,7 +79,7 @@ function SettingsEditor({
                 adminEmail: email,
                 maintenanceMode: maintenance,
                 systemNotify: notifications,
-                emailNotify: false,
+                emailNotify: emailNotifications,
               },
             });
             reload();
