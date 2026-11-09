@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Compass, Camera, User, LogOut, Menu, X, Sparkles } from 'lucide-react';
+import { Compass, Camera, User, LogOut, Menu, X, Sparkles, LayoutDashboard } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 export const Navbar = () => {
@@ -59,7 +59,7 @@ export const Navbar = () => {
                         : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                     }`}
                   >
-                    {Icon && <Icon className="w-4 h-4 mr-1.5" />}
+                    {Icon && <Icon className="w-4 h-4 mr-2" />}
                     {link.name}
                   </Link>
                 );
@@ -118,6 +118,16 @@ export const Navbar = () => {
                         <User className="w-4 h-4 mr-2.5 text-gray-500" />
                         Hồ sơ cá nhân
                       </Link>
+                      {user && (user.role === 'ROLE_ADMIN' || user.role === 'ADMIN') && (
+                        <Link
+                          to="/admin"
+                          onClick={() => setUserDropdownOpen(false)}
+                          className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                        >
+                          <LayoutDashboard className="w-4 h-4 mr-2.5 text-brand-600" />
+                          Quản trị hệ thống
+                        </Link>
+                      )}
                     </div>
 
                     <div className="py-1">
