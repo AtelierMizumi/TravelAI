@@ -59,7 +59,7 @@ public class ApiSecurity implements WebMvcConfigurer {
                     if (path.matches("/api/(tour|hotel)-bookings")) actor.requireAdmin();
                 }
                 if (!method.equals("GET") && path.matches("/api/(places|tours|hotels)(/.*)?")) actor.requireAdmin();
-                if (maintenancePolicy != null && method.equals("POST") && path.equals("/api/booking/reviews")) {
+                if (maintenancePolicy != null && method.equals("POST") && path.matches("/api/booking/reviews(/[^/]+/pay)?")) {
                     boolean enabled = settingsService != null
                             && Boolean.TRUE.equals(settingsService.current().getMaintenanceMode());
                     if (maintenancePolicy.shouldBlock(enabled, actor,

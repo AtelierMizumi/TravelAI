@@ -4,9 +4,10 @@ import com.travelai.backend.security.SessionService;
 import org.springframework.stereotype.Component;
 
 /**
- * Maintenance gate policy. Only NEW_PURCHASE (canonical review creation)
- * is blocked; everything else (auth, read, existing pay, cancel/refund,
- * admin) stays available so money-related flows can complete.
+ * Maintenance gate policy. NEW_PURCHASE (canonical review creation AND
+ * first pay of a review, both of which create a new confirmed booking)
+ * is blocked; everything else (auth, read, cancel/refund, admin) stays
+ * available so money-related flows can complete.
  */
 @Component
 public class MaintenancePolicy {

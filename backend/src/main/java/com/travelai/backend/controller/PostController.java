@@ -69,6 +69,7 @@ public class PostController {
     @GetMapping("/admin/all")
     public ResponseEntity<?> getAllPostsForAdmin() {
         var actor = ApiSecurity.currentActor();
+        actor.requireAdmin();
         return ResponseEntity.ok(postRepository.findAllByOrderByCreatedAtDesc().stream()
                 .map(post -> mapPost(post, actor))
                 .toList());
@@ -166,13 +167,7 @@ public class PostController {
         ApiSecurity.currentActor().requireOwner(post.getAuthorId());
 
         if (post.getOriginalPostId() != null) {
-            Post original = postRepository.findById(post.getOriginalPostId()).orElse(null);
-
-            if (original != null) {
-                int currentShare = original.getShareCount() == null ? 0 : original.getShareCount();
-                original.setShareCount(Math.max(0, currentShare - 1));
-                postRepository.save(original);
-            }
+            postRepository.decrementShareCount(post.getOriginalPostId());
         }
 
         postRepository.delete(post);

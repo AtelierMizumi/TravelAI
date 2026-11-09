@@ -52,27 +52,24 @@ public class AdminController {
     public ResponseEntity<?> getStats() {
         long users = userRepository.count();
         long posts = postRepository.count();
-        long tourBookings = tourBookingRepository.count() + canonicalCount("TOUR");
-        long hotelBookings = hotelBookingRepository.count() + canonicalCount("HOTEL");
+        // Canonical-only: legacy TourBooking/HotelBooking tables never counted (spec D12).
+        long canonicalBookings = canonicalCountAll();
         long places = placeRepository.count();
-
-        long totalBookings = tourBookings + hotelBookings;
 
         return ResponseEntity.ok(
                 Map.of(
                         "users", users,
                         "posts", posts,
-                        "tourBookings", tourBookings,
-                        "hotelBookings", hotelBookings,
-                        "totalBookings", totalBookings,
+                        "canonicalBookings", canonicalBookings,
+                        "totalBookings", canonicalBookings,
                         "places", places
                 )
         );
     }
 
-    private long canonicalCount(String kind) {
-        return ((Number)em.createNativeQuery("select count(*) from booking_reservations where cast(itinerary as jsonb)->>'kind'=:kind")
-                .setParameter("kind", kind).getSingleResult()).longValue();
+    private long canonicalCountAll() {
+        return ((Number)em.createNativeQuery("select count(*) from booking_reservations where status='CONFIRMED'")
+                .getSingleResult()).longValue();
     }
 
     @GetMapping("/analytics")

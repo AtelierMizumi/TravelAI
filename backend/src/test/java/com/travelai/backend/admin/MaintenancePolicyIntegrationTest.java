@@ -69,6 +69,12 @@ class MaintenancePolicyIntegrationTest {
                         .contentType("application/json").content("{}"))
                 .andExpect(status().isServiceUnavailable());
 
+        mvc.perform(post("/api/booking/reviews/review-any/pay")
+                        .header("Authorization", token)
+                        .header("Idempotency-Key", UUID.randomUUID().toString())
+                        .contentType("application/json").content("{}"))
+                .andExpect(status().isServiceUnavailable());
+
         mvc.perform(get("/api/booking/offers").header("Authorization", token))
                 .andExpect(status().isOk());
 

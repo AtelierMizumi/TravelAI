@@ -63,7 +63,12 @@ public class SystemSettingsService {
         settings.setEmailNotify(request.getEmailNotify());
         settings.setSystemNotify(request.getSystemNotify());
         settings.setMaintenanceMode(request.getMaintenanceMode());
-        return repository.saveAndFlush(settings);
+        try {
+            return repository.saveAndFlush(settings);
+        } catch (jakarta.persistence.OptimisticLockException e) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Settings were changed concurrently; reload and retry.");
+        }
     }
 
     private void validate(SystemSettings request) {

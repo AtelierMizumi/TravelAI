@@ -121,4 +121,11 @@ class PostAccessPolicyIntegrationTest {
                 .andExpect(jsonPath("$[?(@.id==%d)]", pendingId).exists())
                 .andExpect(jsonPath("$[?(@.id==%d)].likesCount", pendingId).exists());
     }
+
+    @Test void adminAllPostsRequiresAdmin() throws Exception {
+        long pendingId = createPost(owner);
+
+        mvc.perform(get("/api/posts/admin/all").header("Authorization", bearer(outsider)))
+                .andExpect(status().isForbidden());
+    }
 }
