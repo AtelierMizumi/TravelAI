@@ -1,0 +1,3 @@
+BEGIN;
+ALTER TABLE hotels ADD COLUMN IF NOT EXISTS province varchar(255);
+COMMIT;

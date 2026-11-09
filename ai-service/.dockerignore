@@ -1,0 +1,7 @@
+**/*service-account*.json
+**/*.key
+**/.secrets
+**/.env*
+**/__pycache__
+**/*.pyc
+tests/
