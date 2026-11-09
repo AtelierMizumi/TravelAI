@@ -37,7 +37,7 @@ export const AdminStatCard = ({
         </h3>
 
         <div className="flex items-center gap-2 pt-1 text-xs">
-          {change !== undefined && (
+          {change != null && (
             <span
               className={`inline-flex items-center gap-0.5 font-bold px-2 py-0.5 rounded-full ${
                 isPositive

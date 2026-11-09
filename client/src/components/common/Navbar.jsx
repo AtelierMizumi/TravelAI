@@ -118,14 +118,16 @@ export const Navbar = () => {
                         <User className="w-4 h-4 mr-2.5 text-gray-500" />
                         Hồ sơ cá nhân
                       </Link>
-                      <Link
-                        to="/admin"
-                        onClick={() => setUserDropdownOpen(false)}
-                        className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                      >
-                        <LayoutDashboard className="w-4 h-4 mr-2.5 text-brand-600" />
-                        Quản trị hệ thống
-                      </Link>
+                      {user && (user.role === 'ROLE_ADMIN' || user.role === 'ADMIN') && (
+                        <Link
+                          to="/admin"
+                          onClick={() => setUserDropdownOpen(false)}
+                          className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                        >
+                          <LayoutDashboard className="w-4 h-4 mr-2.5 text-brand-600" />
+                          Quản trị hệ thống
+                        </Link>
+                      )}
                     </div>
 
                     <div className="py-1">

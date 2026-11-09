@@ -82,40 +82,60 @@ const DEFAULT_ACTIVITIES = [
 ];
 
 const shouldFallbackToDemo = (err) => {
-  if (localStorage.getItem('travelai_demo_mode') === 'true') {
+  if (typeof localStorage !== 'undefined' && localStorage.getItem('travelai_demo_mode') === 'true') {
     return true;
   }
-  const isDevWithoutToken = import.meta.env.DEV && !localStorage.getItem('travelai_token');
+  const isDevWithoutToken =
+    typeof import.meta !== 'undefined' &&
+    import.meta.env?.DEV &&
+    typeof localStorage !== 'undefined' &&
+    !localStorage.getItem('travelai_token');
   const isBackendUnavailable =
-    err?.isNetworkError || err?.status === 0 || err?.status === 403 || err?.status === 502 || err?.status === 503;
+    err?.isNetworkError || err?.status === 0 || err?.status === 502 || err?.status === 503;
 
   return isDevWithoutToken && isBackendUnavailable;
 };
 
 export const adminService = {
   /**
-   * Lấy số liệu thống kê tổng quan (Analytics Stats)
+   * Lấy số liệu thống kê tổng quan (Analytics Stats) từ Backend Core
    */
   async getAuditStats() {
     try {
       const response = await api.get('/admin/bookings/stats');
-      const data = response.data;
+      const data = response?.data || {};
+
+      // Dùng toán tử ?? để bảo toàn giá trị 0 hợp lệ từ API (không dùng || vì sẽ ghi đè 0 bằng mock)
       return {
-        ...DEFAULT_STATS,
-        totalBookings: data.totalBookings || DEFAULT_STATS.totalBookings,
-        totalRevenue: data.totalRevenue || DEFAULT_STATS.totalRevenue,
-        tourRevenue: data.tourRevenue || DEFAULT_STATS.tourRevenue,
-        hotelRevenue: data.hotelRevenue || DEFAULT_STATS.hotelRevenue,
-        pendingCount: data.pendingCount || DEFAULT_STATS.pendingCount,
-        confirmedCount: data.confirmedCount || DEFAULT_STATS.confirmedCount,
-        paidCount: data.paidCount || DEFAULT_STATS.paidCount,
-        completedCount: data.completedCount || DEFAULT_STATS.completedCount,
-        cancelledCount: data.cancelledCount || DEFAULT_STATS.cancelledCount,
-        reconciliationRate: data.reconciliationRate || DEFAULT_STATS.reconciliationRate,
+        totalBookings: data.totalBookings ?? 0,
+        totalRevenue: data.totalRevenue ?? 0,
+        formattedTotalRevenue:
+          data.formattedTotalRevenue ?? adminService.formatVND(data.totalRevenue ?? 0),
+        tourRevenue: data.tourRevenue ?? 0,
+        formattedTourRevenue:
+          data.formattedTourRevenue ?? adminService.formatVND(data.tourRevenue ?? 0),
+        hotelRevenue: data.hotelRevenue ?? 0,
+        formattedHotelRevenue:
+          data.formattedHotelRevenue ?? adminService.formatVND(data.hotelRevenue ?? 0),
+        pendingCount: data.pendingCount ?? 0,
+        confirmedCount: data.confirmedCount ?? 0,
+        paidCount: data.paidCount ?? 0,
+        completedCount: data.completedCount ?? 0,
+        cancelledCount: data.cancelledCount ?? 0,
+        reconciliationRate: data.reconciliationRate ?? 0,
+        totalPayments: data.totalPayments ?? 0,
+        reconciledPayments: data.reconciledPayments ?? 0,
+        // Các chỉ số không có trong BookingAuditStatsResponse: không bịa đặt số liệu giả
+        totalUsers: data.totalUsers ?? null,
+        growthRate: data.growthRate ?? null,
+        isDemoData: false,
       };
     } catch (err) {
       if (shouldFallbackToDemo(err)) {
-        return DEFAULT_STATS;
+        return {
+          ...DEFAULT_STATS,
+          isDemoData: true,
+        };
       }
       throw err;
     }
@@ -123,39 +143,109 @@ export const adminService = {
 
   /**
    * Lấy chuỗi doanh thu theo tháng cho biểu đồ
+   * Tổng hợp trực tiếp từ danh sách giao dịch đặt chỗ thực tế (GET /api/v1/admin/bookings)
    */
   async getRevenueChartData() {
-    return DEFAULT_REVENUE_CHART;
+    try {
+      const response = await api.get('/admin/bookings', { params: { size: 100 } });
+      const bookings = response?.data?.content || [];
+      const months = ['T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8', 'T9', 'T10', 'T11', 'T12'];
+      const monthlyRevenue = months.map((m) => ({ month: m, revenue: 0 }));
+
+      if (Array.isArray(bookings) && bookings.length > 0) {
+        bookings.forEach((b) => {
+          if (
+            b.createdAt &&
+            b.totalAmount &&
+            (b.status === 'PAID' || b.status === 'CONFIRMED' || b.status === 'COMPLETED')
+          ) {
+            const date = new Date(b.createdAt);
+            const mIdx = date.getMonth();
+            if (mIdx >= 0 && mIdx < 12) {
+              monthlyRevenue[mIdx].revenue += Number(b.totalAmount) || 0;
+            }
+          }
+        });
+        return monthlyRevenue;
+      }
+
+      // Khi API thành công nhưng cơ sở dữ liệu chưa có booking: trả về 0 doanh thu cho các tháng
+      return monthlyRevenue;
+    } catch (err) {
+      if (shouldFallbackToDemo(err)) {
+        return DEFAULT_REVENUE_CHART;
+      }
+      throw err;
+    }
   },
 
   /**
-   * Lấy danh sách điểm đến phổ biến nhất
+   * Lấy danh sách điểm đến phổ biến nhất từ dữ liệu booking
    */
   async getPopularDestinations() {
-    return DEFAULT_POPULAR_DESTINATIONS;
+    try {
+      const response = await api.get('/admin/bookings', { params: { size: 100 } });
+      const bookings = response?.data?.content || [];
+
+      if (Array.isArray(bookings) && bookings.length > 0) {
+        const destCounts = {};
+        let totalCount = 0;
+        bookings.forEach((b) => {
+          const item = b.items?.[0];
+          const name = item?.itemName || b.bookingType || 'Địa điểm du lịch';
+          destCounts[name] = (destCounts[name] || 0) + 1;
+          totalCount++;
+        });
+
+        return Object.entries(destCounts)
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 5)
+          .map(([name, count]) => ({
+            name,
+            location: 'Điểm tham quan',
+            count,
+            percentage: totalCount > 0 ? Math.round((count / totalCount) * 100) : 0,
+          }));
+      }
+
+      // Trả về mảng rỗng khi cơ sở dữ liệu chưa có giao dịch
+      return [];
+    } catch (err) {
+      if (shouldFallbackToDemo(err)) {
+        return DEFAULT_POPULAR_DESTINATIONS;
+      }
+      throw err;
+    }
   },
 
   /**
-   * Lấy hoạt động gần đây
+   * Lấy hoạt động giao dịch gần đây
    */
   async getRecentActivities() {
     try {
       const response = await api.get('/admin/bookings', { params: { size: 5 } });
-      const bookings = response.data?.content || [];
-      if (bookings.length > 0) {
+      const bookings = response?.data?.content;
+
+      // Khi API thành công: trả về đúng dữ liệu từ database, nếu rỗng thì trả về mảng rỗng []
+      if (Array.isArray(bookings)) {
         return bookings.map((b) => ({
           id: b.id,
+          bookingCode: b.bookingCode,
           user: b.contactName || b.username || 'Khách hàng',
-          action: `Đã đặt ${b.items?.[0]?.itemName || b.bookingType}`,
-          time: new Date(b.createdAt).toLocaleTimeString('vi-VN', {
-            hour: '2-digit',
-            minute: '2-digit',
-          }),
+          action: `Đã đặt ${b.items?.[0]?.itemName || b.bookingType || 'dịch vụ'}`,
+          time: b.createdAt
+            ? new Date(b.createdAt).toLocaleTimeString('vi-VN', {
+                hour: '2-digit',
+                minute: '2-digit',
+                day: '2-digit',
+                month: '2-digit',
+              })
+            : 'Mới đây',
           status: (b.status || 'pending').toLowerCase(),
-          amount: b.formattedTotalAmount || `${b.totalAmount} ₫`,
+          amount: b.formattedTotalAmount || adminService.formatVND(b.totalAmount ?? 0),
         }));
       }
-      return DEFAULT_ACTIVITIES;
+      return [];
     } catch (err) {
       if (shouldFallbackToDemo(err)) {
         return DEFAULT_ACTIVITIES;
@@ -172,3 +262,5 @@ export const adminService = {
     }).format(amount);
   },
 };
+
+export default adminService;
