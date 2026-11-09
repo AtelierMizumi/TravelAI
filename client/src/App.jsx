@@ -8,6 +8,7 @@ import { ProfilePage } from './pages/ProfilePage';
 import { PlacesPage } from './pages/PlacesPage';
 import { RecognizePage } from './pages/RecognizePage';
 import { FeedPage } from './pages/FeedPage';
+import { AdminDashboardPage } from './pages/AdminDashboardPage';
 import { ContentModerationPage } from './pages/ContentModerationPage';
 import { SystemConfigPage } from './pages/SystemConfigPage';
 
@@ -24,7 +25,7 @@ export const App = () => {
               <Route path="/places" element={<PlacesPage />} />
               <Route path="/recognize" element={<RecognizePage />} />
               <Route path="/feed" element={<FeedPage />} />
-              <Route path="/admin" element={<Navigate to="/admin/moderation" replace />} />
+              <Route path="/admin" element={<AdminDashboardPage />} />
               <Route path="/admin/moderation" element={<ContentModerationPage />} />
               <Route path="/admin/settings" element={<SystemConfigPage />} />
               <Route path="*" element={<Navigate to="/" replace />} />
