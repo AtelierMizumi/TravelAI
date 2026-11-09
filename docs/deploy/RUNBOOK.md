@@ -18,6 +18,15 @@ Compose project: `travelai-prod` (separate from the dev stack). Nothing publishe
   starts the release and smoke-tests it. Smoke fails -> the previous tag is restarted and the bad commit is remembered (no retry loop).
 - Nothing connects into this PC and the agent holds no credentials: the repo and the images are public and contain no secrets
   (secrets are mounted at runtime from `~/deploy/travelai/.env` and `secrets/`).
+- One-time install on the PC (needs your own shell, see `deploy/systemd/`):
+  ```bash
+  mkdir -p ~/.config/systemd/user
+  cp ~/deploy/travelai/deploy/systemd/travelai-deploy.{service,timer} ~/.config/systemd/user/
+  systemctl --user daemon-reload && systemctl --user enable --now travelai-deploy.timer
+  loginctl enable-linger "$USER"   # keep the timer running without an open session
+  ```
+- Once the agent manages production, do not run `scripts/up.sh` from a development checkout: it rebuilds local images and replaces the released ones.
+  Production is operated from `~/deploy/travelai` only (`up.sh` there is for first-time bootstrap).
 - Files: `~/deploy/agent.env` (`DEPLOY_REF`, `REPO`), `~/deploy/state/{current.sha,current.tag,bad.sha}`, `~/deploy/history.log`, `~/deploy/backups/before-<tag>.sql` (last 10).
 - Watch: `tail -f ~/deploy/history.log`, `systemctl --user list-timers travelai-deploy.timer`, `journalctl --user -u travelai-deploy.service -e`.
 - Pause deploys: `systemctl --user stop travelai-deploy.timer`. Re-try a commit marked bad: `rm ~/deploy/state/bad.sha`.
