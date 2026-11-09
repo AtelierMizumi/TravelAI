@@ -1,68 +1,5 @@
-const POSTS_STORAGE_KEY = 'travelai_moderation_posts';
+const POSTS_STORAGE_KEY = 'travelai_social_posts';
 const CONFIG_STORAGE_KEY = 'travelai_system_config';
-
-const DEFAULT_MODERATION_POSTS = [
-  {
-    id: 1,
-    title: 'Top 10 địa điểm bí mật chụp ảnh sống ảo tại Hà Nội',
-    author: 'Nguyễn Văn Minh',
-    category: 'Cẩm nang du lịch',
-    status: 'pending',
-    date: '08/11/2026',
-    content: 'Tổng hợp những con ngõ cổ kính, quán cafe tầng thượng view Hồ Gươm ít người biết...',
-    rejectReason: null,
-  },
-  {
-    id: 2,
-    title: 'Hành trình khám phá ẩm thực đường phố Đà Nẵng 3N2Đ',
-    author: 'Trần Thị Lan',
-    category: 'Ẩm thực',
-    status: 'approved',
-    date: '06/11/2026',
-    content: 'Review chi tiết mì Quảng bà Mua, bánh tráng cuốn thịt heo Đại Lộc và hải sản tươi sống...',
-    rejectReason: null,
-  },
-  {
-    id: 3,
-    title: 'Top khách sạn view biển giá tốt nhất tại Nha Trang 2026',
-    author: 'Lê Hoàng Nam',
-    category: 'Khách sạn',
-    status: 'approved',
-    date: '05/11/2026',
-    content: 'Danh sách resort và khách sạn 4-5 sao dọc đường Trần Phú có buffet sáng phong phú...',
-    rejectReason: null,
-  },
-  {
-    id: 4,
-    title: 'Cẩm nang mua sắm quà lưu niệm Phố Cổ Hội An',
-    author: 'Phạm Quốc Bảo',
-    category: 'Mua sắm',
-    status: 'pending',
-    date: '08/11/2026',
-    content: 'Kinh nghiệm chọn đèn lồng, lụa tơ tằm và gốm Thanh Hà chất lượng, không lo bị chém giá...',
-    rejectReason: null,
-  },
-  {
-    id: 5,
-    title: 'Kinh nghiệm trekking săn mây đỉnh Fansipan mùa thu',
-    author: 'Đỗ Thúy An',
-    category: 'Cẩm nang du lịch',
-    status: 'approved',
-    date: '04/11/2026',
-    content: 'Lịch trình chinh phục nóc nhà Đông Dương, chuẩn bị đồ leo núi và thời điểm biển mây đẹp nhất...',
-    rejectReason: null,
-  },
-  {
-    id: 6,
-    title: 'Dịch vụ cho thuê xe tự lái giá rẻ - Cam kết rẻ nhất',
-    author: 'Dịch Vụ Xe Khách',
-    category: 'Quảng cáo',
-    status: 'rejected',
-    date: '07/11/2026',
-    content: 'Chuyên cho thuê xe 4-7 chỗ không cần cọc tiền, liên hệ zalo...',
-    rejectReason: 'Nội dung spam quảng cáo thương mại không phù hợp quy định cộng đồng.',
-  },
-];
 
 const DEFAULT_SYSTEM_CONFIG = {
   siteName: 'TravelAI - Smart Tourism Platform',
@@ -75,7 +12,7 @@ const DEFAULT_SYSTEM_CONFIG = {
 };
 
 const getStoredPosts = () => {
-  const stored = localStorage.getItem(POSTS_STORAGE_KEY);
+  const stored = typeof localStorage !== 'undefined' ? localStorage.getItem(POSTS_STORAGE_KEY) : null;
   if (stored) {
     try {
       return JSON.parse(stored);
@@ -83,16 +20,17 @@ const getStoredPosts = () => {
       // ignore
     }
   }
-  localStorage.setItem(POSTS_STORAGE_KEY, JSON.stringify(DEFAULT_MODERATION_POSTS));
-  return DEFAULT_MODERATION_POSTS;
+  return [];
 };
 
 const saveStoredPosts = (posts) => {
-  localStorage.setItem(POSTS_STORAGE_KEY, JSON.stringify(posts));
+  if (typeof localStorage !== 'undefined') {
+    localStorage.setItem(POSTS_STORAGE_KEY, JSON.stringify(posts));
+  }
 };
 
 const getStoredConfig = () => {
-  const stored = localStorage.getItem(CONFIG_STORAGE_KEY);
+  const stored = typeof localStorage !== 'undefined' ? localStorage.getItem(CONFIG_STORAGE_KEY) : null;
   if (stored) {
     try {
       return JSON.parse(stored);
@@ -100,40 +38,66 @@ const getStoredConfig = () => {
       // ignore
     }
   }
-  localStorage.setItem(CONFIG_STORAGE_KEY, JSON.stringify(DEFAULT_SYSTEM_CONFIG));
+  if (typeof localStorage !== 'undefined') {
+    localStorage.setItem(CONFIG_STORAGE_KEY, JSON.stringify(DEFAULT_SYSTEM_CONFIG));
+  }
   return DEFAULT_SYSTEM_CONFIG;
 };
 
 const saveStoredConfig = (config) => {
-  localStorage.setItem(CONFIG_STORAGE_KEY, JSON.stringify(config));
+  if (typeof localStorage !== 'undefined') {
+    localStorage.setItem(CONFIG_STORAGE_KEY, JSON.stringify(config));
+  }
 };
 
 export const moderationService = {
   /**
-   * Lấy danh sách bài viết kiểm duyệt
+   * Lấy danh sách bài viết kiểm duyệt (đồng bộ trực tiếp từ feed travelai_social_posts)
    */
   async getPosts({ status = 'all', search = '' } = {}) {
     let list = getStoredPosts();
 
+    // Map each post to ensure compatibility with moderation UI and probes
+    let mapped = list.map((p) => {
+      const postStatus = (p.status || 'APPROVED').toLowerCase();
+      const authorName =
+        typeof p.author === 'string'
+          ? p.author
+          : p.author?.fullName || p.author?.username || 'Du khách';
+
+      return {
+        ...p,
+        title: p.title || p.locationTag || p.content?.slice(0, 60) || 'Bài viết du lịch',
+        author: authorName,
+        category: p.category || (p.locationTag ? 'Địa điểm' : 'Trải nghiệm'),
+        status: postStatus,
+        date: p.createdAt ? new Date(p.createdAt).toLocaleDateString('vi-VN') : 'Mới đây',
+        rejectReason: p.rejectReason || null,
+      };
+    });
+
     if (status && status !== 'all') {
-      list = list.filter((p) => p.status.toLowerCase() === status.toLowerCase());
+      const target = status.toLowerCase();
+      mapped = mapped.filter((p) => p.status === target);
     }
 
     if (search.trim()) {
       const q = search.toLowerCase().trim();
-      list = list.filter(
+      mapped = mapped.filter(
         (p) =>
           p.title?.toLowerCase().includes(q) ||
           p.author?.toLowerCase().includes(q) ||
+          p.content?.toLowerCase().includes(q) ||
           p.category?.toLowerCase().includes(q)
       );
     }
 
-    return list;
+    return mapped;
   },
 
   /**
-   * Duyệt bài viết
+   * Duyệt bài viết -> Cập nhật trạng thái APPROVED trong travelai_social_posts
+   * Sau khi duyệt, bài viết sẽ lập tức xuất hiện trên bảng tin cộng đồng (feedService.getFeedPosts).
    */
   async approvePost(id) {
     const list = getStoredPosts();
@@ -141,7 +105,7 @@ export const moderationService = {
     if (idx !== -1) {
       list[idx] = {
         ...list[idx],
-        status: 'approved',
+        status: 'APPROVED',
         rejectReason: null,
       };
       saveStoredPosts(list);
@@ -151,7 +115,7 @@ export const moderationService = {
   },
 
   /**
-   * Từ chối bài viết kèm lý do
+   * Từ chối bài viết kèm lý do vi phạm
    */
   async rejectPost(id, reason) {
     const list = getStoredPosts();
@@ -159,7 +123,7 @@ export const moderationService = {
     if (idx !== -1) {
       list[idx] = {
         ...list[idx],
-        status: 'rejected',
+        status: 'REJECTED',
         rejectReason: reason || 'Nội dung không phù hợp tiêu chuẩn cộng đồng.',
       };
       saveStoredPosts(list);
@@ -177,6 +141,8 @@ export const moderationService = {
 
   /**
    * Lưu cấu hình hệ thống
+   * Lưu ý kỹ thuật: Lưu trữ cấu hình cục bộ dành cho ban quản trị phía client,
+   * sẵn sàng đồng bộ khi Core Backend cung cấp API /api/v1/admin/config.
    */
   async saveSystemConfig(newConfig) {
     const updated = {
@@ -184,6 +150,18 @@ export const moderationService = {
       ...newConfig,
     };
     saveStoredConfig(updated);
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('travelai_config_updated', { detail: updated }));
+    }
     return updated;
   },
+
+  /**
+   * Kiểm tra xem chế độ bảo trì có đang bật hay không
+   */
+  isMaintenanceMode() {
+    return Boolean(getStoredConfig().maintenanceMode);
+  },
 };
+
+export default moderationService;

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { Link } from 'react-router-dom';
 import {
   FileCheck2,
   Check,
@@ -10,13 +11,16 @@ import {
   ShieldAlert,
   User,
   Calendar,
+  Lock,
 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 import { moderationService } from '../services/moderationService';
 import { Button } from '../components/common/Button';
 import { Toast } from '../components/common/Toast';
 import { Skeleton } from '../components/ui/Skeleton';
 
 export const ContentModerationPage = () => {
+  const { user } = useAuth();
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState('all');
@@ -27,6 +31,8 @@ export const ContentModerationPage = () => {
   const [rejectingPost, setRejectingPost] = useState(null);
   const [rejectReason, setRejectReason] = useState('Nội dung không phù hợp tiêu chuẩn cộng đồng');
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const isAdmin = user?.role === 'ROLE_ADMIN' || user?.role === 'ADMIN';
 
   const fetchPosts = useCallback(async () => {
     try {
@@ -106,6 +112,30 @@ export const ContentModerationPage = () => {
       className: 'bg-rose-50 text-rose-700 border-rose-200',
     },
   };
+
+  if (!loading && user && !isAdmin) {
+    return (
+      <div className="min-h-screen bg-[#F8FAFC] py-16 px-4">
+        <div className="max-w-md mx-auto bg-white rounded-3xl p-8 border border-gray-100 shadow-xs text-center space-y-4">
+          <div className="w-16 h-16 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center mx-auto">
+            <Lock className="w-8 h-8" />
+          </div>
+          <h2 className="text-xl font-bold text-gray-900">Truy Cập Bị Từ Chối (403)</h2>
+          <p className="text-xs sm:text-sm text-gray-500">
+            Bạn cần tài khoản có phân quyền Quản trị viên (ROLE_ADMIN) để thực hiện kiểm duyệt nội dung.
+          </p>
+          <div className="pt-2">
+            <Link
+              to="/"
+              className="inline-flex items-center px-4 py-2 text-xs font-bold text-white bg-brand-600 hover:bg-brand-700 rounded-xl transition-colors"
+            >
+              Quay lại Trang chủ
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] py-8 sm:py-10">
