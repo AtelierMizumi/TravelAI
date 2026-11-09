@@ -1,0 +1,10 @@
+# Release overlay: run the images built by CI instead of building locally or bind-mounting files.
+# Use with docker-compose.yml and docker-compose.edge.yml; TRAVELAI_TAG is "sha-<12 hex of the commit>".
+services:
+  backend-v2:
+    image: ghcr.io/ateliermizumi/travelai-backend:${TRAVELAI_TAG:?set TRAVELAI_TAG}
+  ai-v2:
+    image: ghcr.io/ateliermizumi/travelai-ai:${TRAVELAI_TAG:?set TRAVELAI_TAG}
+  caddy:
+    image: ghcr.io/ateliermizumi/travelai-web:${TRAVELAI_TAG:?set TRAVELAI_TAG}
+    volumes: !reset []   # Caddyfile, web bundle and demo images are baked into the image

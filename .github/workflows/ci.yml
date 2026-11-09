@@ -120,6 +120,7 @@ jobs:
       - uses: actions/checkout@v4
       - run: bash scripts/test-edge-config.sh
       - run: bash scripts/test-gen-secrets.sh
+      - run: bash scripts/test-deploy-agent.sh
       - run: python3 -I scripts/seed/test_dataset.py
       - run: python3 -I scripts/seed/test_seed_demo.py
 
@@ -182,3 +183,55 @@ jobs:
         run: |
           set -a; . ./.env; set +a
           $COMPOSE down -v --remove-orphans
+
+  publish:
+    name: Publish images (GHCR)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    needs: [governance, secret-scan, backend, mobile, ai, scripts, compose-smoke]
+    if: github.event_name == 'push'
+    permissions:
+      contents: read
+      packages: write
+    env:
+      PUBLIC_ORIGIN: ${{ vars.PUBLIC_ORIGIN || 'https://travelai.minhthuan.dev' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Image tag
+        id: tag
+        run: echo "value=sha-${GITHUB_SHA::12}" >> "$GITHUB_OUTPUT"
+      - name: Backend image
+        uses: docker/build-push-action@v6
+        with:
+          context: backend
+          push: true
+          tags: ghcr.io/ateliermizumi/travelai-backend:${{ steps.tag.outputs.value }}
+          labels: org.opencontainers.image.source=https://github.com/${{ github.repository }}
+          cache-from: type=gha,scope=backend
+          cache-to: type=gha,scope=backend,mode=max
+      - name: AI image
+        uses: docker/build-push-action@v6
+        with:
+          context: ai-service
+          push: true
+          tags: ghcr.io/ateliermizumi/travelai-ai:${{ steps.tag.outputs.value }}
+          labels: org.opencontainers.image.source=https://github.com/${{ github.repository }}
+          cache-from: type=gha,scope=ai
+          cache-to: type=gha,scope=ai,mode=max
+      - name: Web image (bundle baked for the public origin)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: deploy/web/Dockerfile
+          build-args: PUBLIC_ORIGIN=${{ env.PUBLIC_ORIGIN }}
+          push: true
+          tags: ghcr.io/ateliermizumi/travelai-web:${{ steps.tag.outputs.value }}
+          labels: org.opencontainers.image.source=https://github.com/${{ github.repository }}
+          cache-from: type=gha,scope=web
+          cache-to: type=gha,scope=web,mode=max

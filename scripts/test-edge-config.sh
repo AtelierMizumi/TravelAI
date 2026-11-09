@@ -21,4 +21,8 @@ for svc in caddy cloudflared postgres-v2 ai-v2 backend-v2; do
 done
 echo "$rendered" | grep -q 'CORS_ALLOWED_ORIGINS: https://travelai.example' && ok "backend CORS = PUBLIC_ORIGIN" || bad "backend CORS = PUBLIC_ORIGIN"
 echo "$rendered" | grep -q 'TRAVELAI_MESSAGE_KEY_REQUIRED: "true"' && ok "message key required in prod" || bad "message key required in prod"
+release=$(TRAVELAI_TAG=sha-test docker compose --profile v2 -f docker-compose.yml -f docker-compose.edge.yml -f docker-compose.release.yml config --format json 2>&1) \
+  && ok "release overlay renders" || { bad "release overlay renders"; echo "$release" | head -3; }
+echo "$release" | python3 -c 'import sys,json; d=json.load(sys.stdin)["services"]; assert d["caddy"].get("volumes") in (None, []) and all(d[s]["image"].endswith(":sha-test") for s in ("backend-v2","ai-v2","caddy"))' 2>/dev/null \
+  && ok "release images pinned to TRAVELAI_TAG, caddy has no bind mounts" || bad "release images pinned to TRAVELAI_TAG, caddy has no bind mounts"
 exit $fail

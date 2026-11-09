@@ -1,0 +1,12 @@
+.git
+**/node_modules
+**/dist
+**/target
+**/.expo
+**/__pycache__
+.env
+.env.*
+secrets
+*.key
+*service-account*.json
+docs

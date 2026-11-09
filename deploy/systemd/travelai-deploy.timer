@@ -1,0 +1,10 @@
+[Unit]
+Description=Check GitHub for a new TravelAI release every 3 minutes
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=3min
+AccuracySec=30s
+
+[Install]
+WantedBy=timers.target
