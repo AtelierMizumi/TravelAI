@@ -36,4 +36,15 @@ public interface TourRepository extends JpaRepository<Tour, Long> {
     List<Tour> findByLocationId(Long locationId);
 
     boolean existsByTitleIgnoreCase(String title);
+
+    long countByStatus(String status);
+
+    @Query("SELECT COALESCE(SUM(t.availableSlots), 0) FROM Tour t WHERE t.status = 'ACTIVE'")
+    long sumActiveAvailableSlots();
+
+    @Query("SELECT t.province, COUNT(t) FROM Tour t WHERE t.province IS NOT NULL GROUP BY t.province")
+    List<Object[]> countToursByProvince();
+
+    @Query("SELECT COUNT(DISTINCT t.location.id) FROM Tour t WHERE t.location IS NOT NULL")
+    long countDistinctLocationsWithTours();
 }
