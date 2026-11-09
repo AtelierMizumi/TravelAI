@@ -1,0 +1,60 @@
+# Production edge overlay for the v2 stack: Caddy (only ingress) + cloudflared (outbound tunnel).
+# Usage: scripts/up.sh   (or: docker compose --profile v2 -f docker-compose.yml -f docker-compose.edge.yml up -d --build --wait)
+# Needs in .env: POSTGRES_PASSWORD, HOST_GCP_KEY, HOST_MESSAGE_KEY, CLOUDFLARE_TUNNEL_TOKEN, PUBLIC_ORIGIN.
+# Tunnel route (Cloudflare dashboard): <PUBLIC_ORIGIN host> -> http://caddy:80
+services:
+  postgres-v2:
+    ports: !reset []
+    cap_drop: [ALL]
+    cap_add: [CHOWN, DAC_OVERRIDE, FOWNER, SETGID, SETUID]
+    restart: unless-stopped
+
+  ai-v2:
+    ports: !reset []
+    cap_drop: [ALL]
+    restart: unless-stopped
+    environment:
+      AI_ALLOWED_ORIGINS: ${PUBLIC_ORIGIN:?set PUBLIC_ORIGIN in .env}
+
+  backend-v2:
+    ports: !reset []
+    cap_drop: [ALL]
+    restart: unless-stopped
+    environment:
+      CORS_ALLOWED_ORIGINS: ${PUBLIC_ORIGIN:?set PUBLIC_ORIGIN in .env}
+      TRAVELAI_MESSAGE_KEY_REQUIRED: "true"
+
+  caddy:
+    profiles: ["v2"]
+    image: caddy:2
+    restart: unless-stopped
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./apps/mobile/dist:/srv/web:ro
+    cap_drop: [ALL]
+    depends_on:
+      backend-v2:
+        condition: service_healthy
+      ai-v2:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://127.0.0.1:80/"]
+      interval: 15s
+      timeout: 3s
+      retries: 5
+    networks:
+      - travelai-network
+
+  cloudflared:
+    profiles: ["v2"]
+    image: cloudflare/cloudflared:latest
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run
+    environment:
+      TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN:?set CLOUDFLARE_TUNNEL_TOKEN in .env}
+    cap_drop: [ALL]
+    depends_on:
+      caddy:
+        condition: service_healthy
+    networks:
+      - travelai-network

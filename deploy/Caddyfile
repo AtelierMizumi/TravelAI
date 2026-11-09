@@ -1,0 +1,46 @@
+# Edge reverse proxy for TravelAI (v2). TLS is terminated by Cloudflare Tunnel,
+# so Caddy only speaks plain HTTP on the internal compose network.
+{
+	auto_https off
+	admin off
+}
+
+:80 {
+	encode zstd gzip
+
+	header {
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+		-Server
+	}
+
+	# H10: never expose actuator / swagger from outside
+	# Must be a handle block placed first: handle blocks run in source order and
+	# a bare respond would lose to the SPA catch-all below.
+	@internal path /actuator* /swagger* /v3/api-docs*
+	handle @internal {
+		respond 404
+	}
+
+	handle /api/* {
+		reverse_proxy backend-v2:8080
+	}
+
+	handle /ws* {
+		reverse_proxy backend-v2:8080
+	}
+
+	handle_path /ai/* {
+		request_body {
+			max_size 10MB
+		}
+		reverse_proxy ai-v2:8000
+	}
+
+	# Static web (expo export -p web), SPA fallback
+	handle {
+		root * /srv/web
+		try_files {path} /index.html
+		file_server
+	}
+}
