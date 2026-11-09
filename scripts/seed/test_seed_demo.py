@@ -118,5 +118,73 @@ class LoginTest(unittest.TestCase):
                 seed_demo.login_or_register(api, "a@demo.travelai.test", "wrong", "A")
 
 
+USER_PASSWORD = "synthetic-user-password"
+
+
+def run_all(backend, buffer=None):
+    api = seed_demo.Api(backend.base_url)
+    seeder = seed_demo.Seeder(api, origin="https://demo.example", log=print if buffer else (lambda *_: None))
+    token, _ = seed_demo.login_or_register(api, "admin@demo.travelai.test", "synthetic-admin-password", "Admin")
+    dataset = seed_demo.load_dataset()
+    seeder.seed_catalog(token, dataset)
+    seeder.seed_people(token, dataset, USER_PASSWORD)
+    return seeder
+
+
+class PeopleSeedTest(unittest.TestCase):
+    def test_first_run_creates_people_money_bookings_and_community(self):
+        with FakeBackend() as backend:
+            run_all(backend)
+            self.assertEqual(len([e for e in backend.users if e != "admin@demo.travelai.test"]), 4)
+            self.assertEqual(len(backend.provisions), 4)
+            self.assertEqual(len(backend.linked), 4)
+            self.assertEqual(len(backend.bookings), 5)
+            self.assertEqual(sorted(b["status"] for b in backend.bookings).count("CANCELLED"), 1)
+            self.assertEqual(len(backend.posts), 6)
+            self.assertTrue(all(p["status"] == "APPROVED" for p in backend.posts))
+            self.assertEqual(sum(len(p["comments"]) for p in backend.posts), 3)
+            self.assertEqual(sum(len(p["likes"]) for p in backend.posts), 5)
+            self.assertEqual(len(backend.chats), 2)
+
+    def test_second_run_adds_nothing(self):
+        with FakeBackend() as backend:
+            run_all(backend)
+            snapshot = (len(backend.provisions), len(backend.bookings), len(backend.posts), len(backend.chats),
+                        sum(len(p["comments"]) for p in backend.posts), sum(len(p["likes"]) for p in backend.posts))
+            run_all(backend)
+            self.assertEqual(snapshot, (len(backend.provisions), len(backend.bookings), len(backend.posts),
+                                        len(backend.chats), sum(len(p["comments"]) for p in backend.posts),
+                                        sum(len(p["likes"]) for p in backend.posts)))
+
+    def test_second_run_performs_zero_writes(self):
+        with FakeBackend() as backend:
+            run_all(backend)
+            data_writes = lambda: [w for w in backend.writes if w[0] != "AUTH"]  # logins are not data writes
+            writes = data_writes()
+            seeder = run_all(backend)
+            self.assertEqual(data_writes(), writes)
+            self.assertEqual(seeder.created, 0)
+
+    def test_rerun_completes_a_cancellation_that_failed_midway(self):
+        with FakeBackend() as backend:
+            backend.fail_cancel_once = True
+            with self.assertRaises(seed_demo.SeedError):
+                run_all(backend)
+            self.assertEqual(sum(b["status"] == "CANCELLED" for b in backend.bookings), 0)
+            run_all(backend)
+            self.assertEqual(len(backend.bookings), 5)
+            self.assertEqual(sum(b["status"] == "CANCELLED" for b in backend.bookings), 1)
+
+    def test_secrets_never_reach_the_output(self):
+        with FakeBackend() as backend:
+            buffer = io.StringIO()
+            with redirect_stdout(buffer):
+                run_all(backend, buffer)
+            out = buffer.getvalue()
+            self.assertNotIn(USER_PASSWORD, out)
+            self.assertNotIn("TEST-", out)      # synthetic CVV
+            self.assertNotIn("tok-", out)       # session tokens
+
+
 if __name__ == "__main__":
     unittest.main()

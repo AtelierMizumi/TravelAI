@@ -1,0 +1,157 @@
+{
+  "users": [
+    {
+      "key": "lan",
+      "name": "Lan Phương",
+      "email": "lan.phuong@demo.travelai.test"
+    },
+    {
+      "key": "minh",
+      "name": "Minh Quân",
+      "email": "minh.quan@demo.travelai.test"
+    },
+    {
+      "key": "thu",
+      "name": "Thu Hà",
+      "email": "thu.ha@demo.travelai.test"
+    },
+    {
+      "key": "khoa",
+      "name": "Đăng Khoa",
+      "email": "dang.khoa@demo.travelai.test"
+    }
+  ],
+  "bank": {
+    "bankName": "Ngân hàng Demo SIMULATED",
+    "balance": 50000000,
+    "expiryMonth": 12,
+    "expiryYear": 2030
+  },
+  "bookings": [
+    {
+      "user": "lan",
+      "kind": "TOUR",
+      "target": "tour-hue-di-san",
+      "departureIndex": 0,
+      "guests": 2
+    },
+    {
+      "user": "minh",
+      "kind": "TOUR",
+      "target": "tour-hoi-an-den-long",
+      "departureIndex": 0,
+      "guests": 2
+    },
+    {
+      "user": "minh",
+      "kind": "HOTEL",
+      "target": "hotel-da-nang-dragon",
+      "checkInDays": 10,
+      "nights": 2,
+      "guests": 2,
+      "room": "101"
+    },
+    {
+      "user": "thu",
+      "kind": "TOUR",
+      "target": "tour-sai-gon-city",
+      "departureIndex": 0,
+      "guests": 1,
+      "then": "cancel"
+    },
+    {
+      "user": "khoa",
+      "kind": "HOTEL",
+      "target": "hotel-phu-quoc-beach",
+      "checkInDays": 20,
+      "nights": 3,
+      "guests": 2,
+      "room": "201"
+    }
+  ],
+  "posts": [
+    {
+      "user": "lan",
+      "place": "dai-noi-hue",
+      "content": "Sáng sớm ở Đại Nội rất yên tĩnh, đi trước 8 giờ để tránh đông. Nhớ mang nón và nước nhé!"
+    },
+    {
+      "user": "minh",
+      "place": "pho-co-hoi-an",
+      "content": "Hội An buổi tối đẹp nhất khi thả hoa đăng. Mình đặt tour nửa ngày và thấy rất đáng."
+    },
+    {
+      "user": "thu",
+      "place": "cho-ben-thanh",
+      "content": "Chợ Bến Thành đông nhưng đồ ăn ngon, nhớ mặc cả khi mua quà lưu niệm."
+    },
+    {
+      "user": "khoa",
+      "place": "phu-quoc",
+      "content": "Bãi Sao nước trong và cát mịn, mùa khô đi là hợp lý nhất."
+    },
+    {
+      "user": "lan",
+      "place": "vinh-ha-long",
+      "content": "Ngủ đêm trên du thuyền ở Hạ Long là trải nghiệm khó quên, hoàng hôn rất đẹp."
+    },
+    {
+      "user": "minh",
+      "place": "cau-rong",
+      "content": "Cuối tuần Cầu Rồng phun lửa lúc 21 giờ, đứng bờ sông Hàn xem là rõ nhất."
+    }
+  ],
+  "comments": [
+    {
+      "post": 0,
+      "user": "minh",
+      "content": "Cảm ơn bạn, mình sẽ đi vào cuối tháng."
+    },
+    {
+      "post": 1,
+      "user": "lan",
+      "content": "Đẹp quá, mình cũng muốn thử tour này!"
+    },
+    {
+      "post": 3,
+      "user": "thu",
+      "content": "Mùa này đi Phú Quốc có mưa không bạn?"
+    }
+  ],
+  "likes": [
+    {
+      "post": 0,
+      "user": "minh"
+    },
+    {
+      "post": 0,
+      "user": "thu"
+    },
+    {
+      "post": 1,
+      "user": "lan"
+    },
+    {
+      "post": 3,
+      "user": "lan"
+    },
+    {
+      "post": 4,
+      "user": "khoa"
+    }
+  ],
+  "chat": [
+    {
+      "from": "lan",
+      "to": "minh",
+      "content": "Chào Quân, bạn đi Hội An bằng tour nào vậy?",
+      "id": "seed-chat-1"
+    },
+    {
+      "from": "minh",
+      "to": "lan",
+      "content": "Mình đặt tour đèn lồng nửa ngày trên TravelAI, khá ổn.",
+      "id": "seed-chat-2"
+    }
+  ]
+}

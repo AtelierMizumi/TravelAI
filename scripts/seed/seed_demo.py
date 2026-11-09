@@ -9,6 +9,7 @@ import argparse
 import json
 import os
 import sys
+import uuid
 import urllib.error
 import urllib.request
 from datetime import date, datetime, timedelta, timezone
@@ -24,7 +25,7 @@ class SeedError(RuntimeError):
 
 
 def load_dataset():
-    names = ("places", "tours", "hotels", "calendars")
+    names = ("places", "tours", "hotels", "calendars", "community")
     return {n: json.loads((DATA / f"{n}.json").read_text(encoding="utf-8")) for n in names}
 
 
@@ -148,6 +149,119 @@ class Seeder:
                 self.log(f"publish holiday calendar {c['year']}")
                 self._write(token, "/api/booking/calendars", c)
 
+    # -- people, money, bookings, community ------------------------------
+    def seed_people(self, admin_token, dataset, user_password):
+        community = dataset["community"]
+        users = {}
+        for u in community["users"]:
+            token, uid = login_or_register(self.api, u["email"], user_password, u["name"],
+                                           allow_register=not self.dry_run)
+            if token is None:
+                self.planned += 1
+                self.log(f"would register {u['email']}")
+            users[u["key"]] = {**u, "token": token, "id": uid}
+        if self.dry_run:
+            return
+        self._admin_token, self._bank = admin_token, community["bank"]
+        cards = {key: self._ensure_card(admin_token, u, community["bank"]) for key, u in users.items()}
+        offers = {o["name"]: o for o in self.api.request("GET", "/api/booking/offers") or []}
+        names = {t["key"]: t["name"] for t in dataset["tours"]}
+        names.update({h["key"]: h["name"] for h in dataset["hotels"]})
+        for spec in community["bookings"]:
+            self._ensure_booking(users[spec["user"]], cards[spec["user"]], offers[names[spec["target"]]], spec)
+        self._seed_community(admin_token, users, dataset, community)
+
+    def _ensure_card(self, admin_token, user, bank):
+        """Return {'cardId','testCvv'} when the card was provisioned in this run, else None (already linked)."""
+        linked = (self.api.request("GET", "/api/booking/bank", token=user["token"]) or {}).get("cards") or []
+        if linked:
+            return None
+        return self._provision_card(admin_token, user, bank)
+
+    def _provision_card(self, admin_token, user, bank):
+        self.log(f"provision SIMULATED card for {user['email']}")
+        card = self._write(admin_token, "/api/booking/bank/accounts",
+                           {"ownerId": user["id"], "balance": bank["balance"], "expiryMonth": bank["expiryMonth"],
+                            "expiryYear": bank["expiryYear"], "bankName": bank["bankName"]},
+                           {"Idempotency-Key": f"seed-bank-{user['email']}-{uuid.uuid4().hex[:8]}"})
+        if "testCvv" not in card:
+            raise SeedError("provisioning did not return the one-time test credential (replayed key?)")
+        self._write(user["token"], "/api/booking/bank/link",
+                    {"bankName": bank["bankName"], "accountNumber": card["cardId"], "testCvv": card["testCvv"]})
+        return {"cardId": card["cardId"], "testCvv": card["testCvv"]}
+
+    def _ensure_booking(self, user, card, offer, spec):
+        mine = self.api.request("GET", "/api/booking/bookings", token=user["token"]) or []
+        existing = next((b for b in mine
+                         if (b.get("itinerary") or {}).get("selection", {}).get("offeringId") == offer["id"]), None)
+        if existing is not None:
+            # a previous run may have stopped between paying and cancelling
+            if spec.get("then") == "cancel" and existing.get("status") == "CONFIRMED":
+                self._cancel(user, existing["id"], f"{user['key']}-{spec['target']}")
+            return
+        if card is None:  # card linked by an earlier run: its one-time CVV is gone, issue a new one
+            card = self._provision_card(self._admin_token, user, self._bank)
+        selection = {"offeringId": offer["id"], "bookingId": None, "bookingRevision": None, "departure": None,
+                     "checkIn": None, "checkOut": None, "guests": spec["guests"], "seats": [],
+                     "roomGuests": None, "replacementRooms": None}
+        if spec["kind"] == "TOUR":
+            selection["departure"] = offer["departures"][spec["departureIndex"]]["start"]
+        else:
+            start = self.today + timedelta(days=spec["checkInDays"])
+            selection["checkIn"] = start.isoformat()
+            selection["checkOut"] = (start + timedelta(days=spec["nights"])).isoformat()
+            selection["roomGuests"] = {f"R{spec['room']}": spec["guests"]}
+        tag = f"{user['key']}-{spec['target']}"
+        self.log(f"book {spec['kind']} {offer['name']} for {user['email']}")
+        review = self._write(user["token"], "/api/booking/reviews", selection, {"Idempotency-Key": f"seed-review-{tag}"})
+        booking = self._write(user["token"], f"/api/booking/reviews/{review['id']}/pay",
+                              {"digest": review["digest"], "confirmed": True, **card},
+                              {"Idempotency-Key": f"seed-pay-{tag}"})
+        if booking.get("status") != "CONFIRMED":
+            raise SeedError(f"payment for {offer['name']} was not confirmed (status {booking.get('status')})")
+        if spec.get("then") == "cancel":
+            self._cancel(user, booking["id"], tag)
+
+    def _cancel(self, user, booking_id, tag):
+        self.log(f"cancel booking of {user['email']}")
+        self._write(user["token"], f"/api/booking/bookings/{booking_id}/cancel",
+                    {"reason": "Thay đổi kế hoạch cá nhân"}, {"Idempotency-Key": f"seed-cancel-{tag}"})
+
+    def _seed_community(self, admin_token, users, dataset, community):
+        places = {p["key"]: p for p in dataset["places"]}
+        existing = {p["content"]: p for p in self.api.request("GET", "/api/posts/admin/all", token=admin_token) or []}
+        ordered = []
+        for spec in community["posts"]:
+            post = existing.get(spec["content"])
+            if post is None:
+                self.log(f"post by {spec['user']}")
+                post = self._write(users[spec["user"]]["token"], "/api/posts",
+                                   {"content": spec["content"], "image": self._image(places[spec["place"]]["image"])})
+            if post.get("status") != "APPROVED" and not self.dry_run:
+                self.api.request("PUT", f"/api/posts/{post['id']}/approve", {}, admin_token)
+            ordered.append(post)
+        for like in community["likes"]:
+            user = users[like["user"]]
+            target = ordered[like["post"]]
+            seen = {p["id"]: p for p in self.api.request("GET", "/api/posts", token=user["token"]) or []}
+            if not seen.get(target["id"], {}).get("liked"):
+                self._write(user["token"], f"/api/posts/{target['id']}/like", {})
+        for comment in community["comments"]:
+            user = users[comment["user"]]
+            target = ordered[comment["post"]]
+            current = {p["id"]: p for p in self.api.request("GET", "/api/posts", token=user["token"]) or []}
+            if comment["content"] not in [c.get("text") for c in current.get(target["id"], {}).get("comments", [])]:
+                self._write(user["token"], f"/api/posts/{target['id']}/comments", {"text": comment["content"]})
+        for chat in community["chat"]:
+            sender, receiver = users[chat["from"]], users[chat["to"]]
+            history = self.api.request("GET", f"/api/chat/conversation?user1={sender['id']}&user2={receiver['id']}",
+                                       token=sender["token"]) or []
+            if any(m.get("content") == chat["content"] for m in history):
+                continue
+            self._write(users[chat["from"]]["token"], "/api/chat/send",
+                        {"receiverId": users[chat["to"]]["id"], "content": chat["content"],
+                         "clientMessageId": chat["id"]})
+
     def _admin_get(self, path, token):
         try:
             return self.api.request("GET", path, token=token) or []
@@ -180,7 +294,12 @@ def main(argv=None):
             print(f"admin account {'ready' if token else 'would be registered'}: {args.admin_email}")
             return
         seeder = Seeder(api, origin=args.base_url, dry_run=args.dry_run)
-        seeder.seed_catalog(token, load_dataset())
+        dataset = load_dataset()
+        seeder.seed_catalog(token, dataset)
+        user_password = os.environ.get("SEED_USER_PASSWORD")
+        if not user_password:
+            sys.exit("SEED_USER_PASSWORD is required (set it in .env)")
+        seeder.seed_people(token, dataset, user_password)
     except SeedError as error:
         sys.exit(f"seed failed: {error}")
     print(f"done: created={seeder.created} planned={seeder.planned}")

@@ -73,8 +73,31 @@ class DatasetTest(unittest.TestCase):
                 self.assertGreater(r["price"], 0)
                 self.assertGreater(r["maxGuests"], 0)
 
+    def test_community_dataset_references_exist(self):
+        community = load("community.json")
+        users = {u["key"] for u in community["users"]}
+        tours = {t["key"] for t in self.tours}
+        hotels = {h["key"]: {r["number"] for r in h["rooms"]} for h in self.hotels}
+        places = {p["key"] for p in self.places}
+        self.assertEqual(len(users), 4)
+        for b in community["bookings"]:
+            self.assertIn(b["user"], users)
+            if b["kind"] == "TOUR":
+                self.assertIn(b["target"], tours)
+            else:
+                self.assertIn(b["room"], hotels[b["target"]])
+        for post in community["posts"]:
+            self.assertIn(post["user"], users)
+            self.assertIn(post["place"], places)
+        for c in community["comments"]:
+            self.assertLess(c["post"], len(community["posts"]))
+        for chat in community["chat"]:
+            self.assertIn(chat["from"], users)
+            self.assertIn(chat["to"], users)
+        self.assertTrue(community["bank"]["bankName"].endswith(" SIMULATED"))
+
     def test_only_demo_emails(self):
-        blob = "".join((ROOT / n).read_text(encoding="utf-8") for n in ("places.json", "tours.json", "hotels.json"))
+        blob = "".join((ROOT / n).read_text(encoding="utf-8") for n in ("places.json", "tours.json", "hotels.json", "community.json"))
         for email in re.findall(r"[\w.+-]+@[\w.-]+", blob):
             self.assertTrue(email.endswith("@demo.travelai.test"), email)
 
