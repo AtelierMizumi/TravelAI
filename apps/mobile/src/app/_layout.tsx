@@ -93,12 +93,13 @@ function NotificationBell() {
 }
 
 function AppShell() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const insets = useSafeAreaInsets();
   const pathname = usePathname();
   const { width } = useWindowDimensions();
   const settings = useResource<Settings>("/system-settings", 30_000);
   const maintenance =
+    !authLoading &&
     settings.data?.maintenanceMode &&
     user?.role !== "ADMIN" &&
     pathname !== "/login";
