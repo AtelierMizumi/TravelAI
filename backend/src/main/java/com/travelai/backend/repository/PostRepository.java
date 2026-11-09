@@ -14,4 +14,9 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     List<Post> findByStatusOrderByCreatedAtDesc(String status);
 
     List<Post> findByAuthorIdOrderByCreatedAtDesc(Long authorId);
+
+    @org.springframework.data.jpa.repository.Modifying
+    @org.springframework.data.jpa.repository.Query(
+            "update Post set shareCount = coalesce(shareCount, 0) + 1 where id = :postId")
+    void incrementShareCount(@org.springframework.data.repository.query.Param("postId") Long postId);
 }
