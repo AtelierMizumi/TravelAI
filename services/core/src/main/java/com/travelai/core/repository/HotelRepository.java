@@ -37,4 +37,15 @@ public interface HotelRepository extends JpaRepository<Hotel, Long> {
     List<Hotel> findByLocationId(Long locationId);
 
     boolean existsByNameIgnoreCase(String name);
+
+    long countByStatus(String status);
+
+    @Query("SELECT COALESCE(SUM(h.availableRooms), 0) FROM Hotel h WHERE h.status = 'ACTIVE'")
+    long sumActiveAvailableRooms();
+
+    @Query("SELECT h.province, COUNT(h) FROM Hotel h WHERE h.province IS NOT NULL GROUP BY h.province")
+    List<Object[]> countHotelsByProvince();
+
+    @Query("SELECT COUNT(DISTINCT h.location.id) FROM Hotel h WHERE h.location IS NOT NULL")
+    long countDistinctLocationsWithHotels();
 }
