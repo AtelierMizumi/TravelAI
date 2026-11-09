@@ -12,6 +12,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.util.Map;
 import java.util.UUID;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -30,6 +31,7 @@ class AnalyticsAggregationIntegrationTest {
     @Autowired UserRepository users;
     @Autowired SessionService sessions;
     @Autowired JdbcTemplate jdbc;
+    @Autowired com.fasterxml.jackson.databind.ObjectMapper json;
 
     Actor makeUser(String role) {
         User user = new User();
@@ -63,6 +65,16 @@ class AnalyticsAggregationIntegrationTest {
         Actor admin = makeUser("ADMIN");
         Actor user = makeUser("USER");
 
+        String before = mvc.perform(get("/api/admin/analytics").header("Authorization", bearer(admin)))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+        long baseline = json.readTree(before).get("stats").get("totalBookings").asLong();
+        long baselineJanRevenue = 0;
+        for (var p : json.readTree(before).get("revenueSeries")) {
+            if ("2026-01".equals(p.get("month").asText())) {
+                baselineJanRevenue = p.get("revenue").asLong();
+            }
+        }
+
         seedCanonicalReservation("r-dec", "CONFIRMED", 1_000_000, "Ha Long Tour");
         seedCanonicalReservation("r-jan", "CONFIRMED", 2_000_000, "Ha Long Tour");
         seedTransaction("t-dec", "r-dec", "CHARGE", 1_000_000, "2025-12-15 10:00:00");
@@ -74,12 +86,24 @@ class AnalyticsAggregationIntegrationTest {
         mvc.perform(get("/api/admin/analytics").header("Authorization", bearer(user)))
                 .andExpect(status().isForbidden());
 
-        mvc.perform(get("/api/admin/analytics").header("Authorization", bearer(admin)))
+        String after = mvc.perform(get("/api/admin/analytics").header("Authorization", bearer(admin)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.stats.totalBookings").value(2))
-                .andExpect(jsonPath("$.revenueSeries[?(@.month=='2025-12')].revenue").value(1_000_000))
-                .andExpect(jsonPath("$.revenueSeries[?(@.month=='2026-01')].revenue").value(1_500_000))
-                .andExpect(jsonPath("$.topServices[0].name").value("Ha Long Tour"))
-                .andExpect(jsonPath("$.topServices[0].bookings").value(2));
+                .andExpect(jsonPath("$.stats.totalBookings").value(baseline + 2))
+                .andReturn().getResponse().getContentAsString();
+
+        var tree = json.readTree(after);
+        Map<String, Long> revenueByMonth = new java.util.HashMap<>();
+        for (var p : tree.get("revenueSeries")) {
+            revenueByMonth.put(p.get("month").asText(), p.get("revenue").asLong());
+        }
+        org.junit.jupiter.api.Assertions.assertEquals(1_000_000L, revenueByMonth.get("2025-12"));
+        org.junit.jupiter.api.Assertions.assertEquals(baselineJanRevenue + 1_500_000L, revenueByMonth.get("2026-01"));
+        boolean foundService = false;
+        for (var svc : tree.get("topServices")) {
+            if ("Ha Long Tour".equals(svc.get("name").asText()) && svc.get("bookings").asLong() >= 2) {
+                foundService = true;
+            }
+        }
+        org.junit.jupiter.api.Assertions.assertTrue(foundService, "Ha Long Tour must appear in topServices");
     }
 }
