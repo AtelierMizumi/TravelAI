@@ -10,6 +10,7 @@ import { AdminSettings } from "@/components/admin/settings";
 import { AdminPolicies, AdminCalendar } from "@/components/admin/policies";
 import { AdminBank } from "@/components/admin/bank";
 import { AdminBookings } from "@/components/admin/bookings";
+import { adminAccess } from "@/context/authGuard";
 const sections = [
   ["stats", "Tổng quan"],
   ["users", "Người dùng"],
@@ -41,11 +42,14 @@ function Stats() {
   );
 }
 export default function Admin() {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
   const [section, setSection] = useState<string>("stats");
+  const access = adminAccess({ user, loading });
   return (
     <Screen title="Quản trị TravelAI" protected>
-      {user?.role === "ADMIN" ? (
+      {access === "loading" ? (
+        <Text style={ui.text}>Đang tải…</Text>
+      ) : access === "allowed" ? (
         <>
           <View style={ui.row}>
             {sections.map(([key, label]) => (

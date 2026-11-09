@@ -21,4 +21,7 @@ public class SystemSettings {
     private Boolean emailNotify;
     private Boolean systemNotify;
     private Boolean maintenanceMode;
+
+    @Version
+    private Long version;
 }

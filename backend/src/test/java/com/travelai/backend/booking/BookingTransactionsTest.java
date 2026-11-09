@@ -203,7 +203,7 @@ class BookingTransactionsTest {
                 .andExpect(jsonPath("$.booking.id").value(booking.get("id")));
         String stats = mvc.perform(get("/api/admin/stats").header("Authorization",bearer(admin)))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
-        assertTrue(json.readTree(stats).get("tourBookings").asLong() > 0);
+        assertTrue(json.readTree(stats).get("canonicalBookings").asLong() > 0);
         assertEquals(900,balance());
     }
     @Test void physicalHotelRoomsRejectOverlapAndAllowAdjacentStays() {

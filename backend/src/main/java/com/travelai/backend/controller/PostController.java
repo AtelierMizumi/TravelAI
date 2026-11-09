@@ -13,8 +13,11 @@ import com.travelai.backend.repository.CommentRepository;
 import com.travelai.backend.repository.PostLikeRepository;
 import com.travelai.backend.repository.PostRepository;
 import com.travelai.backend.repository.ShareRepository;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -30,6 +33,7 @@ public class PostController {
     private final CommentRepository commentRepository;
     private final ShareRepository shareRepository;
     private final NotificationPublisher notificationPublisher;
+    private final com.travelai.backend.community.PostAccessPolicy policy;
 
     public PostController(
             UserRepository users,
@@ -37,7 +41,8 @@ public class PostController {
             PostLikeRepository likeRepository,
             CommentRepository commentRepository,
             ShareRepository shareRepository,
-            NotificationPublisher notificationPublisher
+            NotificationPublisher notificationPublisher,
+            com.travelai.backend.community.PostAccessPolicy policy
     ) {
         this.users = users;
         this.postRepository = postRepository;
@@ -45,31 +50,39 @@ public class PostController {
         this.commentRepository = commentRepository;
         this.shareRepository = shareRepository;
         this.notificationPublisher = notificationPublisher;
+        this.policy = policy;
     }
 
     @GetMapping
     public ResponseEntity<?> getAllPosts(@RequestParam(required = false) Long userId) {
         userId = ApiSecurity.currentActor().id();
         final Long viewerId = userId;
+        var actor = ApiSecurity.currentActor();
         return ResponseEntity.ok(
                 postRepository.findByStatusOrderByCreatedAtDesc("APPROVED")
                         .stream()
-                        .map(post -> mapPost(post, viewerId))
+                        .map(post -> mapPost(post, actor))
                         .toList()
         );
     }
 
     @GetMapping("/admin/all")
     public ResponseEntity<?> getAllPostsForAdmin() {
-        ApiSecurity.currentActor().requireAdmin();
-        return ResponseEntity.ok(postRepository.findAllByOrderByCreatedAtDesc());
+        var actor = ApiSecurity.currentActor();
+        actor.requireAdmin();
+        return ResponseEntity.ok(postRepository.findAllByOrderByCreatedAtDesc().stream()
+                .map(post -> mapPost(post, actor))
+                .toList());
     }
 
     @GetMapping("/user/{userId}")
     public ResponseEntity<?> getPostsByUser(@PathVariable Long userId) {
-        boolean owner = ApiSecurity.currentActor().id() == userId;
+        var actor = ApiSecurity.currentActor();
+        boolean owner = actor.id() == userId;
         return ResponseEntity.ok(postRepository.findByAuthorIdOrderByCreatedAtDesc(userId).stream()
-                .filter(post -> owner || "APPROVED".equals(post.getStatus())).toList());
+                .filter(post -> owner || actor.admin() || policy.canReadFeed(post, actor))
+                .map(post -> mapPost(post, actor))
+                .toList());
     }
 
     @PostMapping
@@ -154,13 +167,7 @@ public class PostController {
         ApiSecurity.currentActor().requireOwner(post.getAuthorId());
 
         if (post.getOriginalPostId() != null) {
-            Post original = postRepository.findById(post.getOriginalPostId()).orElse(null);
-
-            if (original != null) {
-                int currentShare = original.getShareCount() == null ? 0 : original.getShareCount();
-                original.setShareCount(Math.max(0, currentShare - 1));
-                postRepository.save(original);
-            }
+            postRepository.decrementShareCount(post.getOriginalPostId());
         }
 
         postRepository.delete(post);
@@ -239,6 +246,10 @@ public class PostController {
             return ResponseEntity.badRequest().body(Map.of("message", "Post not found"));
         }
 
+        if (!policy.canLike(post, ApiSecurity.currentActor())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Post is not visible to you");
+        }
+
         PostLike existing = likeRepository.findByPostIdAndUserId(postId, userId).orElse(null);
 
         if (existing != null) {
@@ -249,10 +260,18 @@ public class PostController {
             ));
         }
 
-        likeRepository.save(PostLike.builder()
-                .postId(postId)
-                .userId(userId)
-                .build());
+        try {
+            likeRepository.saveAndFlush(PostLike.builder()
+                    .postId(postId)
+                    .userId(userId)
+                    .build());
+        } catch (DataIntegrityViolationException e) {
+            // Concurrent duplicate toggle: treat as already liked (idempotent).
+            return ResponseEntity.ok(Map.of(
+                    "liked", true,
+                    "likesCount", likeRepository.countByPostId(postId)
+            ));
+        }
 
         if (!post.getAuthorId().equals(userId)) {
             notificationPublisher.save(
@@ -284,6 +303,10 @@ public class PostController {
 
         if (post == null) {
             return ResponseEntity.badRequest().body(Map.of("message", "Post not found"));
+        }
+
+        if (!policy.canComment(post, ApiSecurity.currentActor())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Post is not visible to you");
         }
 
         if (request.getText() == null || request.getText().trim().isEmpty()) {
@@ -330,6 +353,10 @@ public class PostController {
             return ResponseEntity.badRequest().body(Map.of("message", "Original post not found"));
         }
 
+        if (!policy.canShareFrom(original, ApiSecurity.currentActor())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Post is not visible to you");
+        }
+
         shareRepository.save(
                 Share.builder()
                         .postId(postId)
@@ -341,9 +368,7 @@ public class PostController {
                         .build()
         );
 
-        int currentShare = original.getShareCount() == null ? 0 : original.getShareCount();
-        original.setShareCount(currentShare + 1);
-        postRepository.save(original);
+        postRepository.incrementShareCount(postId);
 
         Post sharedPost = Post.builder()
                 .authorId(request.getUserId())
@@ -381,8 +406,9 @@ public class PostController {
     private User currentUser() {
         return users.findById(ApiSecurity.currentActor().id()).orElseThrow();
     }
-    private Map<String, Object> mapPost(Post post, Long userId) {
+    private Map<String, Object> mapPost(Post post, com.travelai.backend.security.SessionService.Actor actor) {
         Map<String, Object> data = new HashMap<>();
+        Long userId = actor == null ? null : actor.id();
 
         data.put("id", post.getId());
         data.put("authorId", post.getAuthorId());
@@ -411,7 +437,7 @@ public class PostController {
         if (post.getOriginalPostId() != null) {
             Post original = postRepository.findById(post.getOriginalPostId()).orElse(null);
 
-            if (original != null) {
+            if (original != null && policy.canLike(original, actor)) {
                 Map<String, Object> originalData = new HashMap<>();
                 originalData.put("id", original.getId());
                 originalData.put("authorId", original.getAuthorId());

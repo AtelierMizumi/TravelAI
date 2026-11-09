@@ -23,4 +23,4 @@ if [[ -d /usr/lib/jvm/java-21-openjdk ]]; then
 fi
 printf 'Isolated test evidence directory: %s\n' "$test_root"
 cd "$repo_root/backend"
-mvn -o -Djava.version=21 -Dtravelai.build.directory="$test_root/build" "$@" test
+./mvnw -o -Djava.version=21 -Dtravelai.build.directory="$test_root/build" "$@" test
