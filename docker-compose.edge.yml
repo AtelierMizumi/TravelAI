@@ -31,6 +31,7 @@ services:
     volumes:
       - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
       - ./apps/mobile/dist:/srv/web:ro
+      - ./data/seed/images:/srv/media:ro
     cap_drop: [ALL]
     depends_on:
       backend-v2:

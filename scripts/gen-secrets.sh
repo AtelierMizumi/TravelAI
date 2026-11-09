@@ -23,3 +23,5 @@ set_default() { # name value
 }
 set_default POSTGRES_PASSWORD "$(openssl rand -base64 36 | tr -d '/+=\n')"
 set_default HOST_MESSAGE_KEY "$PWD/secrets/message.key"
+set_default SEED_ADMIN_PASSWORD "$(openssl rand -base64 18 | tr -d '/+=\n')"
+set_default SEED_USER_PASSWORD "$(openssl rand -base64 18 | tr -d '/+=\n')"

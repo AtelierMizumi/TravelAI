@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# Smoke test for the production edge. Usage: scripts/smoke-edge.sh <base-url> [--mock-ai]
+# Smoke test for the production edge. Usage: [SEEDED=0] scripts/smoke-edge.sh <base-url>
+# SEEDED=0 skips the demo-data checks (empty database, e.g. in CI).
 # Exits non-zero if any check fails.
 set -u
 BASE="${1:?usage: smoke-edge.sh <base-url>}"; BASE="${BASE%/}"
@@ -17,6 +18,15 @@ check "GET /ai/ (AI health)"                200 "$(code "$BASE/ai/")"
 check "GET /actuator/health hidden"         404 "$(code "$BASE/actuator/health")"
 check "GET /swagger-ui/index.html hidden"   404 "$(code "$BASE/swagger-ui/index.html")"
 check "GET /v3/api-docs hidden"             404 "$(code "$BASE/v3/api-docs")"
+
+if [ "${SEEDED:-1}" = 1 ]; then
+  count() { curl -sS -m 25 "$BASE/api/$1" 2>/dev/null | python3 -c 'import sys,json; print(len(json.load(sys.stdin)))' 2>/dev/null || echo 0; }
+  [ "$(count places)" -ge 12 ] && check "demo places >= 12" ok ok || check "demo places >= 12" ">=12" "$(count places)"
+  [ "$(count tours)" -ge 8 ] && check "demo tours >= 8" ok ok || check "demo tours >= 8" ">=8" "$(count tours)"
+  [ "$(count hotels)" -ge 8 ] && check "demo hotels >= 8" ok ok || check "demo hotels >= 8" ">=8" "$(count hotels)"
+  ctype=$(curl -sSI -m 25 "$BASE/media/ho-hoan-kiem.jpg" 2>/dev/null | tr -d '\r' | awk -F': ' 'tolower($1)=="content-type"{print $2}')
+  check "GET /media/ho-hoan-kiem.jpg is image/jpeg" "image/jpeg" "$ctype"
+fi
 
 hdr=$(curl -sSI -m 25 "$BASE/" 2>/dev/null)
 echo "$hdr" | grep -qi '^x-content-type-options: nosniff' && check "nosniff header" ok ok || check "nosniff header" ok missing

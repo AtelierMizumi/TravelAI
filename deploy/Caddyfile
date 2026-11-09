@@ -37,6 +37,13 @@
 		reverse_proxy ai-v2:8000
 	}
 
+	# Demo images (data/seed/images), cached by browsers
+	handle_path /media/* {
+		root * /srv/media
+		header Cache-Control "public, max-age=86400"
+		file_server
+	}
+
 	# Static web (expo export -p web), SPA fallback
 	handle {
 		root * /srv/web
