@@ -1,6 +1,7 @@
 package com.travelai.backend.security;
 
 import jakarta.servlet.http.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.*;
 import org.springframework.web.servlet.*;
 import org.springframework.web.servlet.config.annotation.*;
@@ -15,7 +16,15 @@ import org.springframework.web.util.UrlPathHelper;
 @Configuration
 public class ApiSecurity implements WebMvcConfigurer {
     private final SessionService sessions;
-    public ApiSecurity(SessionService sessions) { this.sessions=sessions; }
+    private final com.travelai.backend.admin.MaintenancePolicy maintenancePolicy;
+    private final com.travelai.backend.admin.SystemSettingsService settingsService;
+    public ApiSecurity(SessionService sessions) { this(sessions, null, null); }
+    @Autowired
+    public ApiSecurity(SessionService sessions,
+                       com.travelai.backend.admin.MaintenancePolicy maintenancePolicy,
+                       com.travelai.backend.admin.SystemSettingsService settingsService) {
+        this.sessions=sessions; this.maintenancePolicy=maintenancePolicy; this.settingsService=settingsService;
+    }
     @Bean public static Clock businessClock() { return Clock.systemUTC(); }
     public static SessionService.Actor actor(HttpServletRequest request) {
         Object value=request.getAttribute("travelai.actor");
@@ -50,6 +59,15 @@ public class ApiSecurity implements WebMvcConfigurer {
                     if (path.matches("/api/(tour|hotel)-bookings")) actor.requireAdmin();
                 }
                 if (!method.equals("GET") && path.matches("/api/(places|tours|hotels)(/.*)?")) actor.requireAdmin();
+                if (maintenancePolicy != null && method.equals("POST") && path.equals("/api/booking/reviews")) {
+                    boolean enabled = settingsService != null
+                            && Boolean.TRUE.equals(settingsService.current().getMaintenanceMode());
+                    if (maintenancePolicy.shouldBlock(enabled, actor,
+                            com.travelai.backend.admin.MaintenancePolicy.MaintenanceAction.NEW_PURCHASE)) {
+                        throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE,
+                                "Hệ thống đang bảo trì, vui lòng thử lại sau.");
+                    }
+                }
                 Matcher owner=Pattern.compile("/api/(?:auth/(?:profile|change-password)|(?:tour|hotel)-bookings/user)/(\\d+)").matcher(path);
                 if(owner.matches()) actor.requireOwner(Long.parseLong(owner.group(1)));
                 return true;
