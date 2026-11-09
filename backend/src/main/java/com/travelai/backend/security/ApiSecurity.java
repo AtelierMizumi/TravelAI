@@ -7,7 +7,10 @@ import org.springframework.web.servlet.config.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 import org.springframework.http.HttpStatus;
 import java.time.Clock;
+import java.util.Locale;
 import java.util.regex.*;
+import org.springframework.util.StringUtils;
+import org.springframework.web.util.UrlPathHelper;
 
 @Configuration
 public class ApiSecurity implements WebMvcConfigurer {
@@ -24,10 +27,18 @@ public class ApiSecurity implements WebMvcConfigurer {
                 org.springframework.web.context.request.RequestContextHolder.currentRequestAttributes();
         return actor(attributes.getRequest());
     }
+    /** Same view of the path that Spring MVC routes on: decoded, no ;matrix params, no //, no dot segments. */
+    static String normalizedPath(HttpServletRequest request) {
+        String raw = request.getRequestURI();
+        if (raw.toLowerCase(Locale.ROOT).matches(".*%(2e|2f|5c).*"))
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid request path");
+        String path = new UrlPathHelper().getPathWithinApplication(request);
+        return StringUtils.cleanPath(path.replaceAll("/{2,}", "/"));
+    }
     @Override public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(new HandlerInterceptor() {
             @Override public boolean preHandle(HttpServletRequest request, HttpServletResponse response,Object handler) {
-                String path=request.getRequestURI(), method=request.getMethod();
+                String path=normalizedPath(request), method=request.getMethod();
                 if (method.equals("OPTIONS") || path.equals("/api/auth/login") || path.equals("/api/auth/register") || (method.equals("POST") && (path.equals("/api/auth/password-reset/request") || path.equals("/api/auth/password-reset/verify") || path.equals("/api/auth/password-reset/confirm")))) return true;
                 if (method.equals("GET") && (path.matches("/api/(places|tours|hotels)(/.*)?") || path.matches("/api/ratings/(TOUR|HOTEL)/[0-9]+") || path.equals("/api/booking/offers") || path.equals("/api/system-settings"))) return true;
                 SessionService.Actor actor=sessions.authenticate(request.getHeader("Authorization"));

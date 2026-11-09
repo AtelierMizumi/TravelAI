@@ -24,6 +24,7 @@ public class UserController {
 
     @GetMapping
     public ResponseEntity<?> getAllUsers() {
+        com.travelai.backend.security.ApiSecurity.currentActor().requireAdmin();
         List<User> users = userRepository.findAll();
         return ResponseEntity.ok(users);
     }
@@ -31,6 +32,7 @@ public class UserController {
     @Transactional
     @PutMapping("/{id}/toggle-status")
     public ResponseEntity<?> toggleStatus(@PathVariable Long id) {
+        com.travelai.backend.security.ApiSecurity.currentActor().requireAdmin();
 
         User user = userRepository.findById(id).orElse(null);
 
@@ -61,6 +63,7 @@ public class UserController {
     public ResponseEntity<?> makeAdmin(
             @PathVariable Long id
     ) {
+        com.travelai.backend.security.ApiSecurity.currentActor().requireAdmin();
 
         User user = userRepository.findById(id).orElse(null);
 
@@ -81,6 +84,7 @@ public class UserController {
     public ResponseEntity<?> removeAdmin(
             @PathVariable Long id
     ) {
+        com.travelai.backend.security.ApiSecurity.currentActor().requireAdmin();
 
         User user = userRepository.findById(id).orElse(null);
 
@@ -101,6 +105,7 @@ public class UserController {
     public ResponseEntity<?> deleteUser(
             @PathVariable Long id
     ) {
+        com.travelai.backend.security.ApiSecurity.currentActor().requireAdmin();
 
         User user = userRepository.findById(id).orElse(null);
 
@@ -122,6 +127,7 @@ public class UserController {
 
     @PostMapping
 public ResponseEntity<?> createUser(@RequestBody User request) {
+        com.travelai.backend.security.ApiSecurity.currentActor().requireAdmin();
     if (userRepository.findByEmail(request.getEmail()).isPresent()) {
         return ResponseEntity.badRequest().body(
                 Map.of("message", "Email already exists")
@@ -147,6 +153,7 @@ public ResponseEntity<?> updateUser(
         @PathVariable Long id,
         @RequestBody User request
 ) {
+        com.travelai.backend.security.ApiSecurity.currentActor().requireAdmin();
     User user = userRepository.findById(id).orElse(null);
 
     if (user == null) {

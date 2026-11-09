@@ -67,6 +67,7 @@ public class AdminController {
 
     @GetMapping("/users")
     public ResponseEntity<?> getAllUsers() {
+        com.travelai.backend.security.ApiSecurity.currentActor().requireAdmin();
         return ResponseEntity.ok(userRepository.findAll());
     }
 }
