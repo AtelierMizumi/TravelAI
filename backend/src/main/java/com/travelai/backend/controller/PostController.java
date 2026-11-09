@@ -13,8 +13,10 @@ import com.travelai.backend.repository.CommentRepository;
 import com.travelai.backend.repository.PostLikeRepository;
 import com.travelai.backend.repository.PostRepository;
 import com.travelai.backend.repository.ShareRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -30,6 +32,7 @@ public class PostController {
     private final CommentRepository commentRepository;
     private final ShareRepository shareRepository;
     private final NotificationPublisher notificationPublisher;
+    private final com.travelai.backend.community.PostAccessPolicy policy;
 
     public PostController(
             UserRepository users,
@@ -37,7 +40,8 @@ public class PostController {
             PostLikeRepository likeRepository,
             CommentRepository commentRepository,
             ShareRepository shareRepository,
-            NotificationPublisher notificationPublisher
+            NotificationPublisher notificationPublisher,
+            com.travelai.backend.community.PostAccessPolicy policy
     ) {
         this.users = users;
         this.postRepository = postRepository;
@@ -45,6 +49,7 @@ public class PostController {
         this.commentRepository = commentRepository;
         this.shareRepository = shareRepository;
         this.notificationPublisher = notificationPublisher;
+        this.policy = policy;
     }
 
     @GetMapping
@@ -62,14 +67,19 @@ public class PostController {
     @GetMapping("/admin/all")
     public ResponseEntity<?> getAllPostsForAdmin() {
         ApiSecurity.currentActor().requireAdmin();
-        return ResponseEntity.ok(postRepository.findAllByOrderByCreatedAtDesc());
+        return ResponseEntity.ok(postRepository.findAllByOrderByCreatedAtDesc().stream()
+                .map(post -> mapPost(post, null))
+                .toList());
     }
 
     @GetMapping("/user/{userId}")
     public ResponseEntity<?> getPostsByUser(@PathVariable Long userId) {
-        boolean owner = ApiSecurity.currentActor().id() == userId;
+        var actor = ApiSecurity.currentActor();
+        boolean owner = actor.id() == userId;
         return ResponseEntity.ok(postRepository.findByAuthorIdOrderByCreatedAtDesc(userId).stream()
-                .filter(post -> owner || "APPROVED".equals(post.getStatus())).toList());
+                .filter(post -> owner || actor.admin() || policy.canReadFeed(post, actor))
+                .map(post -> mapPost(post, actor.id()))
+                .toList());
     }
 
     @PostMapping
@@ -239,6 +249,10 @@ public class PostController {
             return ResponseEntity.badRequest().body(Map.of("message", "Post not found"));
         }
 
+        if (!policy.canLike(post, ApiSecurity.currentActor())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Post is not visible to you");
+        }
+
         PostLike existing = likeRepository.findByPostIdAndUserId(postId, userId).orElse(null);
 
         if (existing != null) {
@@ -286,6 +300,10 @@ public class PostController {
             return ResponseEntity.badRequest().body(Map.of("message", "Post not found"));
         }
 
+        if (!policy.canComment(post, ApiSecurity.currentActor())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Post is not visible to you");
+        }
+
         if (request.getText() == null || request.getText().trim().isEmpty()) {
             return ResponseEntity.badRequest().body(Map.of("message", "Comment is empty"));
         }
@@ -328,6 +346,10 @@ public class PostController {
 
         if (original == null) {
             return ResponseEntity.badRequest().body(Map.of("message", "Original post not found"));
+        }
+
+        if (!policy.canShareFrom(original, ApiSecurity.currentActor())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Post is not visible to you");
         }
 
         shareRepository.save(
