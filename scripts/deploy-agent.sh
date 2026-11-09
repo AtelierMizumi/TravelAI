@@ -5,6 +5,7 @@
 #  3. smoke fails -> restart the previous version, remember the bad commit so it is not retried
 # State lives in $DEPLOY_DIR/state, log in $DEPLOY_DIR/history.log. Needs no credentials (public repo and images).
 set -uo pipefail
+umask 077   # state, logs and database dumps are private to this user
 
 DEPLOY_DIR="${DEPLOY_DIR:-$HOME/deploy}"
 [ -f "$DEPLOY_DIR/agent.env" ] && . "$DEPLOY_DIR/agent.env"
@@ -18,6 +19,7 @@ SMOKE_RETRIES="${SMOKE_RETRIES:-4}"; SMOKE_WAIT="${SMOKE_WAIT:-15}"
 SERVICES=(postgres-v2 ai-v2 backend-v2 caddy cloudflared)
 STATE="$DEPLOY_DIR/state"; LOG="$DEPLOY_DIR/history.log"
 mkdir -p "$STATE" "$DEPLOY_DIR/backups"
+chmod 700 "$DEPLOY_DIR/backups"
 
 log() { printf '%s %s\n' "$(date -Is)" "$*" >> "$LOG"; echo "$*"; }
 notify() { "$NOTIFY" "TravelAI deploy" "$1" >/dev/null 2>&1 || true; }
@@ -60,10 +62,20 @@ if ! compose "$tag" pull --quiet >/dev/null 2>&1; then
   exit 0
 fi
 
+# Refuse images that were not built from exactly this commit (stale or re-pushed tag).
+while read -r image; do
+  revision=$("$DOCKER" inspect --format '{{ index .Config.Labels "org.opencontainers.image.revision" }}' "$image" 2>/dev/null)
+  if [ "$revision" != "$latest" ]; then
+    echo "$latest" > "$STATE/bad.sha"
+    log "REFUSED $tag: $image was not built from $latest"
+    notify "Refused deploy of $tag: image revision mismatch"
+    exit 1
+  fi
+done < <(compose "$tag" config --images 2>/dev/null | grep '^ghcr.io/ateliermizumi/travelai-')
+
 db=$(compose "$tag" ps -q postgres-v2 2>/dev/null | head -n1)
 if [ -n "$db" ]; then
   "$DOCKER" exec "$db" pg_dump -U travelai_user travel_ai > "$DEPLOY_DIR/backups/before-$tag.sql" 2>/dev/null
-  chmod 600 "$DEPLOY_DIR/backups/before-$tag.sql" 2>/dev/null
   # keep the 10 newest backups; only files inside our own backups directory are touched
   ls -1t "$DEPLOY_DIR"/backups/before-*.sql 2>/dev/null | tail -n +11 | while read -r old; do rm -f -- "$old"; done
 fi

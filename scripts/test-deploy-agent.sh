@@ -24,6 +24,8 @@ STUB
 case "$*" in
   *" pull"*)        echo "PULL tag=$TRAVELAI_TAG" >> "$DEPLOY_DIR/calls.log"; [ -e "$DEPLOY_DIR/fake.pullfail" ] && exit 1; exit 0 ;;
   *" ps -q"*)       echo fakecontainer ;;
+  *"config --images"*) printf 'ghcr.io/ateliermizumi/travelai-backend:x\nghcr.io/ateliermizumi/travelai-ai:x\nghcr.io/ateliermizumi/travelai-web:x\npostgres:16-alpine\n' ;;
+  inspect*)         cat "$DEPLOY_DIR/fake.revision" 2>/dev/null || cat "$DEPLOY_DIR/fake.latest" ;;
   exec*)            echo "-- dump" ;;
   *" up "*)         echo "UP tag=$TRAVELAI_TAG" >> "$DEPLOY_DIR/calls.log"; echo "$TRAVELAI_TAG" > "$DEPLOY_DIR/running.tag" ;;
 esac
@@ -76,6 +78,19 @@ d=$(new_env); echo "$SHA_B" > "$d/fake.latest"; echo "sha-bbbbbbbbbbbb" > "$d/fa
 run_agent "$d"
 [ "$(grep -c '^UP ' "$d/calls.log")" = 1 ] && [ "$(cat "$d/state/bad.sha")" = "$SHA_B" ] && ok "first deploy failure has no rollback and is marked bad" || bad "first deploy failure has no rollback and is marked bad"
 
+# 7. image revision label does not match the commit -> never started, marked bad
+d=$(new_env); echo "$SHA_B" > "$d/fake.latest"; echo "$SHA_A" > "$d/fake.revision"
+run_agent "$d"
+! grep -q '^UP ' "$d/calls.log" && [ "$(cat "$d/state/bad.sha")" = "$SHA_B" ] && [ ! -e "$d/state/current.sha" ] \
+  && ok "image built from another commit is refused" || bad "image built from another commit is refused"
+
+# 8. backups are private
+d=$(new_env); echo "$SHA_B" > "$d/fake.latest"
+run_agent "$d"
+[ "$(stat -c %a "$d/backups")" = 700 ] && [ "$(stat -c %a "$d"/backups/before-*.sql)" = 600 ] && ok "backup directory 700 and dump 600" || bad "backup directory 700 and dump 600"
+
 # 6. history log records outcomes
+d=$(new_env); echo "$SHA_B" > "$d/fake.latest"; echo "sha-bbbbbbbbbbbb" > "$d/fake.badtags"
+run_agent "$d"
 grep -q "FAILED" "$d/history.log" && ok "history log records the failure" || bad "history log records the failure"
 exit $fail

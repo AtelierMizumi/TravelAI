@@ -12,6 +12,19 @@ Compose project: `travelai-prod` (separate from the dev stack). Nothing publishe
 - `scripts/smoke-edge.sh https://travelai.minhthuan.dev` must print only PASS.
 - Tunnel connected: `docker logs travelai-prod-cloudflared-1 2>&1 | grep -c "Registered tunnel connection"` -> 4.
 
+## Automatic deploy (CD, pull-based)
+- Flow: push to `DEPLOY_REF` -> CI (all jobs) -> job `publish` pushes `travelai-backend`, `travelai-ai`, `travelai-web` to GHCR tagged `sha-<12 hex>` ->
+  `scripts/deploy-agent.sh` on this PC (systemd user timer, every 3 min) sees the newest green commit, pulls the images, backs up the database,
+  starts the release and smoke-tests it. Smoke fails -> the previous tag is restarted and the bad commit is remembered (no retry loop).
+- Nothing connects into this PC and the agent holds no credentials: the repo and the images are public and contain no secrets
+  (secrets are mounted at runtime from `~/deploy/travelai/.env` and `secrets/`).
+- Files: `~/deploy/agent.env` (`DEPLOY_REF`, `REPO`), `~/deploy/state/{current.sha,current.tag,bad.sha}`, `~/deploy/history.log`, `~/deploy/backups/before-<tag>.sql` (last 10).
+- Watch: `tail -f ~/deploy/history.log`, `systemctl --user list-timers travelai-deploy.timer`, `journalctl --user -u travelai-deploy.service -e`.
+- Pause deploys: `systemctl --user stop travelai-deploy.timer`. Re-try a commit marked bad: `rm ~/deploy/state/bad.sha`.
+- Switch the tracked branch (e.g. after the v2 merge into `main`): edit `DEPLOY_REF` in `~/deploy/agent.env`.
+- Manual rollback: run `TRAVELAI_TAG=sha-<12 hex> docker compose -p travelai-prod --profile v2 -f docker-compose.yml -f docker-compose.edge.yml -f docker-compose.release.yml up -d --no-build` inside `~/deploy/travelai`.
+- Limits: a deploy takes up to a few minutes after CI finishes; the PC must be on; failure notification is the log and a desktop notification (no commit status, that would need a token).
+
 ## Demo data
 - Load / repair: `scripts/seed.sh` (takes a `pg_dump` into `~/backups/` first, then calls the public API; safe to re-run, a second run writes nothing). Preview: `scripts/seed.sh --dry-run`.
 - Content: `data/seed/*.json`, images in `data/seed/images` (served at `/media/`), image licences in `data/seed/ATTRIBUTION.md`.
