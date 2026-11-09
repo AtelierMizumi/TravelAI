@@ -38,10 +38,10 @@ export const PostCard = ({
     }
   };
 
-  const isOwnPost =
-    post.isOwnPost ||
-    (currentUser?.username &&
-      post.author?.username?.toLowerCase() === currentUser.username.toLowerCase());
+  const isOwnPost = Boolean(
+    currentUser?.username &&
+      post.author?.username?.toLowerCase() === currentUser.username.toLowerCase()
+  );
 
   return (
     <div className="bg-white rounded-3xl shadow-xs hover:shadow-md border border-gray-100 overflow-hidden transition-all duration-300">
@@ -64,6 +64,11 @@ export const PostCard = ({
               {isOwnPost && (
                 <span className="text-[10px] bg-brand-50 text-brand-700 px-2 py-0.5 rounded-full font-semibold border border-brand-200">
                   Bạn
+                </span>
+              )}
+              {post.status === 'PENDING' && (
+                <span className="text-[10px] bg-amber-50 text-amber-700 px-2 py-0.5 rounded-full font-semibold border border-amber-200">
+                  Đang chờ duyệt
                 </span>
               )}
             </div>
@@ -133,7 +138,7 @@ export const PostCard = ({
           <LikeButton
             initialLikes={post.likesCount || 0}
             initialIsLiked={post.isLiked || false}
-            onToggle={() => onLikeToggle(post.id)}
+            onToggle={() => onLikeToggle(post.id, currentUser?.username)}
           />
 
           {/* Comment Toggle */}

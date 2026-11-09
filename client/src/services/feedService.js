@@ -13,9 +13,10 @@ const DEFAULT_POSTS = [
     locationTag: 'Phố Cổ Hội An, Quảng Nam',
     content: 'Hoàng hôn ở Phố Cổ Hội An thật sự quá đỗi bình yên 🌅 Những ánh đèn lồng rực rỡ phản chiếu xuống dòng sông Hoài thơ mộng khiến ai đến đây cũng muốn quay trở lại nhiều lần!',
     imageUrl: 'https://images.unsplash.com/photo-1559592413-7cec4d0cae2b?auto=format&fit=crop&w=1200&q=80',
-    likesCount: 542,
-    isLiked: false,
+    baseLikesCount: 542,
+    likedByUsernames: [],
     sharesCount: 38,
+    status: 'APPROVED',
     comments: [
       {
         id: 1001,
@@ -45,9 +46,10 @@ const DEFAULT_POSTS = [
     locationTag: 'Bà Nà Hills & Cầu Vàng, Đà Nẵng',
     content: 'Lần đầu trải nghiệm tuyến cáp treo Bà Nà Hills săn mây vào sáng sớm 😍 Cầu Vàng được đôi bàn tay rêu phong nâng đỡ giữa ngút ngàn rừng núi quả xứng danh kỳ quan du lịch!',
     imageUrl: 'https://images.unsplash.com/photo-1569154941061-e231b4725ef1?auto=format&fit=crop&w=1200&q=80',
-    likesCount: 821,
-    isLiked: true,
+    baseLikesCount: 820,
+    likedByUsernames: ['khanh_sky'],
     sharesCount: 65,
+    status: 'APPROVED',
     comments: [
       {
         id: 1003,
@@ -70,9 +72,10 @@ const DEFAULT_POSTS = [
     locationTag: 'Vịnh Hạ Long, Quảng Ninh',
     content: 'Du ngoạn du thuyền 5 sao trên Vịnh Hạ Long ngắm nhìn hàng nghìn hòn đảo đá vôi kỳ vĩ. Chèo kayak vào hang Luồn và ngắm hoàng hôn buông xuống mặt nước ngọc bích cực kỳ chill!',
     imageUrl: 'https://images.unsplash.com/photo-1528127269322-539801943592?auto=format&fit=crop&w=1200&q=80',
-    likesCount: 1240,
-    isLiked: false,
+    baseLikesCount: 1240,
+    likedByUsernames: [],
     sharesCount: 94,
+    status: 'APPROVED',
     comments: [
       {
         id: 1004,
@@ -95,9 +98,10 @@ const DEFAULT_POSTS = [
     locationTag: 'Quần Thể Danh Thắng Tràng An, Ninh Bình',
     content: 'Tràng An mùa này nước trong vắt nhìn thấy cả rong rêu đáy sông. Ngồi thuyền lướt qua những thung lũng ngập nước và hang động xuyên thủy cảm giác như lạc vào cõi bồng lai tiên cảnh 🌿✨',
     imageUrl: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80',
-    likesCount: 673,
-    isLiked: false,
+    baseLikesCount: 673,
+    likedByUsernames: [],
     sharesCount: 42,
+    status: 'APPROVED',
     comments: [],
     createdAt: '2026-11-06T14:15:00',
   },
@@ -138,25 +142,47 @@ const saveStoredFollowing = (following) => {
 
 export const feedService = {
   /**
-   * Lấy danh sách bài viết theo bộ lọc
+   * Lấy danh sách bài viết theo bộ lọc và danh tính người xem
    */
   async getFeedPosts({ filter = 'ALL', currentUsername = 'traveler' } = {}) {
     const list = getStoredPosts();
-    let result = [...list];
+    const normalizedUser = (currentUsername || '').toLowerCase();
 
-    if (filter === 'POPULAR') {
-      result.sort((a, b) => b.likesCount - a.likesCount);
-    } else if (filter === 'MINE') {
-      result = result.filter(
-        (p) =>
-          p.author?.username?.toLowerCase() === currentUsername?.toLowerCase() ||
-          p.isOwnPost === true
-      );
+    // Enrich each post dynamically according to the current viewing user
+    const enriched = list.map((p) => {
+      const likedBy = Array.isArray(p.likedByUsernames) ? p.likedByUsernames : [];
+      const isLiked = normalizedUser
+        ? likedBy.some((u) => (u || '').toLowerCase() === normalizedUser)
+        : false;
+      const baseCount = p.baseLikesCount ?? (p.likesCount ?? 0);
+      const likesCount = baseCount + likedBy.length;
+      const postAuthor = (p.author?.username || '').toLowerCase();
+      const isOwn = Boolean(normalizedUser && postAuthor === normalizedUser);
+
+      return {
+        ...p,
+        isLiked,
+        likesCount,
+        isOwnPost: isOwn,
+      };
+    });
+
+    let result = [];
+    if (filter === 'MINE') {
+      // Strictly user's own posts (no leakage from other accounts)
+      result = enriched.filter((p) => p.isOwnPost);
     } else {
-      // ALL: mới nhất lên đầu
-      result.sort(
-        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      );
+      // Only APPROVED posts appear on the public community feed,
+      // EXCEPT the author can see their own pending posts.
+      result = enriched.filter((p) => (p.status === 'APPROVED' || !p.status) || p.isOwnPost);
+
+      if (filter === 'POPULAR') {
+        result.sort((a, b) => b.likesCount - a.likesCount);
+      } else {
+        result.sort(
+          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+      }
     }
 
     return result;
@@ -171,11 +197,12 @@ export const feedService = {
     }
 
     const posts = getStoredPosts();
+    const username = currentUser?.username || 'traveler';
     const newPost = {
       id: Date.now(),
       author: {
-        id: currentUser?.id || 1,
-        username: currentUser?.username || 'traveler',
+        id: currentUser?.id || Date.now(),
+        username: username,
         fullName: currentUser?.fullName || 'Nguyễn Văn Du Khách',
         avatarUrl:
           currentUser?.avatarUrl ||
@@ -186,39 +213,61 @@ export const feedService = {
       imageUrl:
         imageUrl?.trim() ||
         'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=80',
-      likesCount: 0,
-      isLiked: false,
+      baseLikesCount: 0,
+      likedByUsernames: [],
       sharesCount: 0,
       comments: [],
-      isOwnPost: true,
+      status: 'PENDING', // Đưa vào queue duyệt nội dung WBS 1.7.6
       createdAt: new Date().toISOString(),
     };
 
     posts.unshift(newPost);
     saveStoredPosts(posts);
-    return newPost;
+
+    return {
+      ...newPost,
+      isLiked: false,
+      likesCount: 0,
+      isOwnPost: true,
+    };
   },
 
   /**
-   * Thả tim hoặc Bỏ thả tim bài viết
+   * Thả tim hoặc Bỏ thả tim bài viết (Namespaced theo từng tài khoản)
    */
-  async toggleLike(postId) {
+  async toggleLike(postId, currentUsername = 'traveler') {
     const posts = getStoredPosts();
     const idx = posts.findIndex((p) => p.id === Number(postId));
     if (idx === -1) throw new Error('Bài viết không tồn tại.');
 
     const post = posts[idx];
-    const newLiked = !post.isLiked;
-    const newCount = newLiked ? post.likesCount + 1 : Math.max(0, post.likesCount - 1);
+    const likedBy = Array.isArray(post.likedByUsernames) ? [...post.likedByUsernames] : [];
+    const normalizedUser = (currentUsername || 'traveler').toLowerCase();
+    const userIdx = likedBy.findIndex((u) => (u || '').toLowerCase() === normalizedUser);
+
+    let newLiked = false;
+    if (userIdx > -1) {
+      likedBy.splice(userIdx, 1);
+      newLiked = false;
+    } else {
+      likedBy.push(currentUsername || 'traveler');
+      newLiked = true;
+    }
+
+    const baseCount =
+      post.baseLikesCount ??
+      (post.likesCount ? Math.max(0, post.likesCount - (post.isLiked ? 1 : 0)) : 0);
+    const totalLikes = baseCount + likedBy.length;
 
     posts[idx] = {
       ...post,
-      isLiked: newLiked,
-      likesCount: newCount,
+      baseLikesCount: baseCount,
+      likedByUsernames: likedBy,
+      likesCount: totalLikes,
     };
 
     saveStoredPosts(posts);
-    return { isLiked: newLiked, likesCount: newCount };
+    return { isLiked: newLiked, likesCount: totalLikes };
   },
 
   /**

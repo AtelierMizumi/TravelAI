@@ -66,8 +66,8 @@ export const FeedPage = () => {
     }
   };
 
-  const handleLikeToggle = async (postId) => {
-    await feedService.toggleLike(postId);
+  const handleLikeToggle = async (postId, username) => {
+    await feedService.toggleLike(postId, username || user?.username || 'traveler');
   };
 
   const handleCommentAdded = async (postId, text) => {
