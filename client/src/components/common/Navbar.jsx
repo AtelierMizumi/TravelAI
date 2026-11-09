@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Compass, Camera, User, LogOut, Menu, X, Sparkles } from 'lucide-react';
+import { Compass, Camera, MessageSquare, User, LogOut, Menu, X, Sparkles } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 export const Navbar = () => {
@@ -13,6 +13,7 @@ export const Navbar = () => {
     { name: 'Trang chủ', path: '/' },
     { name: 'Khám phá địa danh', path: '/places', icon: Compass },
     { name: 'Nhận diện AI', path: '/recognize', icon: Camera },
+    { name: 'Bảng tin du lịch', path: '/feed', icon: MessageSquare },
   ];
 
   const isActive = (path) => {
