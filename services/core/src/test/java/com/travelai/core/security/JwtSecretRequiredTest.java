@@ -33,6 +33,16 @@ class JwtSecretRequiredTest {
     }
 
     @Test
+    @DisplayName("Rejects the public tutorial key that used to be the default")
+    void rejectsRevokedPublicKey() {
+        // Known-public key, revoked: present only to prove it can never be used again.
+        String revoked = "404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970";
+        IllegalStateException ex = assertThrows(IllegalStateException.class,
+                () -> new JwtTokenProvider(revoked, EXPIRATION_MS));
+        assertTrue(ex.getMessage().contains("JWT_SECRET"));
+    }
+
+    @Test
     @DisplayName("Rejects a null secret")
     void rejectsNullSecret() {
         assertThrows(IllegalStateException.class, () -> new JwtTokenProvider(null, EXPIRATION_MS));
