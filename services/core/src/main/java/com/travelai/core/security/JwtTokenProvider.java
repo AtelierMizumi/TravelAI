@@ -30,8 +30,25 @@ public class JwtTokenProvider {
     public JwtTokenProvider(
             @Value("${app.jwt.secret}") String jwtSecret,
             @Value("${app.jwt.expiration-ms}") long jwtExpirationInMs) {
-        this.key = Keys.hmacShaKeyFor(jwtSecret.getBytes(StandardCharsets.UTF_8));
+        this.key = Keys.hmacShaKeyFor(requireSafeSecret(jwtSecret).getBytes(StandardCharsets.UTF_8));
         this.jwtExpirationInMs = jwtExpirationInMs;
+    }
+
+    /** Placeholder shipped in .env.example; long enough for HMAC but publicly known. */
+    private static final String DOCUMENTED_PLACEHOLDER = "replace-with-output-of-openssl-rand-hex-32";
+    private static final int MIN_SECRET_BYTES = 32; // HS256 needs a 256-bit key
+
+    private static String requireSafeSecret(String secret) {
+        if (secret == null || secret.isBlank()) {
+            throw new IllegalStateException("JWT_SECRET is missing or blank; generate one with: openssl rand -hex 32");
+        }
+        if (secret.equals(DOCUMENTED_PLACEHOLDER)) {
+            throw new IllegalStateException("JWT_SECRET still holds the .env.example placeholder; generate one with: openssl rand -hex 32");
+        }
+        if (secret.getBytes(StandardCharsets.UTF_8).length < MIN_SECRET_BYTES) {
+            throw new IllegalStateException("JWT_SECRET must be at least " + MIN_SECRET_BYTES + " bytes; generate one with: openssl rand -hex 32");
+        }
+        return secret;
     }
 
     public String generateToken(Authentication authentication) {

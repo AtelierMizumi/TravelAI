@@ -96,4 +96,7 @@ jobs:
           push: false
           tags: travelai-client:ci
       - name: Validate compose file
-        run: POSTGRES_PASSWORD=ci-placeholder docker compose config -q
+        run: POSTGRES_PASSWORD=ci-placeholder JWT_SECRET=ci-placeholder docker compose config -q
+
+      - name: Compose requires JWT_SECRET
+        run: bash scripts/test-compose-secrets.sh
