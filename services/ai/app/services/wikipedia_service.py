@@ -23,7 +23,7 @@ MEDIA_REJECTION_TERMS = {
 # generic names are blocked with HTTP 403 (robot policy).
 _USER_AGENT = (
     "TravelAI/1.0 (https://github.com/AtelierMizumi/TravelAI; "
-    "contact thuanc177@gmail.com) ai-landmark-recognition"
+    "contact contact@minhthuan.dev) ai-landmark-recognition"
 )
 
 
