@@ -31,6 +31,7 @@ Compose project: `travelai-prod` (separate from the dev stack). Nothing publishe
 - Watch: `tail -f ~/deploy/history.log`, `systemctl --user list-timers travelai-deploy.timer`, `journalctl --user -u travelai-deploy.service -e`.
 - Pause deploys: `systemctl --user stop travelai-deploy.timer`. Re-try a commit marked bad: `rm ~/deploy/state/bad.sha`.
 - Switch the tracked branch (e.g. after the v2 merge into `main`): edit `DEPLOY_REF` in `~/deploy/agent.env`.
+  The branch must also be listed under `on.push.branches` in `.github/workflows/ci.yml`; otherwise no green push run exists and the agent silently keeps the current release. Current tracked branch: `feat/wbs-1.8.2-v2-integration`.
 - Manual rollback: run `TRAVELAI_TAG=sha-<12 hex> docker compose -p travelai-prod --profile v2 -f docker-compose.yml -f docker-compose.edge.yml -f docker-compose.release.yml up -d --no-build` inside `~/deploy/travelai`.
 - Limits: a deploy takes up to a few minutes after CI finishes; the PC must be on; failure notification is the log and a desktop notification (no commit status, that would need a token).
 

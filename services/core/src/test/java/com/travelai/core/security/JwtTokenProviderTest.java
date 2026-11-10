@@ -14,7 +14,8 @@ import static org.junit.jupiter.api.Assertions.*;
 class JwtTokenProviderTest {
 
     private JwtTokenProvider tokenProvider;
-    private final String secret = "404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970";
+    // TEST ONLY synthetic secret - never use in production
+    private final String secret = "79bd464d2e683674a9b549dec0cfeca659a1b19969d432365ed81df28990020a";
     private final long expirationMs = 3600000;
 
     @BeforeEach
