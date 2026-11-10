@@ -16,7 +16,11 @@ import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Date;
+import java.util.HexFormat;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Component
@@ -37,6 +41,9 @@ public class JwtTokenProvider {
     /** Placeholder shipped in .env.example; long enough for HMAC but publicly known. */
     private static final String DOCUMENTED_PLACEHOLDER = "replace-with-output-of-openssl-rand-hex-32";
     private static final int MIN_SECRET_BYTES = 32; // HS256 needs a 256-bit key
+    /** SHA-256 of the public tutorial key that was the old default; stored hashed, never in clear. */
+    private static final Set<String> REVOKED_SECRET_SHA256 = Set.of(
+            "3354cfcf65c7b2e6840ea6f880aede239750cb1d063950c4e8fd9fbf9ec73a32");
 
     private static String requireSafeSecret(String secret) {
         if (secret == null || secret.isBlank()) {
@@ -45,10 +52,22 @@ public class JwtTokenProvider {
         if (secret.equals(DOCUMENTED_PLACEHOLDER)) {
             throw new IllegalStateException("JWT_SECRET still holds the .env.example placeholder; generate one with: openssl rand -hex 32");
         }
+        if (REVOKED_SECRET_SHA256.contains(sha256Hex(secret))) {
+            throw new IllegalStateException("JWT_SECRET is a revoked public key; generate one with: openssl rand -hex 32");
+        }
         if (secret.getBytes(StandardCharsets.UTF_8).length < MIN_SECRET_BYTES) {
             throw new IllegalStateException("JWT_SECRET must be at least " + MIN_SECRET_BYTES + " bytes; generate one with: openssl rand -hex 32");
         }
         return secret;
+    }
+
+    private static String sha256Hex(String value) {
+        try {
+            byte[] digest = MessageDigest.getInstance("SHA-256").digest(value.getBytes(StandardCharsets.UTF_8));
+            return HexFormat.of().formatHex(digest);
+        } catch (NoSuchAlgorithmException e) {
+            throw new IllegalStateException("SHA-256 unavailable", e);
+        }
     }
 
     public String generateToken(Authentication authentication) {
