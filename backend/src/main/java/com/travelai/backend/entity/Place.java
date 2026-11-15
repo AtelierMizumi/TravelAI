@@ -31,6 +31,6 @@ public class Place {
     @Column(length = 5000)
     private String description;
 
-    @Column(length = 1000)
+    @Column(columnDefinition = "TEXT")
     private String imageUrl;
 }

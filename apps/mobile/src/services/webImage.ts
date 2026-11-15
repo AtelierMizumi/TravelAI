@@ -70,6 +70,18 @@ export async function prepareWebImage(uri: string): Promise<string> {
   return URL.createObjectURL(await downscaleToJpeg(original));
 }
 
+/** Shrinks a picked image to a small JPEG data URL (stored as text with the catalog row). */
+export async function prepareWebImageDataUrl(uri: string, max = 800): Promise<string> {
+  const original = await (await fetch(uri)).blob();
+  const jpeg = await downscaleToJpeg(original, undefined, max);
+  return new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result));
+    reader.onerror = () => reject(new Error("Không đọc được ảnh đã nén."));
+    reader.readAsDataURL(jpeg);
+  });
+}
+
 function browserDeps(): BrowserDeps {
   return {
     loadImage: (source) =>
