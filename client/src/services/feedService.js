@@ -124,8 +124,9 @@ const saveStoredPosts = (posts) => {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(posts));
 };
 
-const getStoredFollowing = () => {
-  const stored = localStorage.getItem(FOLLOWING_KEY);
+const getStoredFollowing = (viewer) => {
+  if (!viewer) return [];
+  const stored = localStorage.getItem(`${FOLLOWING_KEY}:${viewer.toLowerCase()}`);
   if (stored) {
     try {
       return JSON.parse(stored);
@@ -133,11 +134,11 @@ const getStoredFollowing = () => {
       // ignore
     }
   }
-  return ['minh_traveler'];
+  return [];
 };
 
-const saveStoredFollowing = (following) => {
-  localStorage.setItem(FOLLOWING_KEY, JSON.stringify(following));
+const saveStoredFollowing = (following, viewer) => {
+  localStorage.setItem(`${FOLLOWING_KEY}:${viewer.toLowerCase()}`, JSON.stringify(following));
 };
 
 export const feedService = {
@@ -302,9 +303,9 @@ export const feedService = {
   /**
    * Kiểm tra và Đảo trạng thái theo dõi tác giả
    */
-  toggleFollow(username) {
-    if (!username) return false;
-    let following = getStoredFollowing();
+  toggleFollow(username, viewer) {
+    if (!username || !viewer) return false;
+    let following = getStoredFollowing(viewer);
     const isCurrentlyFollowing = following.includes(username);
 
     if (isCurrentlyFollowing) {
@@ -313,16 +314,16 @@ export const feedService = {
       following.push(username);
     }
 
-    saveStoredFollowing(following);
+    saveStoredFollowing(following, viewer);
     return !isCurrentlyFollowing;
   },
 
   /**
    * Kiểm tra xem đang theo dõi tác giả hay không
    */
-  isFollowing(username) {
-    if (!username) return false;
-    const following = getStoredFollowing();
+  isFollowing(username, viewer) {
+    if (!username || !viewer) return false;
+    const following = getStoredFollowing(viewer);
     return following.includes(username);
   },
 

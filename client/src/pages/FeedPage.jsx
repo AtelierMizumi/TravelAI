@@ -57,12 +57,14 @@ export const FeedPage = () => {
         message: 'Trải nghiệm du lịch của bạn đã được chia sẻ lên bảng tin cộng đồng.',
       });
       fetchPosts();
+      return true;
     } catch (err) {
       setToast({
         type: 'error',
         title: 'Không thể đăng bài',
         message: err.message || 'Đã có lỗi xảy ra khi tạo bài viết.',
       });
+      return false;
     }
   };
 

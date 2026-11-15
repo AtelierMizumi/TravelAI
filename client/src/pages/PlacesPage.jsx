@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Compass, AlertCircle, Sparkles, MapPin, Search } from 'lucide-react';
 import { locationService } from '../services/locationService';
 import { PlaceCard } from '../components/places/PlaceCard';
@@ -15,7 +16,9 @@ export const PlacesPage = () => {
   const [error, setError] = useState(null);
 
   // Filters & Pagination State
-  const [searchKeyword, setSearchKeyword] = useState('');
+  const [searchParams] = useSearchParams();
+  const [searchKeyword, setSearchKeyword] = useState(() => searchParams.get('keyword') || '');
+  useEffect(() => { setSearchKeyword(searchParams.get('keyword') || ''); setCurrentPage(0); }, [searchParams]);
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedProvince, setSelectedProvince] = useState('');
   const [selectedSort, setSelectedSort] = useState('rating,desc');

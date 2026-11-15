@@ -22,11 +22,12 @@ export const CreatePostBox = ({ currentUser, onPostCreated }) => {
 
     try {
       setIsSubmitting(true);
-      await onPostCreated({
+      const saved = await onPostCreated({
         content: content.trim(),
         imageUrl: imageUrl.trim() || sampleImages[0].url,
         locationTag: locationTag.trim() || 'Việt Nam',
       });
+      if (!saved) return;
       setContent('');
       setImageUrl('');
       setLocationTag('');

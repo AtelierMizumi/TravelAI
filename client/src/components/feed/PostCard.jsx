@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   MessageCircle,
   Share2,
@@ -21,17 +21,26 @@ export const PostCard = ({
   const [showComments, setShowComments] = useState(false);
   const [copied, setCopied] = useState(false);
   const [isFollowing, setIsFollowing] = useState(
-    feedService.isFollowing(post.author?.username)
+    feedService.isFollowing(post.author?.username, currentUser?.username)
   );
 
-  const handleShare = () => {
-    navigator.clipboard?.writeText(window.location.href);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  useEffect(() => {
+    setIsFollowing(feedService.isFollowing(post.author?.username, currentUser?.username));
+  }, [post.author?.username, currentUser?.username]);
+
+  const handleShare = async () => {
+    try {
+      if (!navigator.clipboard?.writeText) throw new Error('clipboard unavailable');
+      await navigator.clipboard.writeText(window.location.href);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      setCopied(false);
+    }
   };
 
   const handleFollow = () => {
-    const nextStatus = feedService.toggleFollow(post.author?.username);
+    const nextStatus = feedService.toggleFollow(post.author?.username, currentUser?.username);
     setIsFollowing(nextStatus);
     if (onFollowToggle) {
       onFollowToggle(post.author?.username, nextStatus);
@@ -88,7 +97,7 @@ export const PostCard = ({
         </div>
 
         {/* Follow Button */}
-        {!isOwnPost && (
+        {currentUser?.username && !isOwnPost && (
           <button
             type="button"
             onClick={handleFollow}
