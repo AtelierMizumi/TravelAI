@@ -51,10 +51,14 @@ public class AiController {
     public Map<String,String> voice(@RequestBody VoiceInput input, HttpServletRequest request) {
         long userId=ApiSecurity.actor(request).id();
         VoiceFormat.Audio audio=VoiceFormat.parse(input == null ? null : input.audio());
-        List<Map<String,Object>> contents=List.of(Map.of("role","user","parts",List.of(
-            Map.of("text","Hãy nghe câu hỏi bằng giọng nói và trả lời bằng tiếng Việt. Nếu không nghe rõ, hãy nói rõ."),
-            Map.of("inlineData",Map.of("mimeType",audio.mime(),"data",audio.base64())))));
+        List<Map<String,Object>> contents=voiceContents(audio);
         return generate(userId, contents);
+    }
+    /** Audio first, then the instruction: Gemini answers the spoken question directly this way. */
+    public static List<Map<String,Object>> voiceContents(VoiceFormat.Audio audio) {
+        return List.of(Map.of("role","user","parts",List.of(
+            Map.of("inlineData",Map.of("mimeType",audio.mime(),"data",audio.base64())),
+            Map.of("text","Người dùng gửi một câu hỏi bằng giọng nói (tệp âm thanh đính kèm). Hãy nghe và trả lời trực tiếp bằng tiếng Việt, ngắn gọn. Chỉ khi thật sự không nghe được nội dung mới nói rõ điều đó."))));
     }
     private Map<String,String> generate(long userId,List<Map<String,Object>> contents) {
         if (key.isEmpty()) throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Chat AI chưa được cấu hình khóa Gemini trên máy chủ.");
