@@ -21,6 +21,7 @@ import type { Booking, CatalogItem, Offer, User } from "@/services/types";
 type LegacyBooking = { id: number; userId?: number; userName?: string; tourName?: string; hotelName?: string; bookingDate?: string; checkIn?: string; status?: string };
 const kindLabel = { TOUR: "Tour", HOTEL: "Khách sạn" } as const;
 const statuses = ["CONFIRMED", "CANCELLED", "NO_SHOW"];
+const statusLabel = (value: string) => ({ CONFIRMED: "Đã xác nhận", CANCELLED: "Đã hủy", NO_SHOW: "Không đến" } as Record<string, string>)[value] || value;
 export function AdminBookings() {
   const resource = useResource<Booking[]>("/booking/bookings");
   const legacyTours = useResource<LegacyBooking[]>("/tour-bookings");
@@ -91,7 +92,7 @@ export function AdminBookings() {
                 <View style={adminList.body}>
                   <Text style={adminList.name}>{row.customer}</Text>
                   <Text style={adminList.sub}>
-                    {[row.date || "Chưa có ngày", row.time, row.province || "Chưa rõ tỉnh/thành", row.status].filter(Boolean).join(" · ")}
+                    {[row.date || "Chưa có ngày", row.time, row.province || "Chưa rõ tỉnh/thành", statusLabel(row.status)].filter(Boolean).join(" · ")}
                   </Text>
                   {!isLegacy && <Text selectable style={adminList.sub}>Mã {row.key}</Text>}
                 </View>
@@ -117,7 +118,7 @@ export function AdminBookings() {
             <AdminButton title={filters.province || "Tất cả tỉnh/thành"} icon="location-outline" onPress={() => setShowProvinces(!showProvinces)} />
             {!!filters.province && <AdminButton title="Xóa tỉnh" icon="close-outline" onPress={() => patch({ province: "" })} />}
             {["", ...statuses].map((value) => (
-              <AdminButton key={value || "all"} title={value || "Mọi trạng thái"} icon="flag-outline" tone={(filters.status || "") === value ? "primary" : "soft"} onPress={() => patch({ status: value })} />
+              <AdminButton key={value || "all"} title={value ? statusLabel(value) : "Mọi trạng thái"} icon="flag-outline" tone={(filters.status || "") === value ? "primary" : "soft"} onPress={() => patch({ status: value })} />
             ))}
           </View>
           {showProvinces && (
