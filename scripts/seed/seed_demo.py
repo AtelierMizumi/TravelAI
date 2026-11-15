@@ -73,6 +73,7 @@ class Seeder:
         self.today = today or datetime.now(timezone.utc).date()
         self.planned = 0
         self.created = 0
+        self.updated = 0
 
     # -- helpers ---------------------------------------------------------
     def _write(self, token, path, body, headers=None):
@@ -89,14 +90,15 @@ class Seeder:
     # -- catalog ---------------------------------------------------------
     def seed_catalog(self, token, dataset):
         places = {p["key"]: self._ensure(token, "/api/places", p["name"], {
-            "name": p["name"], "description": p["description"], "imageUrl": self._image(p["image"])})
+            "name": p["name"], "description": p["description"], "province": p["province"],
+            "imageUrl": self._image(p["image"])})
             for p in dataset["places"]}
         by_key = {p["key"]: p for p in dataset["places"]}
         tour_ids = {}
         for t in dataset["tours"]:
             place = by_key[t["place"]]
             row = self._ensure(token, "/api/tours", t["name"], {
-                "name": t["name"], "location": place["name"], "rating": 4.5, "price": t["price"],
+                "name": t["name"], "location": place["name"], "province": place["province"], "rating": 4.5, "price": t["price"],
                 "durationDays": t["durationDays"], "maxGuests": t["maxGuests"], "status": "active",
                 "description": t["description"], "image": self._image(place["image"])})
             tour_ids[t["key"]] = row["id"]
@@ -115,9 +117,21 @@ class Seeder:
     def _ensure(self, token, path, name, body):
         for row in self.api.request("GET", path) or []:
             if row.get("name") == name:
+                if body.get("province") and not row.get("province"):
+                    return self._fill_province(token, path, row, body["province"])
                 return row
         self.log(f"create {path} {name}")
         return self._write(token, path, body)
+
+    def _fill_province(self, token, path, row, province):
+        """Older databases hold rows seeded before provinces existed: set it, never overwrite one."""
+        self.log(f"set province {path} {row.get('name')}")
+        if self.dry_run:
+            self.planned += 1
+            return row
+        updated = self.api.request("PUT", f"{path}/{row['id']}", {**row, "province": province}, token)
+        self.updated += 1
+        return updated or row
 
     def _seed_offers(self, token, dataset, tour_ids, hotel_ids):
         existing = {(o["kind"], o["legacyId"]) for o in self._admin_get("/api/booking/admin/offers", token)}
@@ -302,7 +316,7 @@ def main(argv=None):
         seeder.seed_people(token, dataset, user_password)
     except SeedError as error:
         sys.exit(f"seed failed: {error}")
-    print(f"done: created={seeder.created} planned={seeder.planned}")
+    print(f"done: created={seeder.created} updated={seeder.updated} planned={seeder.planned}")
 
 
 if __name__ == "__main__":

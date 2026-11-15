@@ -57,7 +57,14 @@ class FakeBackend:
                 self._send(200, table.get(self.path, []))
 
             def do_PUT(self):
-                self._body()
+                body = self._body()
+                parts = self.path.split("/")
+                if len(parts) == 4 and parts[2] in ("places", "tours", "hotels"):
+                    outer.writes.append(("PUT", self.path))
+                    outer.auth_headers.append(self.headers.get("Authorization"))
+                    row = next(r for r in getattr(outer, parts[2]) if r["id"] == int(parts[3]))
+                    row.update(body)
+                    return self._send(200, row)
                 if self.path.startswith("/api/posts/") and self.path.endswith("/approve"):
                     outer.posts[int(self.path.split("/")[3]) - 1]["status"] = "APPROVED"
                     return self._send(200, {})

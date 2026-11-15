@@ -19,6 +19,37 @@ def run(backend, dry_run=False):
     return seeder
 
 
+class ProvinceSeedTest(unittest.TestCase):
+    def test_places_and_tours_carry_their_province(self):
+        with FakeBackend() as backend:
+            run(backend)
+            dataset = seed_demo.load_dataset()
+            by_key = {p["key"]: p for p in dataset["places"]}
+            for place in dataset["places"]:
+                row = next(r for r in backend.places if r["name"] == place["name"])
+                self.assertEqual(row["province"], place["province"])
+            for tour in dataset["tours"]:
+                row = next(r for r in backend.tours if r["name"] == tour["name"])
+                self.assertEqual(row["province"], by_key[tour["place"]]["province"])
+
+    def test_rerun_fills_a_missing_province_without_creating_rows(self):
+        with FakeBackend() as backend:
+            run(backend)
+            for row in backend.places + backend.tours:
+                row.pop("province", None)
+            counts = (len(backend.places), len(backend.tours), len(backend.hotels))
+            run(backend)
+            self.assertEqual(counts, (len(backend.places), len(backend.tours), len(backend.hotels)))
+            self.assertTrue(all(r.get("province") for r in backend.places + backend.tours))
+
+    def test_rerun_never_overwrites_a_province_that_is_already_set(self):
+        with FakeBackend() as backend:
+            run(backend)
+            backend.places[0]["province"] = "Edited by an administrator"
+            run(backend)
+            self.assertEqual(backend.places[0]["province"], "Edited by an administrator")
+
+
 class CatalogSeedTest(unittest.TestCase):
     def test_first_run_creates_whole_catalog(self):
         with FakeBackend() as backend:
