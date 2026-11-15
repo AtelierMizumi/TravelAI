@@ -101,7 +101,7 @@ Phase 7: STOP AT GATEKEEPER ➔ Report PR link to Tech Lead for Review & Merge
 ### Phase 4: Scope-Isolated Deep Coding & Verification
 1. **RACI Enforcement**: Edit ONLY the designated microservice/directory:
    - Thuận: `ai-service/`, root `docker-compose.yml`, architecture docs.
-   - Đức: `services/backend/` (Spring Boot, DDL, flyway).
+   - Đức: `backend/` (Spring Boot, SQL migrations in `backend/src/main/resources/db`).
    - Ngọc: `apps/mobile/` (Expo, React Native).
 2. **Quality & Zero-Pollution**:
    - Zero `.docx`, `.xlsx`, `.pdf`, or `local_references/` staged.

@@ -1,115 +1,27 @@
-# 🔌 ĐẶC TẢ GIAO DIỆN API LIÊN DỊCH VỤ (API CONTRACT SPECIFICATION)
+# Hợp đồng API (bản chạy TravelAI 2.0)
 
-> **Mã công việc WBS**: `1.1.2 - Tài liệu thiết kế kiến trúc Microservices & AI Gateway`  
-> **Người thực hiện**: Trần Minh Thuận (Tech Lead / System Architect)  
-> **Phiên bản**: `1.0.0` | **Sprint**: `Sprint 1 (Tuần 1 - 2)`  
-> **Liên kết Issue**: [Issue #2](https://github.com/AtelierMizumi/TravelAI/issues/2)
+> Cập nhật 15/11/2026 từ mã nguồn `backend` và `ai-service`. Tất cả đường dẫn qua một origin: `/api/*`, `/ws`, `/ai/*`. Lỗi trả JSON `{message}`; chưa dùng `application/problem+json`. Các thao tác ghi trên `places`, `tours`, `hotels`, `admin`, `users`, `system-settings` yêu cầu ADMIN.
 
----
+## Backend (`/api`)
 
-## 1. GIAO TIẾP NỘI BỘ (INTERNAL INTER-SERVICE API: SPRING BOOT <-> FASTAPI)
+| Nhóm | Điểm cuối |
+|---|---|
+| Xác thực `/auth` | `POST register`, `login`, `logout`, `password-reset/request`, `password-reset/verify`, `password-reset/confirm`; `GET me`; `PUT profile/{id}`, `change-password/{id}` |
+| Địa điểm `/places` | `GET /`, `GET /{id}`, `GET /resolve?landmarkCode=`, `GET /{id}/services` (tour + khách sạn cùng tỉnh, `matchType=SAME_PROVINCE`); `POST`, `PUT /{id}`, `DELETE /{id}` (ADMIN) |
+| Tour `/tours`, Khách sạn `/hotels` | `GET /`, `GET /{id}`; `POST`, `PUT /{id}`, `DELETE /{id}` (ADMIN; trả **409** khi đã có đặt chỗ) |
+| Đặt chỗ `/booking` | `GET offers`, `offers/{id}/availability`, `bank`, `bank/institutions`, `bookings`, `bookings/{id}/history`, `reviews/{id}`; `POST bank/link`, `reviews`, `reviews/{id}/pay`, `bookings/{id}/cancel`, `bookings/{id}/no-show`; quản trị: `offers`, `calendars`, `bank/accounts`, `bookings/{id}/correct-no-show` |
+| Đặt chỗ cũ `/tour-bookings`, `/hotel-bookings` | `GET`, `POST`, `PUT /{id}`, `PUT /{id}/approve`, `PUT /{id}/reject`, `DELETE /{id}` |
+| Đánh giá `/ratings` | `POST /`, `GET /{kind}/{catalogId}` |
+| Bảng tin `/posts` | `GET /`, `GET /user/{userId}`, `GET /admin/all`; `POST /`, `PUT /{id}`, `DELETE /{id}`, `PUT /{id}/approve`, `PUT /{id}/reject`, `POST /{postId}/like`, `/comments`, `/share` |
+| Xã hội | `/follows` (`POST toggle`, `GET stats/{userId}`, `GET check`), `/people`, `/notifications` |
+| Chat `/chat` + WebSocket `/ws` | `POST send`, `GET conversation`, `GET inbox/{userId}`, `GET unread/{userId}`, `PUT read` |
+| Quản trị | `/admin` (`GET stats`, `analytics`, `users`), `/admin/system-settings`, `/system-settings` (`GET` công khai, `PUT` ADMIN), `/users` (khóa, cấp/gỡ quyền, xóa) |
+| Trợ lý `/ai` (backend) | `POST chat`, `voice`, `detect` |
 
-### 1.1. API Nhận Diện Địa Danh Bằng AI
-- **Endpoint**: `POST /api/v1/vision/recognize`
-- **Giao thức**: HTTP/1.1 RESTful (Internal Microservice Network)
-- **Content-Type**: `multipart/form-data`
+## AI service (`/ai`)
 
-#### Request Parameters:
-| Tên Tham Số | Kiểu Dữ Liệu | Bắt Buộc | Mô Tả |
-|---|---|---|---|
-| `file` | Binary (Image) | Có | File hình ảnh định dạng JPEG/PNG/WEBP, kích thước < 10MB |
-
-#### Response Success (`200 OK`):
-```json
-{
-  "success": true,
-  "landmark_name": "Vịnh Hạ Long",
-  "confidence": 0.94,
-  "latitude": 20.9101,
-  "longitude": 107.1839,
-  "description": "Di sản thiên nhiên thế giới UNESCO tại tỉnh Quảng Ninh, Việt Nam.",
-  "matched_keywords": ["ha long", "vịnh hạ long", "ha long bay"],
-  "detection_type": "LANDMARK_DETECTION"
-}
-```
-
-#### Response Not Recognized (`200 OK`):
-```json
-{
-  "success": false,
-  "landmark_name": null,
-  "confidence": 0.0,
-  "latitude": null,
-  "longitude": null,
-  "description": "Không nhận diện được danh lam thắng cảnh trong bức ảnh.",
-  "matched_keywords": [],
-  "detection_type": "UNKNOWN"
-}
-```
-
-#### Response Error (`400 Bad Request / 500 Internal Error`):
-```json
-{
-  "success": false,
-  "error_code": "INVALID_IMAGE_FORMAT",
-  "message": "Định dạng file không được hỗ trợ. Vui lòng tải lên định dạng JPEG, PNG hoặc WEBP.",
-  "timestamp": "2026-09-27T10:00:00Z"
-}
-```
-
----
-
-## 2. GIAO DIỆN NGOẠI VI (EXTERNAL CLIENT-FACING REST API)
-
-### 2.1. Nhận Diện & Gợi Ý Điểm Đến
-- **Endpoint**: `POST /api/places/recognize`
-- **Header**: `Authorization: Bearer <JWT_TOKEN>` (Tùy chọn)
-- **Mô tả**: Tiếp nhận ảnh từ React Client, chuyển tiếp đến AI Service và kết hợp dữ liệu từ PostgreSQL.
-- **Response Success (`200 OK`)**:
-```json
-{
-  "status": "success",
-  "data": {
-    "landmark": {
-      "id": 1,
-      "name": "Vịnh Hạ Long",
-      "province": "Quảng Ninh",
-      "description": "Kỳ quan thiên nhiên thế giới nổi tiếng với hàng ngàn đảo đá vôi.",
-      "image_url": "https://storage.travelai.vn/places/ha-long.jpg",
-      "rating": 4.8,
-      "review_count": 128
-    },
-    "confidence_score": 0.94,
-    "suggested_tours": [
-      {
-        "id": 101,
-        "title": "Tour Du Thuyền 5 Sao Vịnh Hạ Long 2N1Đ",
-        "price": 2850000,
-        "duration": "2 ngày 1 đêm",
-        "rating": 4.9
-      }
-    ],
-    "suggested_hotels": [
-      {
-        "id": 201,
-        "name": "Vinpearl Resort & Spa Hạ Long",
-        "price_per_night": 2200000,
-        "stars": 5,
-        "address": "Đảo Rều, Bãi Cháy, TP. Hạ Long"
-      }
-    ]
-  }
-}
-```
-
-### 2.2. Chuẩn Mã Lỗi Hệ Thống (RFC 7807 Standard Error Format)
-```json
-{
-  "type": "https://travelai.vn/errors/resource-not-found",
-  "title": "Resource Not Found",
-  "status": 404,
-  "detail": "Không tìm thấy thông tin địa danh với mã được cung cấp.",
-  "instance": "/api/places/999",
-  "timestamp": "2026-09-27T10:00:00Z"
-}
-```
+| Điểm cuối | Mô tả |
+|---|---|
+| `GET /` | Tình trạng: `googleVisionConfigured`, `localLandmarkModel` |
+| `POST /detect` | `multipart`: `file`, `consent=true`; trả tên, `recognitionStatus` (`identified`, `predicted`, `unknown`), tọa độ, độ tin cậy, `landmarkCode`, `province`. Tệp quá 10 MB bị từ chối (413); lỗi nhà cung cấp trả 502/503 |
+| `GET /places/summary` | Tóm tắt địa điểm theo tên |
