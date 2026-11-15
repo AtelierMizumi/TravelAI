@@ -12,4 +12,5 @@ public interface HotelBookingRepository extends JpaRepository<HotelBooking, Long
     List<HotelBooking> findByUserIdOrderByCreatedAtDesc(Long userId);
 
     Long countByUserId(Long userId);
+    boolean existsByHotelName(String hotelName);
 }

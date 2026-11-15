@@ -12,4 +12,5 @@ public interface TourBookingRepository extends JpaRepository<TourBooking, Long> 
     List<TourBooking> findByUserIdOrderByCreatedAtDesc(Long userId);
 
     Long countByUserId(Long userId);
+    boolean existsByTourName(String tourName);
 }

@@ -1,5 +1,6 @@
 package com.travelai.backend.controller;
 
+import com.travelai.backend.catalog.CatalogDeleteGuard;
 import com.travelai.backend.entity.Tour;
 import com.travelai.backend.repository.TourRepository;
 import org.springframework.http.ResponseEntity;
@@ -12,9 +13,11 @@ import java.util.Map;
 public class TourController {
 
     private final TourRepository tourRepository;
+    private final CatalogDeleteGuard deleteGuard;
 
-    public TourController(TourRepository tourRepository) {
+    public TourController(TourRepository tourRepository, CatalogDeleteGuard deleteGuard) {
         this.tourRepository = tourRepository;
+        this.deleteGuard = deleteGuard;
     }
 
     @GetMapping
@@ -96,6 +99,11 @@ public class TourController {
             return ResponseEntity.badRequest().body(
                     Map.of("message", "Tour not found")
             );
+        }
+
+        if (deleteGuard.inUse(tour)) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.CONFLICT)
+                    .body(Map.of("message", CatalogDeleteGuard.MESSAGE));
         }
 
         tourRepository.delete(tour);

@@ -1,6 +1,7 @@
 package com.travelai.backend.controller;
 
 import com.travelai.backend.entity.Hotel;
+import com.travelai.backend.catalog.CatalogDeleteGuard;
 import com.travelai.backend.repository.HotelRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,9 +13,11 @@ import java.util.Map;
 public class HotelController {
 
     private final HotelRepository hotelRepository;
+    private final CatalogDeleteGuard deleteGuard;
 
-    public HotelController(HotelRepository hotelRepository) {
+    public HotelController(HotelRepository hotelRepository, CatalogDeleteGuard deleteGuard) {
         this.hotelRepository = hotelRepository;
+        this.deleteGuard = deleteGuard;
     }
 
     @GetMapping
@@ -79,6 +82,11 @@ public class HotelController {
             return ResponseEntity.badRequest().body(
                     Map.of("message", "Hotel not found")
             );
+        }
+
+        if (deleteGuard.inUse(hotel)) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.CONFLICT)
+                    .body(Map.of("message", CatalogDeleteGuard.MESSAGE));
         }
 
         hotelRepository.delete(hotel);

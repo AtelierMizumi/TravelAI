@@ -15,6 +15,7 @@ class LandmarkCatalogTest {
     @Autowired LandmarkCatalog catalog;
     @Autowired TourRepository tours;
     @Autowired HotelRepository hotels;
+    @Autowired PlaceRepository places;
 
     @Test void resolvesCatalogAndKeepsOnlySameProvince() {
         var place = catalog.resolve("chua_cau_hoi_an");
@@ -33,5 +34,18 @@ class LandmarkCatalogTest {
         assertFalse(selectedTours.stream().map(Tour.class::cast).anyMatch(t -> t.getId().equals(other.getId())));
         assertTrue(selectedHotels.stream().map(Hotel.class::cast).anyMatch(h -> h.getId().equals(hotel.getId())));
         assertFalse(selectedHotels.stream().map(Hotel.class::cast).anyMatch(h -> h.getId().equals(inactive.getId())));
+    }
+
+    @Test void unknownProvinceNeverInventsServices() {
+        var place = new Place();
+        place.setName("Synthetic unknown " + UUID.randomUUID());
+        place.setProvince("Atlantis");
+        place = places.save(place);
+        tours.save(Tour.builder().name("Synthetic atlantis tour").location("Atlantis").status("active").build());
+        hotels.save(Hotel.builder().name("Synthetic atlantis hotel").location("Atlantis").status("active").build());
+        var result = catalog.services(place.getId());
+        assertNull(result.get("province"));
+        assertTrue(((List<?>) result.get("tours")).isEmpty());
+        assertTrue(((List<?>) result.get("hotels")).isEmpty());
     }
 }
