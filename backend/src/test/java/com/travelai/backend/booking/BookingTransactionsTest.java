@@ -204,6 +204,10 @@ class BookingTransactionsTest {
         String stats = mvc.perform(get("/api/admin/stats").header("Authorization",bearer(admin)))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
         assertTrue(json.readTree(stats).get("canonicalBookings").asLong() > 0);
+        var statsJson = json.readTree(stats);
+        assertTrue(statsJson.get("tourBookings").asLong() > 0, "the paid tour booking is counted as a tour");
+        assertEquals(statsJson.get("totalBookings").asLong(), statsJson.get("tourBookings").asLong() + statsJson.get("hotelBookings").asLong(),
+                "tour and hotel counts split the same confirmed total, with no double counting");
         assertEquals(900,balance());
     }
     @Test void physicalHotelRoomsRejectOverlapAndAllowAdjacentStays() {

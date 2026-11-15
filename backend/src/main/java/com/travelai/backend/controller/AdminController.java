@@ -62,6 +62,8 @@ public class AdminController {
         long posts = postRepository.count();
         // Canonical-only: legacy TourBooking/HotelBooking tables never counted (spec D12).
         long canonicalBookings = canonicalCountAll();
+        long tourBookings = canonicalCount("TOUR");
+        long hotelBookings = canonicalCount("HOTEL");
         long places = placeRepository.count();
 
         return ResponseEntity.ok(
@@ -70,9 +72,17 @@ public class AdminController {
                         "posts", posts,
                         "canonicalBookings", canonicalBookings,
                         "totalBookings", canonicalBookings,
+                        "tourBookings", tourBookings,
+                        "hotelBookings", hotelBookings,
                         "places", places
                 )
         );
+    }
+
+    /** Confirmed canonical reservations of one kind; same filter as the total so the split adds up. */
+    private long canonicalCount(String kind) {
+        return ((Number)em.createNativeQuery("select count(*) from booking_reservations where status='CONFIRMED' and cast(itinerary as jsonb)->>'kind'=:kind")
+                .setParameter("kind", kind).getSingleResult()).longValue();
     }
 
     private long canonicalCountAll() {
