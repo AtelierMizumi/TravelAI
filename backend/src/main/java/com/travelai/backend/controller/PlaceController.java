@@ -40,6 +40,7 @@ public class PlaceController {
     public ResponseEntity<Place> update(@PathVariable Long id, @RequestBody Place request) {
         return repo.findById(id).map(place -> {
             place.setName(request.getName()); place.setDescription(request.getDescription()); place.setImageUrl(request.getImageUrl());
+            if (request.getProvince() != null) place.setProvince(request.getProvince());
             return ResponseEntity.ok(repo.save(place));
         }).orElseGet(() -> ResponseEntity.notFound().build());
     }

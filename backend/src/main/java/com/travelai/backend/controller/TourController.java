@@ -79,7 +79,7 @@ public class TourController {
 
         tour.setName(request.getName());
         tour.setLocation(request.getLocation());
-        tour.setProvince(request.getProvince());
+        if (request.getProvince() != null) tour.setProvince(request.getProvince());
         tour.setRating(request.getRating());
         tour.setPrice(request.getPrice());
         tour.setDurationDays(request.getDurationDays());
