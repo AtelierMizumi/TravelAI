@@ -13,6 +13,6 @@ export COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-travelai-prod}"
     npx expo export -p web --output-dir dist )
 
 # expo export recreates dist/, which orphans Caddy's bind mount: always recreate Caddy.
-docker compose --profile v2 -f docker-compose.yml -f docker-compose.edge.yml rm -sf caddy >/dev/null 2>&1 || true
-docker compose --profile v2 -f docker-compose.yml -f docker-compose.edge.yml up -d --build --wait postgres-v2 ai-v2 backend-v2 caddy cloudflared
+docker compose -f docker-compose.yml -f docker-compose.edge.yml rm -sf caddy >/dev/null 2>&1 || true
+docker compose -f docker-compose.yml -f docker-compose.edge.yml up -d --build --wait postgres-v2 ai-v2 backend-v2 caddy cloudflared
 echo "stack is up: $PUBLIC_ORIGIN"

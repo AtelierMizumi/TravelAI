@@ -1,108 +1,13 @@
 services:
   # ============================================================================
-  # Relational Database: PostgreSQL 16
-  # Schema and seed data are applied on the first start of an empty volume.
-  # ============================================================================
-  postgres:
-    image: postgres:16-alpine
-    container_name: travelai-postgres
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: travelai_db
-      POSTGRES_USER: travelai_user
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set in env or .env (see .env.example)}
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./services/core/src/main/resources/db/init_schema.sql:/docker-entrypoint-initdb.d/01-init-schema.sql:ro
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U travelai_user -d travelai_db"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - travelai-network
-
-  # ============================================================================
-  # AI Microservice: Python FastAPI + Google Cloud Vision SDK
-  # Runs in deterministic mock mode unless VISION_MOCK_ENABLED=false and
-  # Google credentials are provided.
-  # ============================================================================
-  ai-service:
-    build:
-      context: ./services/ai
-      dockerfile: Dockerfile
-    container_name: travelai-ai-service
-    restart: unless-stopped
-    environment:
-      - PORT=8000
-      - VISION_MOCK_ENABLED=${VISION_MOCK_ENABLED:-true}
-    ports:
-      - "8000:8000"
-    networks:
-      - travelai-network
-
-  # ============================================================================
-  # Core Business Backend: Java 17 + Spring Boot 3
-  # ============================================================================
-  backend:
-    build:
-      context: ./services/core
-      dockerfile: Dockerfile
-    container_name: travelai-backend
-    restart: unless-stopped
-    depends_on:
-      postgres:
-        condition: service_healthy
-      ai-service:
-        condition: service_healthy
-    environment:
-      - SPRING_PROFILES_ACTIVE=dev
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres:5432/travelai_db
-      - SPRING_DATASOURCE_USERNAME=travelai_user
-      - SPRING_DATASOURCE_PASSWORD=${POSTGRES_PASSWORD:?POSTGRES_PASSWORD must be set in env or .env (see .env.example)}
-      - CORS_ALLOWED_ORIGINS=${CORS_ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:5173}
-      - AI_SERVICE_URL=http://ai-service:8000
-      # Optional here so the v2 profile still renders; core refuses a blank secret at startup.
-      - JWT_SECRET=${JWT_SECRET:-}
-      - JWT_EXPIRATION_MS=${JWT_EXPIRATION_MS:-7200000}
-    ports:
-      - "8080:8080"
-    networks:
-      - travelai-network
-
-  # ============================================================================
-  # Presentation Layer: React 18 + Vite SPA served by NGINX
-  # The browser talks to a single origin; NGINX proxies /api/v1/vision/ to the
-  # AI service and /api/ to the core backend (see client/nginx.conf).
-  # ============================================================================
-  client:
-    build:
-      context: ./client
-      dockerfile: Dockerfile
-    container_name: travelai-client
-    restart: unless-stopped
-    depends_on:
-      backend:
-        condition: service_healthy
-      ai-service:
-        condition: service_healthy
-    ports:
-      - "3000:3000"
-    networks:
-      - travelai-network
-
-  # ============================================================================
-  # TravelAI 2.0 stack (profile "v2"): Expo app backend, AI service, database.
-  # Start with: docker compose --profile v2 up -d --build postgres-v2 ai-v2 backend-v2
-  # Name the services explicitly: a bare "up" would also start the default stack,
-  # which uses the same host ports 8080/8000.
+  # TravelAI stack: Expo app backend, AI service, database.
+  # Start with: docker compose up -d --build postgres-v2 ai-v2 backend-v2
+  # (the "-v2" suffix is the product generation, TravelAI 2.0; names are kept so
+  # the production deploy agent and its volumes keep working.)
   # Needs POSTGRES_PASSWORD, plus HOST_GCP_KEY (service-account JSON path on the
   # host) and HOST_MESSAGE_KEY (message key file path); both must be set (the service fails to start if a path is missing).
   # ============================================================================
   postgres-v2:
-    profiles: ["v2"]
     image: postgres:16-alpine
     restart: unless-stopped
     environment:
@@ -122,7 +27,6 @@ services:
       - travelai-network
 
   ai-v2:
-    profiles: ["v2"]
     build:
       context: .
       dockerfile: ai-service/Dockerfile
@@ -145,7 +49,6 @@ services:
       - travelai-network
 
   backend-v2:
-    profiles: ["v2"]
     build:
       context: .
       dockerfile: backend/Dockerfile
@@ -175,8 +78,6 @@ services:
       - travelai-network
 
 volumes:
-  postgres_data:
-    driver: local
   postgres_v2_data:
     driver: local
 

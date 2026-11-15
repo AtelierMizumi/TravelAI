@@ -29,7 +29,7 @@ flock -n 9 || exit 0
 
 compose() { # $1=image tag, rest=compose args
   local tag=$1; shift
-  (cd "$APP_DIR" && COMPOSE_PROJECT_NAME=travelai-prod TRAVELAI_TAG="$tag" "$DOCKER" compose --profile v2 \
+  (cd "$APP_DIR" && COMPOSE_PROJECT_NAME=travelai-prod TRAVELAI_TAG="$tag" "$DOCKER" compose \
      -f docker-compose.yml -f docker-compose.edge.yml -f docker-compose.release.yml "$@")
 }
 origin() { grep '^PUBLIC_ORIGIN=' "$APP_DIR/.env" | cut -d= -f2-; }

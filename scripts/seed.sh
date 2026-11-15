@@ -8,7 +8,7 @@ bash scripts/gen-secrets.sh >/dev/null
 set -a; . ./.env; set +a
 : "${PUBLIC_ORIGIN:?set PUBLIC_ORIGIN in .env}"
 export COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-travelai-prod}"
-db=$(docker compose --profile v2 -f docker-compose.yml -f docker-compose.edge.yml ps -q postgres-v2)
+db=$(docker compose -f docker-compose.yml -f docker-compose.edge.yml ps -q postgres-v2)
 [ -n "$db" ] || { echo "postgres-v2 is not running: start the stack with scripts/up.sh" >&2; exit 1; }
 admin="admin@demo.travelai.test"
 dry=""; [ "${1:-}" = "--dry-run" ] && dry="--dry-run"

@@ -133,7 +133,7 @@ jobs:
     env:
       COMPOSE_PROJECT_NAME: travelai-prod
       COMPOSE: >-
-        docker compose --profile v2
+        docker compose
         -f docker-compose.yml -f docker-compose.edge.yml -f docker-compose.ci.yml
     steps:
       - uses: actions/checkout@v4

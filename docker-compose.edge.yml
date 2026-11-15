@@ -1,5 +1,5 @@
 # Production edge overlay for the v2 stack: Caddy (only ingress) + cloudflared (outbound tunnel).
-# Usage: scripts/up.sh   (or: docker compose --profile v2 -f docker-compose.yml -f docker-compose.edge.yml up -d --build --wait)
+# Usage: scripts/up.sh   (or: docker compose -f docker-compose.yml -f docker-compose.edge.yml up -d --build --wait)
 # Needs in .env: POSTGRES_PASSWORD, HOST_GCP_KEY, HOST_MESSAGE_KEY, CLOUDFLARE_TUNNEL_TOKEN, PUBLIC_ORIGIN.
 # Tunnel route (Cloudflare dashboard): <PUBLIC_ORIGIN host> -> http://caddy:80
 services:
@@ -25,7 +25,6 @@ services:
       TRAVELAI_MESSAGE_KEY_REQUIRED: "true"
 
   caddy:
-    profiles: ["v2"]
     image: caddy:2
     restart: unless-stopped
     volumes:
@@ -47,7 +46,6 @@ services:
       - travelai-network
 
   cloudflared:
-    profiles: ["v2"]
     image: cloudflare/cloudflared:latest
     restart: unless-stopped
     command: tunnel --no-autoupdate run
