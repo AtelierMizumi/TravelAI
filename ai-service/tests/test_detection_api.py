@@ -156,6 +156,26 @@ class DetectionApiTest(unittest.TestCase):
         with patch.object(ai, "wikipedia_lookup", return_value={**article, "language": "en"}):
             self.assertFalse(self.client.get("/places/summary", params={"name": "Synthetic"}).json()["found"])
 
+    def test_google_web_candidate_naming_a_catalog_landmark_is_offered_as_a_prediction(self):
+        # Real case: the photo is dominated by motorbikes, so the scene is not "place", yet Google names the market.
+        signals = dict(landmarks=[], entities=[dict(name="Ben Thanh Market", score=1.78), dict(name="Clock tower", score=.73)],
+                       guesses=["ben thanh market"], labels=[dict(name="Motorcycle", score=.95), dict(name="Parking", score=.9)],
+                       objects=[dict(name="Motorcycle", score=.9, bounds=[])], ocr="")
+        with patch.object(ai, "analyze_google", return_value=signals):
+            body = self.upload().json()
+        self.assertEqual("predicted", body["recognitionStatus"])
+        self.assertTrue(body["isPrediction"])
+        self.assertEqual("Chợ Bến Thành", body["name"])
+        self.assertIsNone(body["landmarkCode"], "a prediction must not attach services before the user confirms")
+        self.assertEqual("cho_ben_thanh", body["catalogCandidates"][0]["code"])
+
+    def test_response_without_a_catalog_match_has_no_candidates(self):
+        signals = dict(landmarks=[], entities=[dict(name="Fence", score=.8)], guesses=[], labels=[], objects=[], ocr="")
+        with patch.object(ai, "analyze_google", return_value=signals):
+            body = self.upload().json()
+        self.assertEqual("unknown", body["recognitionStatus"])
+        self.assertEqual([], body["catalogCandidates"])
+
 
 if __name__ == "__main__":
     unittest.main()

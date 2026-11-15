@@ -31,6 +31,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LiveScan } from "@/components/live-scan";
 import { recognizeImage, type RecognitionResult } from "@/services/recognition";
 import { searchPlaces } from "@/services/place-search";
+import { suggestedPlaceQuery } from "@/services/suggestion";
 import { prepareWebImage } from "@/services/webImage";
 
 async function prepareNativeImage(asset: ImagePicker.ImagePickerAsset): Promise<string> {
@@ -150,6 +151,11 @@ export default function RecognitionScreen() {
       const response = await recognizeImage(uri, controller.signal);
       if (!controller.signal.aborted) {
         setResult(response);
+        const suggestion = suggestedPlaceQuery(response);
+        if (suggestion) {
+          setPlaceQuery(suggestion);
+          void openPlacePicker();
+        }
         if (response.landmarkCode && response.recognitionStatus === "identified") {
           try {
             const place = await api<Place>(`/places/resolve?landmarkCode=${encodeURIComponent(response.landmarkCode)}`, { signal: controller.signal });

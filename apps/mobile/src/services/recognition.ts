@@ -24,6 +24,7 @@ export interface RecognitionResult {
   knowledgeSource?: string;
   coordinates?: { latitude: number; longitude: number };
   ocrText?: string;
+  catalogCandidates?: { code: string; name: string; province: string; score: number }[];
 }
 
 export function recognitionApiUrl() {
