@@ -8,6 +8,7 @@ import unicodedata
 from pathlib import Path
 from difflib import SequenceMatcher
 
+from ai.catalog_resolve import resolve_catalog
 from ai.landmark_model import model as landmark_model, LANDMARKS
 
 import requests
@@ -968,6 +969,16 @@ def detect(file: UploadFile = File(...), consent: bool = Form(False)):
         if analysis is None:
             analysis = fallback_analysis(signals)
 
+        # Google often names the landmark (web entity) while the scene looks like "traffic" or "people";
+        # the scene-based fallback then says unknown. An exact catalog name is trustworthy evidence.
+        catalog = resolve_catalog(candidates, LANDMARKS)
+        if not analysis.get("exactName") and catalog["best"]:
+            row = catalog["best"]
+            analysis = dict(exactName=row['name'], displayName=row['name'], category='place',
+                recognitionStatus='predicted', searchQuery=None, locationHint=row['province'],
+                description=row['description'] + ' Đây là dự đoán từ Google Vision, chưa phải xác minh tuyệt đối.',
+                reason='Google Vision gợi ý một tên khớp địa danh trong danh mục; cần bạn xác nhận.')
+
         local_used = False
         if local and local["accepted"]:
             row = LANDMARKS[local["code"]]
@@ -1096,6 +1107,7 @@ def detect(file: UploadFile = File(...), consent: bool = Form(False)):
                 for item in signals["objects"] if item.get("bounds")
             ],
             "candidates": candidates,
+            "catalogCandidates": catalog["matches"][:3],
             "imageSummary": description,
             "sceneRecognized": bool(signals["labels"] or signals["objects"] or signals["entities"] or signals["landmarks"] or used_gemini),
             "exactNameRecognized": bool(name),

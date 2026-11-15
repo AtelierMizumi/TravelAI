@@ -18,7 +18,11 @@
       ],
       "localModelEnabled": true,
       "wikipediaTitle": "Cầu Long Biên",
-      "sourceUrl": "https://vi.wikipedia.org/wiki/Cầu_Long_Biên"
+      "sourceUrl": "https://vi.wikipedia.org/wiki/Cầu_Long_Biên",
+      "webNames": [
+        "Long Bien Bridge",
+        "Cầu Long Biên"
+      ]
     },
     {
       "code": "cau_rong",
@@ -36,7 +40,12 @@
       ],
       "localModelEnabled": false,
       "wikipediaTitle": "Cầu Rồng",
-      "sourceUrl": "https://vi.wikipedia.org/wiki/Cầu_Rồng"
+      "sourceUrl": "https://vi.wikipedia.org/wiki/Cầu_Rồng",
+      "webNames": [
+        "Dragon Bridge",
+        "Dragon Bridge Da Nang",
+        "Cầu Rồng"
+      ]
     },
     {
       "code": "cau_vang",
@@ -55,7 +64,12 @@
       ],
       "localModelEnabled": true,
       "wikipediaTitle": "Cầu Vàng",
-      "sourceUrl": "https://vi.wikipedia.org/wiki/Cầu_Vàng"
+      "sourceUrl": "https://vi.wikipedia.org/wiki/Cầu_Vàng",
+      "webNames": [
+        "Golden Bridge",
+        "Golden Bridge Ba Na Hills",
+        "Cầu Vàng"
+      ]
     },
     {
       "code": "cho_ben_thanh",
@@ -73,7 +87,11 @@
       ],
       "localModelEnabled": true,
       "wikipediaTitle": "Chợ Bến Thành",
-      "sourceUrl": "https://vi.wikipedia.org/wiki/Chợ_Bến_Thành"
+      "sourceUrl": "https://vi.wikipedia.org/wiki/Chợ_Bến_Thành",
+      "webNames": [
+        "Ben Thanh Market",
+        "Chợ Bến Thành"
+      ]
     },
     {
       "code": "chua_cau_hoi_an",
@@ -92,7 +110,13 @@
       ],
       "localModelEnabled": true,
       "wikipediaTitle": "Chùa Cầu",
-      "sourceUrl": "https://vi.wikipedia.org/wiki/Chùa_Cầu"
+      "sourceUrl": "https://vi.wikipedia.org/wiki/Chùa_Cầu",
+      "webNames": [
+        "Japanese Covered Bridge",
+        "Japanese Bridge Hoi An",
+        "Chùa Cầu",
+        "Cầu Nhật Bản"
+      ]
     },
     {
       "code": "chua_linh_ung",
@@ -111,7 +135,13 @@
       ],
       "localModelEnabled": true,
       "wikipediaTitle": "Chùa Linh Ứng (Sơn Trà)",
-      "sourceUrl": "https://vi.wikipedia.org/wiki/Chùa_Linh_Ứng_(Sơn_Trà)"
+      "sourceUrl": "https://vi.wikipedia.org/wiki/Chùa_Linh_Ứng_(Sơn_Trà)",
+      "webNames": [
+        "Linh Ung Pagoda",
+        "Linh Ung pagoda",
+        "Lady Buddha",
+        "Chùa Linh Ứng"
+      ]
     },
     {
       "code": "chua_mot_cot",
@@ -129,7 +159,12 @@
       ],
       "localModelEnabled": true,
       "wikipediaTitle": "Chùa Một Cột",
-      "sourceUrl": "https://vi.wikipedia.org/wiki/Chùa_Một_Cột"
+      "sourceUrl": "https://vi.wikipedia.org/wiki/Chùa_Một_Cột",
+      "webNames": [
+        "One Pillar Pagoda",
+        "Mot Cot Pagoda",
+        "Chùa Một Cột"
+      ]
     },
     {
       "code": "chua_tran_quoc",
@@ -147,7 +182,11 @@
       ],
       "localModelEnabled": true,
       "wikipediaTitle": "Chùa Trấn Quốc",
-      "sourceUrl": "https://vi.wikipedia.org/wiki/Chùa_Trấn_Quốc"
+      "sourceUrl": "https://vi.wikipedia.org/wiki/Chùa_Trấn_Quốc",
+      "webNames": [
+        "Tran Quoc Pagoda",
+        "Chùa Trấn Quốc"
+      ]
     },
     {
       "code": "dinh_doc_lap",
@@ -166,7 +205,13 @@
       ],
       "localModelEnabled": true,
       "wikipediaTitle": "Dinh Độc Lập",
-      "sourceUrl": "https://vi.wikipedia.org/wiki/Dinh_Độc_Lập"
+      "sourceUrl": "https://vi.wikipedia.org/wiki/Dinh_Độc_Lập",
+      "webNames": [
+        "Independence Palace",
+        "Reunification Palace",
+        "Dinh Độc Lập",
+        "Dinh Thống Nhất"
+      ]
     },
     {
       "code": "ho_hoan_kiem",
@@ -186,7 +231,13 @@
       ],
       "localModelEnabled": false,
       "wikipediaTitle": "Hồ Hoàn Kiếm",
-      "sourceUrl": "https://vi.wikipedia.org/wiki/Hồ_Hoàn_Kiếm"
+      "sourceUrl": "https://vi.wikipedia.org/wiki/Hồ_Hoàn_Kiếm",
+      "webNames": [
+        "Hoan Kiem Lake",
+        "Hoàn Kiếm Lake",
+        "Hồ Hoàn Kiếm",
+        "Hồ Gươm"
+      ]
     },
     {
       "code": "lang_khai_dinh",
@@ -205,7 +256,13 @@
       ],
       "localModelEnabled": true,
       "wikipediaTitle": "Lăng Khải Định",
-      "sourceUrl": "https://vi.wikipedia.org/wiki/Lăng_Khải_Định"
+      "sourceUrl": "https://vi.wikipedia.org/wiki/Lăng_Khải_Định",
+      "webNames": [
+        "Mausoleum of Emperor Khai Dinh",
+        "Khai Dinh Tomb",
+        "Tomb of Khai Dinh",
+        "Lăng Khải Định"
+      ]
     },
     {
       "code": "lang_tu_duc",
@@ -224,7 +281,14 @@
       ],
       "localModelEnabled": true,
       "wikipediaTitle": "Lăng Tự Đức",
-      "sourceUrl": "https://vi.wikipedia.org/wiki/Lăng_Tự_Đức"
+      "sourceUrl": "https://vi.wikipedia.org/wiki/Lăng_Tự_Đức",
+      "webNames": [
+        "Tomb of Tu Duc",
+        "Tu Duc Tomb",
+        "Mausoleum of Emperor Tu Duc",
+        "Tomb of Emperor Tu Duc",
+        "Lăng Tự Đức"
+      ]
     },
     {
       "code": "ngo_mon_hue",
@@ -243,7 +307,12 @@
       ],
       "localModelEnabled": true,
       "wikipediaTitle": "Ngọ Môn (Huế)",
-      "sourceUrl": "https://vi.wikipedia.org/wiki/Ngọ_Môn_(Huế)"
+      "sourceUrl": "https://vi.wikipedia.org/wiki/Ngọ_Môn_(Huế)",
+      "webNames": [
+        "Ngo Mon Gate",
+        "Meridian Gate",
+        "Ngọ Môn"
+      ]
     },
     {
       "code": "ngu_hanh_son",
@@ -262,7 +331,12 @@
       ],
       "localModelEnabled": true,
       "wikipediaTitle": "Ngũ Hành Sơn",
-      "sourceUrl": "https://vi.wikipedia.org/wiki/Ngũ_Hành_Sơn"
+      "sourceUrl": "https://vi.wikipedia.org/wiki/Ngũ_Hành_Sơn",
+      "webNames": [
+        "Marble Mountains",
+        "The Marble Mountains",
+        "Ngũ Hành Sơn"
+      ]
     },
     {
       "code": "nha_tho_duc_ba",
@@ -281,7 +355,13 @@
       ],
       "localModelEnabled": true,
       "wikipediaTitle": "Nhà thờ chính tòa Đức Bà Sài Gòn",
-      "sourceUrl": "https://vi.wikipedia.org/wiki/Nhà_thờ_chính_tòa_Đức_Bà_Sài_Gòn"
+      "sourceUrl": "https://vi.wikipedia.org/wiki/Nhà_thờ_chính_tòa_Đức_Bà_Sài_Gòn",
+      "webNames": [
+        "Notre Dame Cathedral of Saigon",
+        "Saigon Notre-Dame Basilica",
+        "Notre-Dame Cathedral Basilica of Saigon",
+        "Nhà thờ Đức Bà Sài Gòn"
+      ]
     },
     {
       "code": "thanh_dia_my_son",
@@ -300,7 +380,11 @@
       ],
       "localModelEnabled": true,
       "wikipediaTitle": "Thánh địa Mỹ Sơn",
-      "sourceUrl": "https://vi.wikipedia.org/wiki/Thánh_địa_Mỹ_Sơn"
+      "sourceUrl": "https://vi.wikipedia.org/wiki/Thánh_địa_Mỹ_Sơn",
+      "webNames": [
+        "My Son Sanctuary",
+        "Thánh địa Mỹ Sơn"
+      ]
     },
     {
       "code": "van_mieu",
@@ -320,7 +404,13 @@
       ],
       "localModelEnabled": false,
       "wikipediaTitle": "Văn Miếu – Quốc Tử Giám",
-      "sourceUrl": "https://vi.wikipedia.org/wiki/Văn_Miếu_–_Quốc_Tử_Giám"
+      "sourceUrl": "https://vi.wikipedia.org/wiki/Văn_Miếu_–_Quốc_Tử_Giám",
+      "webNames": [
+        "Temple of Literature",
+        "Van Mieu",
+        "Quoc Tu Giam",
+        "Văn Miếu"
+      ]
     }
   ]
 }
