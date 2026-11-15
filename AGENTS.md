@@ -48,10 +48,10 @@
    - *References*: [03_git_governance.md](.agents/rules/03_git_governance.md).
 
 5. **Technical Architecture & Code Standards**:
-   - **Frontend**: React 18, Vite, TailwindCSS, Lucide Icons, Axios (with concurrency-safe 401 refresh queue and DOMPurify XSS defense).
-   - **Core Backend**: Java 17+, Spring Boot 3, Spring Data JPA, Spring Security 6, PostgreSQL 16. Enforce RFC 9457 / RFC 7807 (`application/problem+json`), OAuth 2.0 BCP Refresh Token Rotation (RTR), active account state guards, OWASP ASVS v4.0.3, and strict CORS origin allowlists.
-   - **AI Microservice**: Python 3.11+, FastAPI, Pydantic v2, Google Cloud Vision SDK, Pillow/OpenCV with magic byte validation and bounded streaming (< 10MB).
-   - **Containerization**: Multi-stage Dockerfiles, root `docker-compose.yml` orchestrating all 4 containers with healthcheck dependency ordering.
+   - **Frontend**: Expo / React Native (web + Android from one codebase, `apps/mobile`), TypeScript, Expo Router; no `dangerouslySetInnerHTML`, no committed `console.log`.
+   - **Core Backend** (`backend`): Java 25, Spring Boot 3.5, Spring Data JPA, PostgreSQL 16; server-side sessions with idle and absolute expiry, PBKDF2 password hashing, strict CORS origin allowlist, simulated (never real) payments. Target standards (RFC 9457, OWASP ASVS) and their verified status are listed in Ruleset 05.
+   - **AI Microservice** (`ai-service`): Python 3.12, FastAPI, Google Cloud Vision, magic byte validation and bounded upload (< 10MB); optional local ONNX model, off unless provisioned.
+   - **Containerization**: Multi-stage Dockerfiles built from the repository root, non-root runtime users, root `docker-compose.yml` with healthcheck ordering (`postgres-v2`, `ai-v2`, `backend-v2`).
    - *References*: [05_technical_architecture_and_code_standards.md](.agents/rules/05_technical_architecture_and_code_standards.md).
 
 6. **Acceptance Criteria & Sprint Lifecycle (DoR & DoD)**:

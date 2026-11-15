@@ -47,17 +47,18 @@ TravelAI/
 ├── .agents/                    # Agent Governance & Rules System
 │   └── rules/                  # Modular TAGF-v2.0 Rulebooks (00 through 06)
 ├── .github/                    # GitHub Workflows (CI/CD), PR & Issue Templates
-├── client/                     # High-Performance Frontend SPA (React 18 + Vite)
-├── services/
-│   ├── ai/                     # AI Microservice (Python 3.11 + FastAPI + Vision SDK)
-│   └── core/                   # Core Business Backend (Java 17 + Spring Boot 3)
+├── apps/mobile/               # Expo / React Native app (web + Android) incl. admin
+├── backend/                   # Core backend (Java 25 + Spring Boot 3.5)
+├── ai-service/                # AI microservice (Python + FastAPI + Vision SDK)
+├── shared/                    # Landmark and province catalog shared by backend and AI
+├── deploy/ scripts/           # Caddy edge, deploy agent, seed, smoke and test scripts
 ├── docs/                       # Technical Markdown Documentation
 │   ├── architecture/           # System Architecture, Sequence Diagrams, API Contracts
 │   └── specs/                  # Software Requirements Specification (SRS)
 ├── .gitignore                  # Comprehensive Multi-Stack Exclusion Filter
 ├── AGENTS.md                   # Supreme Agent Operational Directives
 ├── COLABORATION.md             # 3-Engineer Collaboration Guidebook (1 session/week)
-├── docker-compose.yml          # Local 4-Container Orchestration (db, ai, core, client)
+├── docker-compose.yml          # Orchestration (postgres-v2, ai-v2, backend-v2)
 └── README.md                   # Central Technical Dashboard & Showcase
 ```
 
@@ -65,6 +66,6 @@ TravelAI/
 
 ## 3. MEDIA ASSET CONVENTIONS
 
-- Static UI assets must reside strictly within `client/public/` or `client/src/assets/`.
+- Static UI assets must reside strictly within `apps/mobile/assets/`.
 - Permitted formats: `.svg` (vector icons & logos), `.webp` (compressed travel hero photography), optimized `.png`.
 - Single asset file size budget: `< 500 KB` per image to avoid Git LFS bloat.

@@ -16,7 +16,7 @@ This skill defines the complete operational procedure for executing an end-to-en
 
 | Engineer | Role | GitHub Handle | Expected Git Identity | Authorized WBS Modules |
 |---|---|---|---|---|
-| **Trần Minh Thuận** *(User)* | **Tech Lead, AI & DevOps** | `@AtelierMizumi` | `Minh Thuận Trần <thuanc177@gmail.com>` | `1.1.1`, `1.1.2`, `1.1.3`, `1.3.1`, `1.3.2`, `1.8.2` (`services/ai/`, arch docs, db schema, docker) |
+| **Trần Minh Thuận** *(User)* | **Tech Lead, AI & DevOps** | `@AtelierMizumi` | `Minh Thuận Trần <thuanc177@gmail.com>` | `1.1.1`, `1.1.2`, `1.1.3`, `1.3.1`, `1.3.2`, `1.8.2` (`ai-service/`, arch docs, db schema, docker) |
 | **Hoàng Văn Đức** | **Core Backend & Security** | `@duchayslay` | `Hoàng Văn Đức <hoangvanduc290805@gmail.com>` | `1.2.1`, `1.4.2`, `1.4.3`, `1.5.1`, `1.6.1`, `1.6.3`, `1.7.2`, `1.7.3`, `1.7.4`, `1.7.5` (`services/backend/`) |
 | **Lê Văn Ngọc** | **Frontend & QA Lead** | `@ngoctapcodee` | `Lê Văn Ngọc <ngoc492005@gmail.com>` | `1.2.2`, `1.3.3`, `1.4.1`, `1.5.2`, `1.6.2`, `1.7.1`, `1.7.6`, `1.8.1` (`client/`, QA/E2E test suites) |
 
@@ -100,17 +100,17 @@ Phase 7: STOP AT GATEKEEPER ➔ Report PR link to Tech Lead for Review & Merge
 
 ### Phase 4: Scope-Isolated Deep Coding & Verification
 1. **RACI Enforcement**: Edit ONLY the designated microservice/directory:
-   - Thuận: `services/ai/`, root `docker-compose.yml`, architecture docs.
+   - Thuận: `ai-service/`, root `docker-compose.yml`, architecture docs.
    - Đức: `services/backend/` (Spring Boot, DDL, flyway).
-   - Ngọc: `services/client/` (React, Tailwind, Vite).
+   - Ngọc: `apps/mobile/` (Expo, React Native).
 2. **Quality & Zero-Pollution**:
    - Zero `.docx`, `.xlsx`, `.pdf`, or `local_references/` staged.
    - Zero debug statements (`print`, `console.log`, `System.out.println`).
    - Errors follow RFC 7807 Problem Details.
 3. **Run Local Verification**:
-   - AI Subsystem: `pytest services/ai/tests/`
-   - Backend: `cd services/backend && ./mvnw test`
-   - Frontend: `cd services/client && npm run build`
+   - AI Subsystem: `cd ai-service && python -m unittest discover -s tests`
+   - Backend: `cd backend && ./mvnw test`
+   - Frontend: `cd apps/mobile && npm run lint && npm test && npx tsc --noEmit`
 
 ### Phase 5: Commit & Push
 1. Stage modified files:

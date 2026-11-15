@@ -8,7 +8,7 @@ description: >-
 
 # Vision Service Testing & Validation Harness
 
-This skill provides testing protocols and mock harnesses for developing, debugging, and verifying the TravelAI FastAPI AI Recognition microservice (`services/ai`).
+This skill provides testing protocols and mock harnesses for developing, debugging, and verifying the TravelAI FastAPI AI Recognition microservice (`ai-service`).
 
 ---
 
@@ -83,7 +83,7 @@ Ensure the following scenarios return RFC 7807 compliant payloads:
 
 ```bash
 # 1. Run unit and integration tests
-cd services/ai
+cd ai-service
 pytest tests/ -v
 
 # 2. Run Ruff linter and formatter check
