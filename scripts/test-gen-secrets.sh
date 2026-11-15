@@ -14,10 +14,12 @@ out1=$(bash "$script" 2>&1) || bad "first run exits 0"
 pw=$(grep '^POSTGRES_PASSWORD=' .env | cut -d= -f2-)
 [ "${#pw}" -ge 32 ] && ok "POSTGRES_PASSWORD >= 32 chars" || bad "POSTGRES_PASSWORD >= 32 chars"
 grep -q "^HOST_MESSAGE_KEY=$tmp/secrets/message.key$" .env && ok "HOST_MESSAGE_KEY points at secrets/message.key" || bad "HOST_MESSAGE_KEY points at secrets/message.key"
+rs=$(grep '^TRAVELAI_RESET_SECRET=' .env | cut -d= -f2- || true)
+[ "$(printf '%s' "$rs" | base64 -d 2>/dev/null | wc -c)" -ge 32 ] && ok "TRAVELAI_RESET_SECRET decodes to >= 32 bytes" || bad "TRAVELAI_RESET_SECRET decodes to >= 32 bytes"
 [ "$(stat -c %a .env)" = 600 ] && ok ".env mode 600" || bad ".env mode 600"
 
 key1=$(cat secrets/message.key); env1=$(cat .env)
 out2=$(bash "$script" 2>&1) || bad "second run exits 0"
 [ "$key1" = "$(cat secrets/message.key)" ] && [ "$env1" = "$(cat .env)" ] && ok "second run changes nothing" || bad "second run changes nothing"
-if printf '%s%s' "$out1" "$out2" | grep -qF -e "$pw" -e "$key1"; then bad "no secret printed"; else ok "no secret printed"; fi
+if printf '%s%s' "$out1" "$out2" | grep -qF -e "$pw" -e "$key1" -e "$rs"; then bad "no secret printed"; else ok "no secret printed"; fi
 exit $fail

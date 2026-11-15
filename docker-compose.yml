@@ -65,6 +65,13 @@ services:
       - TRAVELAI_MESSAGE_KEY_FILE=/run/secrets/message.key
       - SPRING_JPA_SHOW_SQL=false
       - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      # Password-reset mail over SMTP (defaults target Resend). Leave the password empty to disable it.
+      - TRAVELAI_SMTP_HOST=${TRAVELAI_SMTP_HOST:-smtp.resend.com}
+      - TRAVELAI_SMTP_PORT=${TRAVELAI_SMTP_PORT:-587}
+      - TRAVELAI_SMTP_USERNAME=${TRAVELAI_SMTP_USERNAME:-resend}
+      - TRAVELAI_SMTP_PASSWORD=${TRAVELAI_SMTP_PASSWORD:-}
+      - TRAVELAI_SMTP_FROM=${TRAVELAI_SMTP_FROM:-}
+      - TRAVELAI_RESET_SECRET=${TRAVELAI_RESET_SECRET:-}
     volumes:
       - type: bind
         source: ${HOST_MESSAGE_KEY:-/nonexistent/HOST_MESSAGE_KEY-is-unset}
