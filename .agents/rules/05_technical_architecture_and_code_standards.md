@@ -12,25 +12,42 @@
 
 ---
 
-## 1. FRONTEND QUALITY & SECURITY STANDARDS (REACT 18 + VITE)
+## 0. VERIFIED COMPLIANCE STATUS (TravelAI 2.0, 15/11/2026)
 
-- **Runtime & Tooling**: React 18+, Vite, modern ES6+ / JSX.
-- **Styling & UI Tokens**: TailwindCSS utility framework with curated design tokens, Lucide React Icons.
-- **Directory Layout (`client/src/`)**:
+The sections below are the **target standard**. The shipped stack is Expo + Spring Boot 3.5 + FastAPI; this table records what was checked in the code, not what is intended.
+
+| Requirement | Status | Evidence |
+|---|---|---|
+| CORS explicit origin allowlist | Met | `OriginPolicy`, `OriginPolicyTest`, smoke test rejects a foreign origin |
+| Password hashing | Met | PBKDF2WithHmacSHA256 in `PasswordHashes` |
+| Upload validation and size bound | Met | magic bytes and HTTP 413 above 10 MB (`ai-service`, smoke test) |
+| No hard-coded production credentials | Met | `POSTGRES_PASSWORD` and the message key are required, compose refuses to render without them |
+| Non-root containers | Met | `USER travelai` in both Dockerfiles |
+| No `dangerouslySetInnerHTML`, no `console.log` in the app | Met | grep over `apps/mobile/src` |
+| Refresh Token Rotation (OAuth BCP) | **Not applicable by design** | v2 uses server-side sessions (24 h idle, 7 days absolute), not JWT |
+| RFC 9457 `application/problem+json` | **Not met** | errors are `{message}` objects |
+| Bean Validation on request DTOs | **Not met** | no `@Valid` in `backend` |
+| `ddl-auto=validate` in production | **Not met** | `update`; SQL migrations are applied by hand |
+| 5 s budget on Vision calls | **Not met** | provider timeouts are 10 s to 60 s |
+
+---
+
+## 1. FRONTEND QUALITY & SECURITY STANDARDS (EXPO / REACT NATIVE)
+
+- **Runtime & Tooling**: Expo, React Native (web and Android from one codebase), TypeScript, Expo Router.
+- **Directory Layout (`apps/mobile/src/`)**:
   ```text
-  client/src/
-  ├── components/       # Reusable Atomic UI Elements (Button, Modal, Card, Navbar)
-  ├── pages/            # Top-level Route Views (Home, Recognize, Places, Booking)
-  ├── services/         # HTTP Clients (Axios instance, interceptors, API endpoints)
-  ├── hooks/            # Custom React Hooks
-  ├── context/          # Global Context Providers (AuthContext, CartContext, ThemeContext)
-  └── utils/            # Pure helpers and formatters (currency, date-time, string)
+  apps/mobile/src/
+  ├── app/          # Routes (Expo Router): home, detection, booking, feed, messages, admin
+  ├── screens/      # Screen-level views (recognition, destination)
+  ├── components/   # Reusable UI elements; components/admin for the admin area
+  ├── services/     # HTTP clients and API types
+  ├── context/      # Providers (session, theme)
+  └── hooks/        # Custom hooks
   ```
 - **Security & Operational Invariants**:
-  - **Environment-Driven Configuration**: API URLs MUST be sourced exclusively from `import.meta.env.VITE_API_BASE_URL`. Never hardcode hostnames or ports.
-  - **Concurrency-Safe Token Refresh Queue (Axios Interceptors)**:
-    - When receiving an HTTP 401 response, Axios interceptors MUST queue outgoing concurrent requests while a single refresh token request is executed.
-    - Prevents race conditions where multiple parallel requests fire duplicate refresh calls, violating single-use Refresh Token Rotation (RTR).
+  - **Environment-Driven Configuration**: API URLs MUST come from `EXPO_PUBLIC_API_URL` and `EXPO_PUBLIC_AI_API_URL`. Never hardcode hostnames or ports.
+  - **Session expiry**: on HTTP 401 the client MUST drop the local session and return to login; it MUST NOT retry in a loop.
   - **Cross-Site Scripting (XSS) Prevention (OWASP ASVS V5)**:
     - Never render unescaped user content via `dangerouslySetInnerHTML`. If rich text is required, sanitize with `DOMPurify` before DOM insertion.
   - **Deterministic UI States**: Component states MUST handle all three operational conditions: `loading` (Skeleton Loader), `error` (Toast Notification / RFC 7807 Error Normalizer), and `success`.
@@ -128,8 +145,8 @@
 
 ## 4. CONTAINERIZATION & DEVOPS INFRASTRUCTURE
 
-- Every service (`client`, `services/core`, `services/ai`) must provide a multi-stage `Dockerfile` leveraging minimal base images (`alpine` or `slim`), running as non-root users where possible.
-- Root `docker-compose.yml` orchestrates all four containers (`client`, `core`, `ai`, `postgres`) with healthcheck dependency ordering:
+- Every service (`backend`, `ai-service`, the web image in `deploy/web`) must provide a multi-stage `Dockerfile` leveraging minimal base images (`alpine` or `slim`), running as non-root users where possible.
+- Root `docker-compose.yml` orchestrates `postgres-v2`, `ai-v2` and `backend-v2` with healthcheck dependency ordering:
   ```bash
   docker compose up -d
   ```

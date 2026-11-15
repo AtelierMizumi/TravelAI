@@ -1,0 +1,6 @@
+# CI-only override: expose Caddy on loopback so the smoke test can reach the stack.
+# Use together with docker-compose.yml and docker-compose.edge.yml; cloudflared is never started in CI.
+services:
+  caddy:
+    ports:
+      - "127.0.0.1:8088:80"

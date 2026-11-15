@@ -120,7 +120,7 @@ This skill provides an automated and manual verification protocol for auditing S
 To verify that the Spring Boot Core Backend meets all standards, execute the Maven test harness:
 
 ```bash
-cd services/core
+cd backend
 ./mvnw clean test
 ```
 

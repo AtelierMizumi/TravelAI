@@ -1,0 +1,23 @@
+.git
+docs
+# Dependencies and build output, at any depth
+**/node_modules
+**/dist
+**/target
+**/.expo
+**/__pycache__
+**/*.pyc
+**/*.log
+# Secrets and local runtime files must never enter an image, at any depth.
+# (Images are built from the repository root, so per-service ignore files do not apply.)
+**/.env
+**/.env.*
+**/.secrets
+**/secrets
+**/*.key
+**/*.pem
+**/*service-account*.json
+**/credentials*.json
+# Tests are not shipped; the optional local model is provisioned at runtime, not baked.
+ai-service/tests
+ai-service/models/*.onnx

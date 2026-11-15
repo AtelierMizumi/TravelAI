@@ -1,0 +1,10 @@
+BEGIN;
+ALTER TABLE places ADD COLUMN IF NOT EXISTS landmark_code varchar(255);
+ALTER TABLE places ADD COLUMN IF NOT EXISTS province varchar(255);
+ALTER TABLE places ADD COLUMN IF NOT EXISTS latitude double precision;
+ALTER TABLE places ADD COLUMN IF NOT EXISTS longitude double precision;
+ALTER TABLE places ADD COLUMN IF NOT EXISTS local_model_enabled boolean;
+ALTER TABLE places ADD COLUMN IF NOT EXISTS image_attribution text;
+ALTER TABLE tours ADD COLUMN IF NOT EXISTS province varchar(255);
+CREATE UNIQUE INDEX IF NOT EXISTS places_landmark_code_unique ON places (landmark_code) WHERE landmark_code IS NOT NULL;
+COMMIT;

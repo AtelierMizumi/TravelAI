@@ -1,0 +1,13 @@
+{
+  "name": "travel-ai-system",
+  "private": true,
+  "scripts": {
+    "start": "npm --prefix apps/mobile start",
+    "web": "npm --prefix apps/mobile run web",
+    "android": "npm --prefix apps/mobile run android",
+    "ios": "npm --prefix apps/mobile run ios",
+    "check": "npm --prefix apps/mobile run lint && npm --prefix apps/mobile run typecheck && npm --prefix apps/mobile test",
+    "dev": "bash scripts/dev.sh app",
+    "dev:web": "bash scripts/dev.sh web"
+  }
+}

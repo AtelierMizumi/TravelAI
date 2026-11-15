@@ -1,0 +1,326 @@
+{
+  "version": "2026-11-15",
+  "modelSourceCommit": "2425d01850ed33a147fa6f4185f0a6492b17b872",
+  "landmarks": [
+    {
+      "code": "cau_long_bien",
+      "name": "Cầu Long Biên",
+      "province": "Hà Nội",
+      "latitude": 21.0435,
+      "longitude": 105.8573,
+      "description": "Cây cầu thép lịch sử bắc qua sông Hồng tại Hà Nội, chứng nhân lịch sử kiên cường.",
+      "aliases": [
+        "Cầu Long Biên",
+        "cầu long biên",
+        "sông hồng",
+        "long bien bridge",
+        "hà nội"
+      ],
+      "localModelEnabled": true,
+      "wikipediaTitle": "Cầu Long Biên",
+      "sourceUrl": "https://vi.wikipedia.org/wiki/Cầu_Long_Biên"
+    },
+    {
+      "code": "cau_rong",
+      "name": "Cầu Rồng",
+      "province": "Đà Nẵng",
+      "latitude": 16.0611,
+      "longitude": 108.2274,
+      "description": "Cây cầu hình rồng bắc qua sông Hàn tại Đà Nẵng, biểu tượng vươn mình của thành phố biển.",
+      "aliases": [
+        "Cầu Rồng",
+        "cầu rồng",
+        "dragon bridge",
+        "sông hàn",
+        "đà nẵng"
+      ],
+      "localModelEnabled": false,
+      "wikipediaTitle": "Cầu Rồng",
+      "sourceUrl": "https://vi.wikipedia.org/wiki/Cầu_Rồng"
+    },
+    {
+      "code": "cau_vang",
+      "name": "Cầu Vàng (Bà Nà Hills)",
+      "province": "Đà Nẵng",
+      "latitude": 15.995,
+      "longitude": 107.9965,
+      "description": "Kỳ quan kiến trúc cầu bàn tay khổng lồ vươn giữa mây trời tại Bà Nà Hills, Đà Nẵng.",
+      "aliases": [
+        "Cầu Vàng (Bà Nà Hills)",
+        "Cầu Vàng",
+        "cầu vàng",
+        "golden bridge",
+        "bà nà hills",
+        "đà nẵng"
+      ],
+      "localModelEnabled": true,
+      "wikipediaTitle": "Cầu Vàng",
+      "sourceUrl": "https://vi.wikipedia.org/wiki/Cầu_Vàng"
+    },
+    {
+      "code": "cho_ben_thanh",
+      "name": "Chợ Bến Thành",
+      "province": "Hồ Chí Minh",
+      "latitude": 10.7725,
+      "longitude": 106.698,
+      "description": "Ngôi chợ biểu tượng hơn 100 năm tuổi tại trung tâm Thành phố Hồ Chí Minh.",
+      "aliases": [
+        "Chợ Bến Thành",
+        "chợ bến thành",
+        "ben thanh market",
+        "quận 1",
+        "sài gòn"
+      ],
+      "localModelEnabled": true,
+      "wikipediaTitle": "Chợ Bến Thành",
+      "sourceUrl": "https://vi.wikipedia.org/wiki/Chợ_Bến_Thành"
+    },
+    {
+      "code": "chua_cau_hoi_an",
+      "name": "Chùa Cầu (Cầu Nhật Bản)",
+      "province": "Đà Nẵng",
+      "latitude": 15.8771,
+      "longitude": 108.326,
+      "description": "Di tích kiến trúc cổ kính giao thoa văn hóa Việt - Nhật tại đô thị cổ Hội An, di sản UNESCO.",
+      "aliases": [
+        "Chùa Cầu (Cầu Nhật Bản)",
+        "Chùa Cầu",
+        "chùa cầu",
+        "cầu nhật bản",
+        "phố cổ hội an",
+        "quảng nam"
+      ],
+      "localModelEnabled": true,
+      "wikipediaTitle": "Chùa Cầu",
+      "sourceUrl": "https://vi.wikipedia.org/wiki/Chùa_Cầu"
+    },
+    {
+      "code": "chua_linh_ung",
+      "name": "Chùa Linh Ứng (Bán đảo Sơn Trà)",
+      "province": "Đà Nẵng",
+      "latitude": 16.1002,
+      "longitude": 108.2778,
+      "description": "Ngôi chùa linh thiêng với tượng Phật Bà Quan Thế Âm cao nhất Việt Nam tại Đà Nẵng.",
+      "aliases": [
+        "Chùa Linh Ứng (Bán đảo Sơn Trà)",
+        "Chùa Linh Ứng (Sơn Trà)",
+        "chùa linh ứng",
+        "bán đảo sơn trà",
+        "quán thế âm",
+        "đà nẵng"
+      ],
+      "localModelEnabled": true,
+      "wikipediaTitle": "Chùa Linh Ứng (Sơn Trà)",
+      "sourceUrl": "https://vi.wikipedia.org/wiki/Chùa_Linh_Ứng_(Sơn_Trà)"
+    },
+    {
+      "code": "chua_mot_cot",
+      "name": "Chùa Một Cột",
+      "province": "Hà Nội",
+      "latitude": 21.0358,
+      "longitude": 105.8335,
+      "description": "Đóa sen nghìn năm tuổi giữa lòng Hà Nội, công trình Phật giáo thời Lý độc nhất vô nhị ở châu Á.",
+      "aliases": [
+        "Chùa Một Cột",
+        "chùa một cột",
+        "diên hựu tự",
+        "thời lý",
+        "hà nội"
+      ],
+      "localModelEnabled": true,
+      "wikipediaTitle": "Chùa Một Cột",
+      "sourceUrl": "https://vi.wikipedia.org/wiki/Chùa_Một_Cột"
+    },
+    {
+      "code": "chua_tran_quoc",
+      "name": "Chùa Trấn Quốc",
+      "province": "Hà Nội",
+      "latitude": 21.0478,
+      "longitude": 105.8366,
+      "description": "Ngôi chùa cổ nhất thủ đô Hà Nội với lịch sử hơn 1.500 năm, tọa lạc trên bán đảo Hồ Tây.",
+      "aliases": [
+        "Chùa Trấn Quốc",
+        "chùa trấn quốc",
+        "hồ tây",
+        "trấn quốc pagoda",
+        "hà nội"
+      ],
+      "localModelEnabled": true,
+      "wikipediaTitle": "Chùa Trấn Quốc",
+      "sourceUrl": "https://vi.wikipedia.org/wiki/Chùa_Trấn_Quốc"
+    },
+    {
+      "code": "dinh_doc_lap",
+      "name": "Dinh Độc Lập (Dinh Thống Nhất)",
+      "province": "Hồ Chí Minh",
+      "latitude": 10.777,
+      "longitude": 106.6953,
+      "description": "Di tích lịch sử quốc gia đặc biệt, nơi chứng kiến thời khắc lịch sử thống nhất đất nước ngày 30/4/1975.",
+      "aliases": [
+        "Dinh Độc Lập (Dinh Thống Nhất)",
+        "Dinh Độc Lập",
+        "dinh độc lập",
+        "dinh thống nhất",
+        "reunification palace",
+        "sài gòn"
+      ],
+      "localModelEnabled": true,
+      "wikipediaTitle": "Dinh Độc Lập",
+      "sourceUrl": "https://vi.wikipedia.org/wiki/Dinh_Độc_Lập"
+    },
+    {
+      "code": "ho_hoan_kiem",
+      "name": "Hồ Hoàn Kiếm (Hồ Gươm)",
+      "province": "Hà Nội",
+      "latitude": 21.0285,
+      "longitude": 105.8542,
+      "description": "Trái tim của thủ đô Hà Nội gắn liền với truyền thuyết vua Lê Lợi trả gươm báu cho Rùa Vàng.",
+      "aliases": [
+        "Hồ Hoàn Kiếm (Hồ Gươm)",
+        "Hồ Hoàn Kiếm",
+        "hồ hoàn kiếm",
+        "hồ gươm",
+        "tháp rùa",
+        "cầu thê húc",
+        "hà nội"
+      ],
+      "localModelEnabled": false,
+      "wikipediaTitle": "Hồ Hoàn Kiếm",
+      "sourceUrl": "https://vi.wikipedia.org/wiki/Hồ_Hoàn_Kiếm"
+    },
+    {
+      "code": "lang_khai_dinh",
+      "name": "Lăng Khải Định (Ứng Lăng)",
+      "province": "Huế",
+      "latitude": 16.3989,
+      "longitude": 107.5904,
+      "description": "Công trình lăng tẩm kết hợp tinh xảo giữa kiến trúc truyền thống phương Đông và Tây phương tại Huế.",
+      "aliases": [
+        "Lăng Khải Định (Ứng Lăng)",
+        "Lăng Khải Định",
+        "lăng khải định",
+        "ứng lăng",
+        "cố đô huế",
+        "thừa thiên huế"
+      ],
+      "localModelEnabled": true,
+      "wikipediaTitle": "Lăng Khải Định",
+      "sourceUrl": "https://vi.wikipedia.org/wiki/Lăng_Khải_Định"
+    },
+    {
+      "code": "lang_tu_duc",
+      "name": "Lăng Tự Đức (Khiêm Lăng)",
+      "province": "Huế",
+      "latitude": 16.4328,
+      "longitude": 107.5658,
+      "description": "Một trong những lăng tẩm thơ mộng và quy mô bậc nhất của các hoàng đế triều Nguyễn tại Huế.",
+      "aliases": [
+        "Lăng Tự Đức (Khiêm Lăng)",
+        "Lăng Tự Đức",
+        "lăng tự đức",
+        "khiêm lăng",
+        "nhà nguyễn",
+        "huế"
+      ],
+      "localModelEnabled": true,
+      "wikipediaTitle": "Lăng Tự Đức",
+      "sourceUrl": "https://vi.wikipedia.org/wiki/Lăng_Tự_Đức"
+    },
+    {
+      "code": "ngo_mon_hue",
+      "name": "Ngọ Môn (Đại Nội Huế)",
+      "province": "Huế",
+      "latitude": 16.4695,
+      "longitude": 107.5779,
+      "description": "Cổng chính phía nam của Hoàng thành Huế, tuyệt tác kiến trúc cung đình triều Nguyễn.",
+      "aliases": [
+        "Ngọ Môn (Đại Nội Huế)",
+        "Ngọ Môn (Huế)",
+        "ngọ môn",
+        "hoàng thành huế",
+        "đại nội",
+        "cố đô huế"
+      ],
+      "localModelEnabled": true,
+      "wikipediaTitle": "Ngọ Môn (Huế)",
+      "sourceUrl": "https://vi.wikipedia.org/wiki/Ngọ_Môn_(Huế)"
+    },
+    {
+      "code": "ngu_hanh_son",
+      "name": "Danh thắng Ngũ Hành Sơn",
+      "province": "Đà Nẵng",
+      "latitude": 16.0042,
+      "longitude": 108.2635,
+      "description": "Quần thể 5 ngọn núi đá vôi kỳ vĩ mang tên Kim - Mộc - Thủy - Hỏa - Thổ tại Đà Nẵng.",
+      "aliases": [
+        "Danh thắng Ngũ Hành Sơn",
+        "Ngũ Hành Sơn",
+        "ngũ hành sơn",
+        "marble mountains",
+        "chùa tam thai",
+        "đà nẵng"
+      ],
+      "localModelEnabled": true,
+      "wikipediaTitle": "Ngũ Hành Sơn",
+      "sourceUrl": "https://vi.wikipedia.org/wiki/Ngũ_Hành_Sơn"
+    },
+    {
+      "code": "nha_tho_duc_ba",
+      "name": "Nhà Thờ Đức Bà Sài Gòn",
+      "province": "Hồ Chí Minh",
+      "latitude": 10.7798,
+      "longitude": 106.699,
+      "description": "Kiệt tác kiến trúc Gothic - Roman hơn 140 năm tuổi tại trung tâm Thành phố Hồ Chí Minh.",
+      "aliases": [
+        "Nhà Thờ Đức Bà Sài Gòn",
+        "Nhà thờ chính tòa Đức Bà Sài Gòn",
+        "nhà thờ đức bà",
+        "notre dame cathedral saigon",
+        "sài gòn",
+        "quận 1"
+      ],
+      "localModelEnabled": true,
+      "wikipediaTitle": "Nhà thờ chính tòa Đức Bà Sài Gòn",
+      "sourceUrl": "https://vi.wikipedia.org/wiki/Nhà_thờ_chính_tòa_Đức_Bà_Sài_Gòn"
+    },
+    {
+      "code": "thanh_dia_my_son",
+      "name": "Thánh Địa Mỹ Sơn",
+      "province": "Đà Nẵng",
+      "latitude": 15.7647,
+      "longitude": 108.1245,
+      "description": "Quần thể di tích đền tháp Chăm Pa cổ kính giữa thung lũng thiêng, di sản văn hóa thế giới UNESCO.",
+      "aliases": [
+        "Thánh Địa Mỹ Sơn",
+        "Thánh địa Mỹ Sơn",
+        "thánh địa mỹ sơn",
+        "my son sanctuary",
+        "văn hóa chăm pa",
+        "quảng nam"
+      ],
+      "localModelEnabled": true,
+      "wikipediaTitle": "Thánh địa Mỹ Sơn",
+      "sourceUrl": "https://vi.wikipedia.org/wiki/Thánh_địa_Mỹ_Sơn"
+    },
+    {
+      "code": "van_mieu",
+      "name": "Văn Miếu - Quốc Tử Giám",
+      "province": "Hà Nội",
+      "latitude": 21.0288,
+      "longitude": 105.8356,
+      "description": "Trường đại học đầu tiên của Việt Nam, biểu tượng đỉnh cao của tinh hoa đạo học Thăng Long - Hà Nội.",
+      "aliases": [
+        "Văn Miếu - Quốc Tử Giám",
+        "Văn Miếu – Quốc Tử Giám",
+        "văn miếu",
+        "quốc tử giám",
+        "khuê văn các",
+        "bia tiến sĩ",
+        "hà nội"
+      ],
+      "localModelEnabled": false,
+      "wikipediaTitle": "Văn Miếu – Quốc Tử Giám",
+      "sourceUrl": "https://vi.wikipedia.org/wiki/Văn_Miếu_–_Quốc_Tử_Giám"
+    }
+  ]
+}

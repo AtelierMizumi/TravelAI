@@ -1,0 +1,190 @@
+[
+  {
+    "key": "tour-ha-noi-pho-co",
+    "name": "Hà Nội: phố cổ và ẩm thực 1 ngày",
+    "place": "ho-hoan-kiem",
+    "durationDays": 1,
+    "maxGuests": 20,
+    "price": 650000,
+    "description": "Dạo hồ Hoàn Kiếm, tham quan Văn Miếu và thưởng thức các món đặc trưng của Hà Nội cùng hướng dẫn viên địa phương.",
+    "departures": [
+      {
+        "daysFromNow": 10,
+        "capacity": 20,
+        "price": 650000
+      },
+      {
+        "daysFromNow": 24,
+        "capacity": 20,
+        "price": 650000
+      },
+      {
+        "daysFromNow": 38,
+        "capacity": 20,
+        "price": 690000
+      }
+    ]
+  },
+  {
+    "key": "tour-ha-long-2n1d",
+    "name": "Hạ Long: du thuyền 2 ngày 1 đêm",
+    "place": "vinh-ha-long",
+    "durationDays": 2,
+    "maxGuests": 24,
+    "price": 3200000,
+    "description": "Nghỉ đêm trên du thuyền, chèo kayak, thăm hang động và ngắm hoàng hôn giữa vịnh.",
+    "departures": [
+      {
+        "daysFromNow": 12,
+        "capacity": 24,
+        "price": 3200000
+      },
+      {
+        "daysFromNow": 26,
+        "capacity": 24,
+        "price": 3200000
+      },
+      {
+        "daysFromNow": 40,
+        "capacity": 24,
+        "price": 3400000
+      }
+    ]
+  },
+  {
+    "key": "tour-hue-di-san",
+    "name": "Huế: di sản cố đô 2 ngày 1 đêm",
+    "place": "dai-noi-hue",
+    "durationDays": 2,
+    "maxGuests": 18,
+    "price": 2100000,
+    "description": "Tham quan Đại Nội, chùa Thiên Mụ, lăng tẩm và nghe ca Huế trên sông Hương.",
+    "departures": [
+      {
+        "daysFromNow": 9,
+        "capacity": 18,
+        "price": 2100000
+      },
+      {
+        "daysFromNow": 23,
+        "capacity": 18,
+        "price": 2100000
+      }
+    ]
+  },
+  {
+    "key": "tour-da-nang-ba-na",
+    "name": "Đà Nẵng - Bà Nà Hills 1 ngày",
+    "place": "ba-na-hills",
+    "durationDays": 1,
+    "maxGuests": 30,
+    "price": 1250000,
+    "description": "Cáp treo lên Bà Nà, check-in Cầu Vàng, làng Pháp và buổi tối ngắm Cầu Rồng.",
+    "departures": [
+      {
+        "daysFromNow": 8,
+        "capacity": 30,
+        "price": 1250000
+      },
+      {
+        "daysFromNow": 15,
+        "capacity": 2,
+        "price": 1250000
+      },
+      {
+        "daysFromNow": 29,
+        "capacity": 30,
+        "price": 1350000
+      }
+    ]
+  },
+  {
+    "key": "tour-hoi-an-den-long",
+    "name": "Hội An: phố cổ và đèn lồng nửa ngày",
+    "place": "pho-co-hoi-an",
+    "durationDays": 1,
+    "maxGuests": 16,
+    "price": 480000,
+    "description": "Đi bộ qua phố cổ, học làm đèn lồng và thả hoa đăng trên sông Hoài.",
+    "departures": [
+      {
+        "daysFromNow": 7,
+        "capacity": 16,
+        "price": 480000
+      },
+      {
+        "daysFromNow": 14,
+        "capacity": 16,
+        "price": 480000
+      },
+      {
+        "daysFromNow": 21,
+        "capacity": 16,
+        "price": 480000
+      }
+    ]
+  },
+  {
+    "key": "tour-sai-gon-city",
+    "name": "TP.HCM: Sài Gòn một ngày",
+    "place": "nha-tho-duc-ba",
+    "durationDays": 1,
+    "maxGuests": 25,
+    "price": 720000,
+    "description": "Nhà thờ Đức Bà, Bưu điện Trung tâm, chợ Bến Thành và ẩm thực đường phố.",
+    "departures": [
+      {
+        "daysFromNow": 6,
+        "capacity": 25,
+        "price": 720000
+      },
+      {
+        "daysFromNow": 20,
+        "capacity": 25,
+        "price": 720000
+      }
+    ]
+  },
+  {
+    "key": "tour-phu-quoc-3n2d",
+    "name": "Phú Quốc: nghỉ dưỡng biển 3 ngày 2 đêm",
+    "place": "phu-quoc",
+    "durationDays": 3,
+    "maxGuests": 20,
+    "price": 4800000,
+    "description": "Ngắm bãi Sao, lặn ngắm san hô và thưởng thức hải sản, có thời gian tự do nghỉ ngơi.",
+    "departures": [
+      {
+        "daysFromNow": 18,
+        "capacity": 20,
+        "price": 4800000
+      },
+      {
+        "daysFromNow": 32,
+        "capacity": 20,
+        "price": 5200000
+      }
+    ]
+  },
+  {
+    "key": "tour-sa-pa-ruong-bac-thang",
+    "name": "Sa Pa: ruộng bậc thang 3 ngày 2 đêm",
+    "place": "sa-pa",
+    "durationDays": 3,
+    "maxGuests": 14,
+    "price": 3600000,
+    "description": "Trekking qua bản Cát Cát, thung lũng Mường Hoa và nghỉ homestay bản địa.",
+    "departures": [
+      {
+        "daysFromNow": 16,
+        "capacity": 14,
+        "price": 3600000
+      },
+      {
+        "daysFromNow": 30,
+        "capacity": 14,
+        "price": 3600000
+      }
+    ]
+  }
+]

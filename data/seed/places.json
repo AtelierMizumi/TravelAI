@@ -1,0 +1,86 @@
+[
+  {
+    "key": "ho-hoan-kiem",
+    "name": "Hồ Hoàn Kiếm",
+    "province": "Hà Nội",
+    "description": "Hồ nước nằm giữa trung tâm Hà Nội với đền Ngọc Sơn và Tháp Rùa, là nơi người dân đi dạo, tập thể dục và là điểm khởi đầu quen thuộc của mọi chuyến khám phá phố cổ.",
+    "image": "ho-hoan-kiem.jpg"
+  },
+  {
+    "key": "van-mieu",
+    "name": "Văn Miếu - Quốc Tử Giám",
+    "province": "Hà Nội",
+    "description": "Quần thể di tích được xây từ thế kỷ 11, nổi tiếng với vườn bia tiến sĩ và không gian cổ kính, gắn với truyền thống hiếu học của người Việt.",
+    "image": "van-mieu.jpg"
+  },
+  {
+    "key": "vinh-ha-long",
+    "name": "Vịnh Hạ Long",
+    "province": "Quảng Ninh",
+    "description": "Vịnh biển có hàng nghìn đảo đá vôi nhô lên khỏi mặt nước xanh, thích hợp cho du thuyền nghỉ đêm, chèo kayak và ngắm hoàng hôn trên vịnh.",
+    "image": "vinh-ha-long.jpg"
+  },
+  {
+    "key": "dai-noi-hue",
+    "name": "Đại Nội Huế",
+    "province": "Thừa Thiên Huế",
+    "description": "Hoàng thành triều Nguyễn với Ngọ Môn, điện Thái Hòa và các cung điện cổ, phản ánh kiến trúc cung đình và đời sống của vương triều cuối cùng.",
+    "image": "dai-noi-hue.jpg"
+  },
+  {
+    "key": "cau-rong",
+    "name": "Cầu Rồng",
+    "province": "Đà Nẵng",
+    "description": "Cây cầu hình rồng bắc qua sông Hàn, buổi tối phun lửa và nước vào cuối tuần, là biểu tượng hiện đại của thành phố biển Đà Nẵng.",
+    "image": "cau-rong.jpg"
+  },
+  {
+    "key": "ba-na-hills",
+    "name": "Bà Nà Hills",
+    "province": "Đà Nẵng",
+    "description": "Khu du lịch trên núi cao với khí hậu mát mẻ, cáp treo dài và Cầu Vàng có đôi bàn tay khổng lồ nâng đỡ, thu hút du khách quanh năm.",
+    "image": "ba-na-hills.jpg"
+  },
+  {
+    "key": "pho-co-hoi-an",
+    "name": "Phố cổ Hội An",
+    "province": "Quảng Nam",
+    "description": "Đô thị cổ bên sông Hoài với những ngôi nhà gỗ, đèn lồng nhiều màu và ẩm thực địa phương, là di sản thế giới được yêu thích ở miền Trung.",
+    "image": "pho-co-hoi-an.jpg"
+  },
+  {
+    "key": "nha-tho-duc-ba",
+    "name": "Nhà thờ Đức Bà Sài Gòn",
+    "province": "TP. Hồ Chí Minh",
+    "description": "Nhà thờ gạch đỏ xây theo phong cách Roman và Gothic ở trung tâm thành phố, đối diện Bưu điện Trung tâm, là điểm chụp ảnh quen thuộc.",
+    "image": "nha-tho-duc-ba.jpg"
+  },
+  {
+    "key": "cho-ben-thanh",
+    "name": "Chợ Bến Thành",
+    "province": "TP. Hồ Chí Minh",
+    "description": "Ngôi chợ lâu đời với tháp đồng hồ nổi bật, bán đủ loại đặc sản, quà lưu niệm và là nơi thưởng thức món ăn đường phố của Sài Gòn.",
+    "image": "cho-ben-thanh.jpg"
+  },
+  {
+    "key": "phu-quoc",
+    "name": "Phú Quốc",
+    "province": "Kiên Giang",
+    "description": "Đảo lớn nhất Việt Nam với bãi cát trắng, nước biển trong, rừng nguyên sinh và nước mắm nổi tiếng, thích hợp cho kỳ nghỉ biển dài ngày.",
+    "image": "phu-quoc.jpg"
+  },
+  {
+    "key": "sa-pa",
+    "name": "Sa Pa",
+    "province": "Lào Cai",
+    "description": "Thị trấn miền núi với ruộng bậc thang, bản làng dân tộc và khí hậu mát lạnh, nổi bật vào mùa lúa chín và mùa săn mây.",
+    "image": "sa-pa.jpg"
+  },
+  {
+    "key": "trang-an",
+    "name": "Tràng An",
+    "province": "Ninh Bình",
+    "description": "Quần thể núi đá vôi, hang động và sông nước, du khách ngồi thuyền nan len qua các hang xuyên thủy, cảnh quan được UNESCO ghi nhận.",
+    "image": "trang-an.jpg"
+  }
+]

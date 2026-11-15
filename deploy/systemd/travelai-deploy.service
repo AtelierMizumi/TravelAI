@@ -1,0 +1,6 @@
+[Unit]
+Description=TravelAI pull-based deploy agent (one pass)
+
+[Service]
+Type=oneshot
+ExecStart=%h/deploy/travelai/scripts/deploy-agent.sh

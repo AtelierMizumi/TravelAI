@@ -1,0 +1,46 @@
+[
+  {
+    "code": "cau_long_bien",
+    "path": "/images/landmarks/cau_long_bien.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Long_bien_bridge.jpg",
+    "downloadUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/78/Long_bien_bridge.jpg/960px-Long_bien_bridge.jpg?utm_source=vi.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "license": "CC BY-SA 3.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+    "artist": "<a href=\"//commons.wikimedia.org/wiki/User:Pierredh\" title=\"User:Pierredh\">Pierre De Hanscutter</a>",
+    "credit": "<span class=\"int-own-work\" lang=\"en\">Own work</span>",
+    "sha256": "b316e16e82f453f1b3ff00a6c2486496d1f88332bb5aeadde1381d450825abed"
+  },
+  {
+    "code": "cau_rong",
+    "path": "/images/landmarks/cau_rong.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Dragon_Bridge,_Da_Nang_during_day_-_20230819_(cropped).jpg",
+    "downloadUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/2a/Dragon_Bridge%2C_Da_Nang_during_day_-_20230819_%28cropped%29.jpg/960px-Dragon_Bridge%2C_Da_Nang_during_day_-_20230819_%28cropped%29.jpg?utm_source=vi.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "artist": "<a href=\"//commons.wikimedia.org/wiki/User:Somerset999\" title=\"User:Somerset999\">Somerset999</a>",
+    "credit": "<span class=\"int-own-work\" lang=\"en\">Own work</span>",
+    "sha256": "5984ba784ef3b35881b93c55313b3166d99183d23fb45991e2f83483cbaad5d7"
+  },
+  {
+    "code": "cau_vang",
+    "path": "/images/landmarks/cau_vang.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:The_Golden_Bridge,_Ba_Na_Hills,_Vietnam.jpg",
+    "downloadUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a5/The_Golden_Bridge%2C_Ba_Na_Hills%2C_Vietnam.jpg/960px-The_Golden_Bridge%2C_Ba_Na_Hills%2C_Vietnam.jpg?utm_source=vi.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "license": "CC BY 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/2.0",
+    "artist": "<a rel=\"nofollow\" class=\"external text\" href=\"https://www.flickr.com/people/21186555@N07\">. Ray in Manila</a>",
+    "credit": "<a rel=\"nofollow\" class=\"external free\" href=\"https://www.flickr.com/photos/rayinmanila/53604253072/\">https://www.flickr.com/photos/rayinmanila/53604253072/</a>",
+    "sha256": "5ab747340526fd19d7016d67ea259e016efe7013671d4cd265f2f62e01d9d092"
+  },
+  {
+    "code": "cho_ben_thanh",
+    "path": "/images/landmarks/cho_ben_thanh.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Ben_Thanh_market_2.jpg",
+    "downloadUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/9/91/Ben_Thanh_market_2.jpg/960px-Ben_Thanh_market_2.jpg?utm_source=vi.wikipedia.org&utm_campaign=api&utm_content=thumbnail",
+    "license": "CC BY 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/2.0",
+    "artist": "<a rel=\"nofollow\" class=\"external text\" href=\"https://www.flickr.com/photos/rnugraha/\">Riza</a>",
+    "credit": "<a rel=\"nofollow\" class=\"external text\" href=\"https://www.flickr.com/photos/rnugraha/3095172663/sizes/o/\">Flickr</a>",
+    "sha256": "aa28ebe1dd641f03f67527748bce53f732d403a498299627af9e46ded4464fa5"
+  }
+]
