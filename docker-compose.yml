@@ -124,7 +124,8 @@ services:
   ai-v2:
     profiles: ["v2"]
     build:
-      context: ./ai-service
+      context: .
+      dockerfile: ai-service/Dockerfile
     restart: unless-stopped
     # Run as the host user (non-root) so 0600 secret files mounted read-only stay readable.
     user: "${HOST_UID:-1000}:${HOST_GID:-1000}"
@@ -146,7 +147,8 @@ services:
   backend-v2:
     profiles: ["v2"]
     build:
-      context: ./backend
+      context: .
+      dockerfile: backend/Dockerfile
     restart: unless-stopped
     # Run as the host user (non-root) so 0600 secret files mounted read-only stay readable.
     user: "${HOST_UID:-1000}:${HOST_GID:-1000}"

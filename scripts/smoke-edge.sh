@@ -19,6 +19,14 @@ check "GET /actuator/health hidden"         404 "$(code "$BASE/actuator/health")
 check "GET /swagger-ui/index.html hidden"   404 "$(code "$BASE/swagger-ui/index.html")"
 check "GET /v3/api-docs hidden"             404 "$(code "$BASE/v3/api-docs")"
 
+# The landmark catalog must be inside both images: resolve a landmark and read its same-province services.
+resolved=$(curl -sS -m 25 "$BASE/api/places/resolve?landmarkCode=chua_cau_hoi_an" 2>/dev/null)
+place_id=$(printf '%s' "$resolved" | python3 -c 'import sys,json; print(json.load(sys.stdin)["id"])' 2>/dev/null || echo 0)
+match=$(curl -sS -m 25 "$BASE/api/places/$place_id/services" 2>/dev/null \
+  | python3 -c 'import sys,json; d=json.load(sys.stdin); print(d["province"]+"/"+d["matchType"])' 2>/dev/null || echo none)
+check "catalog resolves Chùa Cầu to its province" "Đà Nẵng/SAME_PROVINCE" "$match"
+check "AI health reports the local model status" ok "$(curl -sS -m 25 "$BASE/ai/" 2>/dev/null | grep -q localLandmarkModel && echo ok || echo missing)"
+
 if [ "${SEEDED:-1}" = 1 ]; then
   count() { curl -sS -m 25 "$BASE/api/$1" 2>/dev/null | python3 -c 'import sys,json; print(len(json.load(sys.stdin)))' 2>/dev/null || echo 0; }
   [ "$(count places)" -ge 12 ] && check "demo places >= 12" ok ok || check "demo places >= 12" ">=12" "$(count places)"

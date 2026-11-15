@@ -1,10 +1,12 @@
 # Multi-stage build for the TravelAI 2.0 Spring Boot backend (Java 25).
+# Build context is the repository root: the landmark catalog in shared/ is packaged into the jar.
 FROM eclipse-temurin:25-jdk AS build
 WORKDIR /build
-COPY .mvn .mvn
-COPY mvnw pom.xml ./
+COPY backend/.mvn .mvn
+COPY backend/mvnw backend/pom.xml ./
 RUN ./mvnw -q -B dependency:go-offline
-COPY src src
+COPY shared /shared
+COPY backend/src src
 RUN ./mvnw -q -B -DskipTests package && cp target/*.jar /build/app.jar
 
 FROM eclipse-temurin:25-jre AS runner
