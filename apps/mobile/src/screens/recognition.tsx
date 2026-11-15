@@ -9,6 +9,7 @@ import { ImageManipulator, SaveFormat } from "expo-image-manipulator";
 import { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
+  Platform,
   Pressable,
   StyleSheet,
   Switch,
@@ -30,6 +31,17 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LiveScan } from "@/components/live-scan";
 import { recognizeImage, type RecognitionResult } from "@/services/recognition";
 import { searchPlaces } from "@/services/place-search";
+import { prepareWebImage } from "@/services/webImage";
+
+async function prepareNativeImage(asset: ImagePicker.ImagePickerAsset): Promise<string> {
+  const context = ImageManipulator.manipulate(asset.uri);
+  if (Math.max(asset.width, asset.height) > 1600) {
+    context.resize(asset.width >= asset.height ? { width: 1600 } : { height: 1600 });
+  }
+  const rendered = await context.renderAsync();
+  const prepared = await rendered.saveAsync({ format: SaveFormat.JPEG, compress: 0.85 });
+  return prepared.uri;
+}
 
 export default function RecognitionScreen() {
   const insets = useSafeAreaInsets();
@@ -100,22 +112,13 @@ export default function RecognitionScreen() {
           });
       if (selection.canceled) return;
       const asset = selection.assets[0];
-      // Normalize HEIC and other phone formats to the server's supported JPEG format.
-      const context = ImageManipulator.manipulate(asset.uri);
-      if (Math.max(asset.width, asset.height) > 1600) {
-        // Omit the other dimension: Expo web treats null as a zero-sized canvas.
-        context.resize(
-          asset.width >= asset.height
-            ? { width: 1600 }
-            : { height: 1600 },
-        );
-      }
-      const rendered = await context.renderAsync();
-      const prepared = await rendered.saveAsync({
-        format: SaveFormat.JPEG,
-        compress: 0.85,
-      });
-      setUri(prepared.uri);
+      // Browsers shrink the photo straight into a small canvas (large photos broke the generic
+      // manipulator); native normalizes HEIC and other phone formats to the server's JPEG.
+      const preparedUri =
+        Platform.OS === "web"
+          ? await prepareWebImage(asset.uri)
+          : await prepareNativeImage(asset);
+      setUri(preparedUri);
       setConsent(false);
       setResult(null);
       setMatchedPlace(null);
