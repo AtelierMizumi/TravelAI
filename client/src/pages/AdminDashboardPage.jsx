@@ -201,10 +201,10 @@ export const AdminDashboardPage = () => {
               subtitle={`Đã đối soát ${stats.reconciledPayments ?? 0}/${stats.totalPayments ?? 0} giao dịch`}
             />
             <AdminStatCard
-              title="Đơn đặt đã thanh toán"
-              value={stats.paidCount ?? 0}
+              title="Tổng người dùng"
+              value={stats.totalUsers ?? "Chưa có dữ liệu"}
               icon={Users}
-              subtitle={`Đang chờ xử lý: ${stats.pendingCount ?? 0}`}
+              subtitle="Từ danh sách tài khoản"
             />
           </div>
         )}
@@ -274,7 +274,7 @@ export const AdminDashboardPage = () => {
 
             {destinations.length === 0 ? (
               <div className="py-12 text-center text-xs text-gray-400">
-                Chưa có dữ liệu đặt chỗ cho các điểm đến.
+                Chưa có dữ liệu đặt chỗ cho các sản phẩm.
               </div>
             ) : (
               <div className="space-y-4">

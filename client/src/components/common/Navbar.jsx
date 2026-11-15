@@ -192,6 +192,9 @@ export const Navbar = () => {
               </Link>
             );
           })}
+          {user && (user.role === 'ROLE_ADMIN' || user.role === 'ADMIN') && (
+            <Link to="/admin" onClick={() => setMobileMenuOpen(false)} className="flex items-center px-3 py-2 text-base font-medium text-gray-700 hover:bg-gray-50 rounded-lg">Quản trị hệ thống</Link>
+          )}
           <div className="pt-2 border-t border-gray-100">
             <Link
               to="/profile"

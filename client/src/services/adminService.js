@@ -96,6 +96,18 @@ const shouldFallbackToDemo = (err) => {
   return isDevWithoutToken && isBackendUnavailable;
 };
 
+async function allBookings() {
+  const bookings = [];
+  for (let page = 0; page < 10000; page++) {
+    const result = (await api.get('/admin/bookings', { params: { size: 100, page } }))?.data;
+    if (!result || !Array.isArray(result.content) || !Number.isInteger(result.totalPages)) throw new Error('Dữ liệu phân trang không hợp lệ.');
+    bookings.push(...result.content);
+    if (result.last === true || page + 1 >= result.totalPages) return bookings;
+    if (!result.content.length) throw new Error('Không thể tải đầy đủ các trang.');
+  }
+  throw new Error('Quá nhiều trang để tổng hợp an toàn.');
+}
+
 export const adminService = {
   /**
    * Lấy số liệu thống kê tổng quan (Analytics Stats) từ Backend Core
@@ -104,6 +116,11 @@ export const adminService = {
     try {
       const response = await api.get('/admin/bookings/stats');
       const data = response?.data || {};
+      let totalUsers = null;
+      try {
+        const users = await api.get('/admin/users', { params: { page: 0, size: 1 } });
+        if (Number.isInteger(users?.data?.totalElements) && users.data.totalElements >= 0) totalUsers = users.data.totalElements;
+      } catch { /* Không tạo số liệu thay thế khi không lấy được dữ liệu. */ }
 
       // Dùng toán tử ?? để bảo toàn giá trị 0 hợp lệ từ API (không dùng || vì sẽ ghi đè 0 bằng mock)
       return {
@@ -126,7 +143,7 @@ export const adminService = {
         totalPayments: data.totalPayments ?? 0,
         reconciledPayments: data.reconciledPayments ?? 0,
         // Các chỉ số không có trong BookingAuditStatsResponse: không bịa đặt số liệu giả
-        totalUsers: data.totalUsers ?? null,
+        totalUsers,
         growthRate: data.growthRate ?? null,
         isDemoData: false,
       };
@@ -147,8 +164,7 @@ export const adminService = {
    */
   async getRevenueChartData() {
     try {
-      const response = await api.get('/admin/bookings', { params: { size: 100 } });
-      const bookings = response?.data?.content || [];
+      const bookings = await allBookings();
       const months = ['T1', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'T8', 'T9', 'T10', 'T11', 'T12'];
       const monthlyRevenue = months.map((m) => ({ month: m, revenue: 0 }));
 
@@ -157,11 +173,14 @@ export const adminService = {
           if (
             b.createdAt &&
             b.totalAmount &&
-            (b.status === 'PAID' || b.status === 'CONFIRMED' || b.status === 'COMPLETED')
+            (b.status === 'PAID' || b.status === 'COMPLETED')
           ) {
             const date = new Date(b.createdAt);
-            const mIdx = date.getMonth();
-            if (mIdx >= 0 && mIdx < 12) {
+            const parts = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', year: 'numeric', month: 'numeric' }).formatToParts(date);
+            const year = Number(parts.find((part) => part.type === 'year')?.value);
+            const mIdx = Number(parts.find((part) => part.type === 'month')?.value) - 1;
+            const currentYear = Number(new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', year: 'numeric' }).format(new Date()));
+            if (year === currentYear && mIdx >= 0 && mIdx < 12) {
               monthlyRevenue[mIdx].revenue += Number(b.totalAmount) || 0;
             }
           }
@@ -184,8 +203,7 @@ export const adminService = {
    */
   async getPopularDestinations() {
     try {
-      const response = await api.get('/admin/bookings', { params: { size: 100 } });
-      const bookings = response?.data?.content || [];
+      const bookings = await allBookings();
 
       if (Array.isArray(bookings) && bookings.length > 0) {
         const destCounts = {};
@@ -202,7 +220,7 @@ export const adminService = {
           .slice(0, 5)
           .map(([name, count]) => ({
             name,
-            location: 'Điểm tham quan',
+            location: 'Sản phẩm đặt chỗ',
             count,
             percentage: totalCount > 0 ? Math.round((count / totalCount) * 100) : 0,
           }));
