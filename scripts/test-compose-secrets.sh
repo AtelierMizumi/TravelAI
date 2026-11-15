@@ -22,4 +22,11 @@ else
   echo "FAIL compose failed for another reason: $out"; fail=1
 fi
 
+# Password-reset mail: SMTP settings and the reset secret must reach the backend container,
+# and the defaults must point at Resend (user "resend", STARTTLS 587).
+cfg=$(render POSTGRES_PASSWORD=x TRAVELAI_SMTP_PASSWORD=pw TRAVELAI_RESET_SECRET=rs TRAVELAI_SMTP_FROM='TravelAI <no-reply@example.test>') || cfg=""
+for want in 'TRAVELAI_SMTP_HOST: smtp.resend.com' 'TRAVELAI_SMTP_PORT: "587"' 'TRAVELAI_SMTP_USERNAME: resend' 'TRAVELAI_SMTP_PASSWORD: pw' 'TRAVELAI_RESET_SECRET: rs' 'TRAVELAI_SMTP_FROM: TravelAI <no-reply@example.test>'; do
+  if grep -qF "$want" <<<"$cfg"; then echo "PASS backend receives $want"; else echo "FAIL backend does not receive $want"; fail=1; fi
+done
+
 exit $fail
