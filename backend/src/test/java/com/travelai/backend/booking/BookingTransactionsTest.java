@@ -243,6 +243,7 @@ class BookingTransactionsTest {
         assertEquals(1,notices.stream().filter(n -> "REMINDER_1H".equals(n.getType()) && booking.get("id").equals(n.getTargetReference())).count());
     }
     @Test void ratingsRequireOwnerAndCompletedItineraryAndAreUnique() throws Exception {
+        jdbc.update("insert into tours(id,name,status) values (701,'Synthetic fixture','active') on conflict (id) do update set status='active'");
         offering = (String) service.saveOffer(admin,new OfferInput(null,"TOUR",701L,"Synthetic rated tour",true,
                 new Policy(24,24,30,10,null),null,null,
                 List.of(new Departure(first,1,List.of("1"),100,first.plus(Duration.ofHours(6)))),null)).get("id");
@@ -263,6 +264,7 @@ class BookingTransactionsTest {
         mvc.perform(post("/api/ratings").header("Authorization",bearer(traveler)).contentType("application/json").content(input)).andExpect(status().isConflict());
     }
     @Test void promotionAppliesToTourAndReschedulingPolicyUsesAmountActuallyPaid() {
+        jdbc.update("insert into tours(id,name,status) values (701,'Synthetic fixture','active') on conflict (id) do update set status='active'");
         offering=(String)service.saveOffer(admin,new OfferInput(null,"TOUR",701L,"Synthetic sale",true,
                 new Policy(24,24,30,10,null),null,null,
                 List.of(new Departure(first,1,List.of("1"),100),new Departure(second,1,List.of("1"),160)),null,
@@ -274,6 +276,7 @@ class BookingTransactionsTest {
         assertEquals(16,change.fee()); assertEquals(80,change.holidayDifference()); assertEquals(96,change.total());
     }
     @Test void promotionAppliesOnlyToHotelNightsInConfiguredRange() {
+        jdbc.update("insert into hotels(id,name,status) values (702,'Synthetic fixture','active') on conflict (id) do update set status='active'");
         String hotel=(String)service.saveOffer(admin,new OfferInput(null,"HOTEL",702L,"Synthetic sale hotel",true,
                 new Policy(24,24,30,10,null),LocalTime.of(14,0),LocalTime.of(12,0),List.of(),
                 List.of(new Room("R1","101",2,100,Map.of())),new Promotion(LocalDate.of(2026,6,1),LocalDate.of(2026,6,1),20))).get("id");
@@ -382,5 +385,42 @@ class BookingTransactionsTest {
             for (Future<Boolean> result : results) if(result.get(10,TimeUnit.SECONDS)) successes++;
             assertEquals(1,successes);
         }
+    }
+    @Test void deactivatingCatalogHidesAndBlocksNewPaymentsWithoutDisablingOffer() throws Exception {
+        long catalogId = jdbc.queryForObject("insert into tours(name,status) values (?,?) returning id", Long.class, "Catalog fixture", "active");
+        offering = (String) service.saveOffer(admin, new OfferInput(null,"TOUR",catalogId,"Catalog fixture",true,
+                new Policy(24,24,30,10,null),null,null,
+                List.of(new Departure(first,1,List.of("1"),100)),null)).get("id");
+        Map<String,Object> pending = review(traveler,first,null);
+        String token=bearer(admin);
+        mvc.perform(put("/api/tours/"+catalogId).header("Authorization",token).contentType("application/json")
+                .content("{\"name\":\"Catalog fixture\",\"status\":\"inactive\"}"))
+                .andExpect(status().isOk());
+        assertTrue(service.offers().stream().noneMatch(o -> offering.equals(o.get("id"))));
+        mvc.perform(get("/api/tours/"+catalogId)).andExpect(status().isBadRequest());
+        mvc.perform(get("/api/tours")).andExpect(content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("Catalog fixture"))));
+        assertThrows(IllegalArgumentException.class, () -> pay(traveler,pending,card,key()));
+        assertEquals(1000,balance());
+        mvc.perform(put("/api/tours/"+catalogId).header("Authorization",token).contentType("application/json")
+                .content("{\"name\":\"Catalog fixture\",\"status\":\"active\"}"))
+                .andExpect(status().isOk());
+        assertTrue(service.offers().stream().anyMatch(o -> offering.equals(o.get("id"))));
+    }
+    @Test void inactiveHotelIsHiddenFromCatalogAndBookingsButVisibleToAdmin() throws Exception {
+        long hotelId = jdbc.queryForObject("insert into hotels(name,status) values (?,?) returning id", Long.class, "Hotel fixture", "active");
+        String hotel = (String) service.saveOffer(admin,new OfferInput(null,"HOTEL",hotelId,"Hotel fixture",true,
+                new Policy(24,24,30,10,null),LocalTime.of(14,0),LocalTime.of(12,0),List.of(),
+                List.of(new Room("R1","101",2,100,Map.of())))).get("id");
+        mvc.perform(put("/api/hotels/"+hotelId).header("Authorization",bearer(admin)).contentType("application/json")
+                .content("{\"name\":\"Hotel fixture\",\"status\":\"inactive\"}"))
+                .andExpect(status().isOk());
+        assertTrue(service.offers().stream().noneMatch(o -> hotel.equals(o.get("id"))));
+        mvc.perform(get("/api/hotels/"+hotelId)).andExpect(status().isBadRequest());
+        mvc.perform(get("/api/admin/catalog/hotels")).andExpect(status().isUnauthorized());
+        mvc.perform(get("/api/admin/catalog/hotels").header("Authorization",bearer(traveler))).andExpect(status().isForbidden());
+        mvc.perform(get("/api/admin/catalog/hotels").header("Authorization",bearer(admin))).andExpect(status().isOk())
+                .andExpect(content().string(org.hamcrest.Matchers.containsString("Hotel fixture")));
+        ReviewInput stay=new ReviewInput(hotel,null,null,null,LocalDate.of(2026,6,1),LocalDate.of(2026,6,2),1,List.of(),Map.of("R1",1),Map.of());
+        assertThrows(IllegalArgumentException.class, () -> service.review(traveler,stay,key()));
     }
 }

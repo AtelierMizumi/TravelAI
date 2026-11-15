@@ -4,7 +4,9 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.*;
 import com.travelai.backend.security.*;
 import com.travelai.backend.repository.UserRepository;
+import com.travelai.backend.entity.Hotel;
 import com.travelai.backend.entity.Notification;
+import com.travelai.backend.entity.Tour;
 import com.travelai.backend.service.NotificationPublisher;
 import jakarta.persistence.*;
 import org.springframework.stereotype.Service;
@@ -112,8 +114,16 @@ public class BookingService {
                 .map(c -> Map.<String,Object>of("id", c.id, "year", c.calendarYear, "version", c.version,
                         "source", c.source, "approved", c.approved, "dates", holidayDates(c))).toList();
     }
+    /** An offer linked to a catalog tour/hotel is sellable only while that catalog row is active. */
+    private boolean catalogActive(BookingOffering offer) {
+        if (offer == null) return false;
+        if (offer.legacyId == null) return true;
+        if ("TOUR".equals(offer.kind)) { Tour tour = em.find(Tour.class, offer.legacyId); return tour != null && "active".equalsIgnoreCase(tour.getStatus()); }
+        if ("HOTEL".equals(offer.kind)) { Hotel hotel = em.find(Hotel.class, offer.legacyId); return hotel != null && "active".equalsIgnoreCase(hotel.getStatus()); }
+        return false;
+    }
     public List<Map<String,Object>> offers() {
-        return em.createQuery("select o from BookingOffering o where o.active=true",BookingOffering.class).getResultList().stream().map(this::offerView).toList();
+        return em.createQuery("select o from BookingOffering o where o.active=true",BookingOffering.class).getResultList().stream().filter(this::catalogActive).map(this::offerView).toList();
     }
     private Map<String,Object> offerView(BookingOffering offer) {
         Map<String,Object> result=readMap(offer.definition); result.put("id",offer.id); result.put("version",offer.version);
@@ -170,7 +180,7 @@ public class BookingService {
         return once(actor,"REVIEW",key,input,()-> {
             Reservation current=input.bookingId()==null?null:owned(actor,input.bookingId());
             if(current!=null) { requireStatus(current,"CONFIRMED"); conflict(input.bookingRevision()!=null&&current.revision==input.bookingRevision(),"Booking changed; reload before reviewing"); }
-            BookingOffering offer=find(BookingOffering.class,input.offeringId()); require(offer.active,"Service is unavailable");
+            BookingOffering offer=find(BookingOffering.class,input.offeringId()); require(offer.active && catalogActive(offer),"Service is unavailable");
             if(current!=null) require(current.offeringId.equals(offer.id),"Rescheduling stays within the same tour or hotel");
             Itinerary target=itinerary(offer,input,now);
             Quote quote=quote(target,current,current!=null);
@@ -286,7 +296,7 @@ public class BookingService {
             Reservation current=review.reservationId==null?null:owned(actor,review.reservationId);
             if(current!=null) { requireStatus(current,"CONFIRMED"); conflict(current.revision==review.reservationRevision,"Booking changed; create a fresh review"); }
             Quote quoted=read(review.quote,Quote.class); Itinerary target=quoted.itinerary();
-            BookingOffering liveOffer=find(BookingOffering.class,target.selection().offeringId()); require(liveOffer.active,"Service cannot be provided");
+            BookingOffering liveOffer=find(BookingOffering.class,target.selection().offeringId()); require(liveOffer.active && catalogActive(liveOffer),"Service cannot be provided");
             checkCutoffs(now,current,target); require(target.start().isAfter(now),"Service has started");
             Quote latest=quote(target,current,current!=null);
             conflict(quoted.total()==latest.total()&&write(quoted.nights()).equals(write(latest.nights()))

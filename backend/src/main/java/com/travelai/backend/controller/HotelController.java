@@ -3,7 +3,9 @@ package com.travelai.backend.controller;
 import com.travelai.backend.entity.Hotel;
 import com.travelai.backend.catalog.CatalogDeleteGuard;
 import com.travelai.backend.repository.HotelRepository;
+import jakarta.persistence.EntityManager;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -14,8 +16,10 @@ public class HotelController {
 
     private final HotelRepository hotelRepository;
     private final CatalogDeleteGuard deleteGuard;
+    private final EntityManager entityManager;
 
-    public HotelController(HotelRepository hotelRepository, CatalogDeleteGuard deleteGuard) {
+    public HotelController(HotelRepository hotelRepository, CatalogDeleteGuard deleteGuard, EntityManager entityManager) {
+        this.entityManager = entityManager;
         this.hotelRepository = hotelRepository;
         this.deleteGuard = deleteGuard;
     }
@@ -23,7 +27,7 @@ public class HotelController {
     @GetMapping
     public ResponseEntity<?> getAllHotels() {
         return ResponseEntity.ok(
-                hotelRepository.findAllByOrderByIdDesc()
+                hotelRepository.findAllByOrderByIdDesc().stream().filter(item -> "active".equalsIgnoreCase(item.getStatus())).toList()
         );
     }
 
@@ -49,11 +53,15 @@ public class HotelController {
         return ResponseEntity.ok(hotelRepository.save(hotel));
     }
 
+    @Transactional
     @PutMapping("/{id}")
     public ResponseEntity<?> updateHotel(
             @PathVariable Long id,
             @RequestBody Hotel request
     ) {
+        entityManager.createNativeQuery("insert into booking_barrier(id) values (1) on conflict do nothing").executeUpdate();
+        entityManager.createNativeQuery("select id from booking_barrier where id=1 for update").getSingleResult();
+        entityManager.clear();
         Hotel hotel = hotelRepository.findById(id).orElse(null);
 
         if (hotel == null) {
@@ -100,7 +108,7 @@ public class HotelController {
 public ResponseEntity<?> getHotelById(@PathVariable Long id) {
     Hotel hotel = hotelRepository.findById(id).orElse(null);
 
-    if (hotel == null) {
+    if (hotel == null || !"active".equalsIgnoreCase(hotel.getStatus())) {
         return ResponseEntity.badRequest().body(
                 Map.of("message", "Hotel not found")
         );

@@ -1,6 +1,8 @@
 package com.travelai.backend.controller;
 
 import com.travelai.backend.repository.HotelBookingRepository;
+import com.travelai.backend.repository.HotelRepository;
+import com.travelai.backend.repository.TourRepository;
 import com.travelai.backend.repository.PlaceRepository;
 import com.travelai.backend.repository.PostRepository;
 import com.travelai.backend.repository.TourBookingRepository;
@@ -25,6 +27,8 @@ public class AdminController {
     private final TourBookingRepository tourBookingRepository;
     private final HotelBookingRepository hotelBookingRepository;
     private final PlaceRepository placeRepository;
+    private final TourRepository tours;
+    private final HotelRepository hotels;
     private final com.travelai.backend.admin.AnalyticsAggregation analytics;
     private final Clock clock;
 
@@ -35,6 +39,8 @@ public class AdminController {
             TourBookingRepository tourBookingRepository,
             HotelBookingRepository hotelBookingRepository,
             PlaceRepository placeRepository,
+            TourRepository tours,
+            HotelRepository hotels,
             com.travelai.backend.admin.AnalyticsAggregation analytics,
             Clock clock
     ) {
@@ -44,6 +50,8 @@ public class AdminController {
         this.tourBookingRepository = tourBookingRepository;
         this.hotelBookingRepository = hotelBookingRepository;
         this.placeRepository = placeRepository;
+        this.tours = tours;
+        this.hotels = hotels;
         this.analytics = analytics;
         this.clock = clock;
     }
@@ -89,4 +97,11 @@ public class AdminController {
         com.travelai.backend.security.ApiSecurity.currentActor().requireAdmin();
         return ResponseEntity.ok(userRepository.findAll());
     }
+
+    /** Full catalog including inactive rows; ApiSecurity restricts /api/admin to ADMIN. */
+    @GetMapping("/catalog/tours")
+    public Object catalogTours() { return tours.findAllByOrderByIdDesc(); }
+
+    @GetMapping("/catalog/hotels")
+    public Object catalogHotels() { return hotels.findAllByOrderByIdDesc(); }
 }

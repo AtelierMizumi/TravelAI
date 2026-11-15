@@ -5,9 +5,10 @@ import { useResource } from "@/hooks/use-resource";
 import { api } from "@/services/api";
 import type { CatalogItem, Place } from "@/services/types";
 import { provinces } from "@/services/provinces";
+import { adminCatalogPath } from "@/services/admin-catalog";
 type Kind = "tours" | "hotels" | "places";
 export function AdminCatalog({ kind }: { kind: Kind }) {
-  const resource = useResource<(CatalogItem & Place)[]>(`/${kind}`);
+  const resource = useResource<(CatalogItem & Place)[]>(adminCatalogPath(kind));
   const [selected, setSelected] = useState<(CatalogItem & Place) | null>(null);
   const [creating, setCreating] = useState(false);
   return (
