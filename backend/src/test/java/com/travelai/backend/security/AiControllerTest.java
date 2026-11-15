@@ -23,4 +23,14 @@ class AiControllerTest {
         var voice = new AiController.VoiceInput("VOICE_V1|audio/webm|"+Base64.getEncoder().encodeToString(fakeWebm));
         assertEquals(503, assertThrows(ResponseStatusException.class, () -> controller.voice(voice, request)).getStatusCode().value());
     }
+
+    @Test void voiceRequestPutsAudioFirstAndAsksForADirectAnswer() {
+        var audio = new VoiceFormat.Audio("audio/webm", "QUJD");
+        var parts = (List<?>) ((java.util.Map<?, ?>) AiController.voiceContents(audio).get(0)).get("parts");
+        assertEquals(2, parts.size());
+        assertTrue(((java.util.Map<?, ?>) parts.get(0)).containsKey("inlineData"), "audio must come first");
+        String prompt = (String) ((java.util.Map<?, ?>) parts.get(1)).get("text");
+        assertTrue(prompt.contains("trả lời trực tiếp"), "prompt must ask for a direct answer");
+        assertFalse(prompt.contains("Nếu không nghe rõ"), "old hedging wording must be gone");
+    }
 }
