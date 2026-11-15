@@ -93,4 +93,34 @@ run_agent "$d"
 d=$(new_env); echo "$SHA_B" > "$d/fake.latest"; echo "sha-bbbbbbbbbbbb" > "$d/fake.badtags"
 run_agent "$d"
 grep -q "FAILED" "$d/history.log" && ok "history log records the failure" || bad "history log records the failure"
+# --- scripts/prod-apply.sh: recreate services after a .env change, with the agent's compose files and tag ---
+apply="$(cd "$(dirname "$0")" && pwd)/prod-apply.sh"
+run_apply() {  # $1=dir, rest=services
+  local d=$1; shift
+  DEPLOY_DIR="$d" APP_DIR="$d/travelai" DOCKER="$d/bin/docker" SMOKE="$d/bin/smoke" SMOKE_RETRIES=2 SMOKE_WAIT=0 bash "$apply" "$@" >"$d/apply.out" 2>&1
+}
+cat_docker() { cat > "$1/bin/docker" <<'STUB'
+#!/usr/bin/env bash
+echo "DOCKER $* tag=$TRAVELAI_TAG project=$COMPOSE_PROJECT_NAME" >> "$DEPLOY_DIR/calls.log"
+case "$*" in *" up "*) echo "$TRAVELAI_TAG" > "$DEPLOY_DIR/running.tag" ;; esac
+STUB
+chmod +x "$1/bin/docker"; }
+
+d=$(new_env); cat_docker "$d"; mkdir -p "$d/state"; echo sha-aaaaaaaaaaaa > "$d/state/current.tag"
+run_apply "$d"; rc=$?
+[ $rc -eq 0 ] && ok "apply succeeds when smoke passes" || bad "apply succeeds when smoke passes"
+for want in "-f docker-compose.yml -f docker-compose.edge.yml -f docker-compose.release.yml" "--force-recreate" "--no-build" "backend-v2" "tag=sha-aaaaaaaaaaaa" "project=travelai-prod"; do
+  grep -qF -- "$want" "$d/calls.log" 2>/dev/null && ok "apply uses: $want" || bad "apply uses: $want"
+done
+grep -q "postgres-v2" "$d/calls.log" 2>/dev/null && bad "apply does not touch the database by default" || ok "apply does not touch the database by default"
+
+d=$(new_env); cat_docker "$d"
+run_apply "$d"; rc=$?
+[ $rc -ne 0 ] && [ ! -s "$d/calls.log" ] && ok "apply refuses without a deployed release tag" || bad "apply refuses without a deployed release tag"
+
+d=$(new_env); cat_docker "$d"; mkdir -p "$d/state"; echo sha-aaaaaaaaaaaa > "$d/state/current.tag"
+printf '#!/usr/bin/env bash\nexit 1\n' > "$d/bin/smoke"
+run_apply "$d"; rc=$?
+[ $rc -ne 0 ] && ok "apply fails loudly when smoke fails" || bad "apply fails loudly when smoke fails"
+
 exit $fail
