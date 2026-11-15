@@ -1,7 +1,13 @@
 import React from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 
-export const Pagination = ({ currentPage, totalPages, totalElements, onPageChange }) => {
+export const Pagination = ({
+  currentPage,
+  totalPages,
+  totalElements,
+  onPageChange,
+  itemLabel = 'địa danh',
+}) => {
   if (totalPages <= 1) return null;
 
   // Windowed pagination: show at most 5 page numbers centered around currentPage
@@ -30,7 +36,7 @@ export const Pagination = ({ currentPage, totalPages, totalElements, onPageChang
       <div className="text-xs text-gray-500">
         Hiển thị trang <span className="font-semibold text-gray-800">{currentPage + 1}</span> /{' '}
         <span className="font-semibold text-gray-800">{totalPages}</span> (Tổng số{' '}
-        <span className="font-semibold text-brand-600">{totalElements}</span> địa danh)
+        <span className="font-semibold text-brand-600">{totalElements}</span> {itemLabel})
       </div>
 
       <div className="flex items-center space-x-1.5">

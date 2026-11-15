@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { User, Shield, Clock, AlertCircle, LogIn, Home } from 'lucide-react';
+import { User, Shield, Clock, AlertCircle, LogIn, Home, CalendarDays } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { ProfileHeader } from '../components/profile/ProfileHeader';
 import { ProfileInfoForm } from '../components/profile/ProfileInfoForm';
 import { SecuritySettings } from '../components/profile/SecuritySettings';
 import { ActivityHistory } from '../components/profile/ActivityHistory';
+import { MyBookingsList } from '../components/profile/MyBookingsList';
 import { Skeleton } from '../components/ui/Skeleton';
 import { Toast } from '../components/common/Toast';
 import { Button } from '../components/common/Button';
@@ -99,6 +100,7 @@ export const ProfilePage = () => {
 
   const tabs = [
     { id: 'profile', label: 'Thông tin cá nhân', icon: User },
+    { id: 'bookings', label: 'Đơn đặt chỗ của tôi', icon: CalendarDays },
     { id: 'security', label: 'Bảo mật & Mật khẩu', icon: Shield },
     { id: 'activity', label: 'Lịch sử hoạt động', icon: Clock },
   ];
@@ -122,7 +124,7 @@ export const ProfilePage = () => {
       />
 
       {/* Tabs navigation */}
-      <div className="flex border-b border-gray-200 space-x-2">
+      <div className="flex border-b border-gray-200 space-x-2 overflow-x-auto no-scrollbar">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -130,7 +132,7 @@ export const ProfilePage = () => {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center px-4 py-3 text-sm font-medium border-b-2 transition-all focus:outline-none ${
+              className={`flex items-center px-4 py-3 text-sm font-medium border-b-2 whitespace-nowrap transition-all focus:outline-none ${
                 isActive
                   ? 'border-brand-600 text-brand-600 font-semibold'
                   : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
@@ -152,6 +154,8 @@ export const ProfilePage = () => {
             isUpdating={isUpdating}
           />
         )}
+
+        {activeTab === 'bookings' && <MyBookingsList />}
 
         {activeTab === 'security' && <SecuritySettings />}
 
