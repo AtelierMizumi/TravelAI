@@ -12,6 +12,9 @@ export interface Place {
   name: string;
   description: string;
   imageUrl?: string;
+  landmarkCode?: string | null;
+  province?: string | null;
+  imageAttribution?: string | null;
 }
 export interface CatalogItem {
   id: number;

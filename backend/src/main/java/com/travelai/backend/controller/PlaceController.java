@@ -1,6 +1,7 @@
 package com.travelai.backend.controller;
 
 import com.travelai.backend.entity.Place;
+import com.travelai.backend.catalog.LandmarkCatalog;
 import com.travelai.backend.repository.PlaceRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,15 +13,23 @@ import java.util.List;
 public class PlaceController {
 
     private final PlaceRepository repo;
+    private final LandmarkCatalog catalog;
 
-    public PlaceController(PlaceRepository repo) {
+    public PlaceController(PlaceRepository repo, LandmarkCatalog catalog) {
         this.repo = repo;
+        this.catalog = catalog;
     }
 
     @GetMapping
     public List<Place> getAll() {
         return repo.findAll();
     }
+
+    @GetMapping("/resolve")
+    public Place resolve(@RequestParam String landmarkCode) { return catalog.resolve(landmarkCode); }
+
+    @GetMapping("/{id}/services")
+    public java.util.Map<String,Object> relatedServices(@PathVariable Long id) { return catalog.services(id); }
 
     @GetMapping("/{id}")
     public ResponseEntity<Place> get(@PathVariable Long id) {

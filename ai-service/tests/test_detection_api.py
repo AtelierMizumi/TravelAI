@@ -3,6 +3,8 @@ import importlib.util
 from pathlib import Path
 import unittest
 from unittest.mock import patch
+import sys
+sys.path.insert(0, str(Path(__file__).parents[1]))
 
 from fastapi import HTTPException
 from fastapi.testclient import TestClient
@@ -18,6 +20,9 @@ with patch("google.cloud.vision.ImageAnnotatorClient"), patch(
 class DetectionApiTest(unittest.TestCase):
     def setUp(self):
         self.client = TestClient(ai.app)
+        self.local_patch = patch.object(ai.landmark_model, "predict", return_value=None)
+        self.local_patch.start()
+        self.addCleanup(self.local_patch.stop)
 
     def upload(self, content=b"\xff\xd8\xffsynthetic", consent="true"):
         return self.client.post("/detect", files={"file": ("test.jpg", content, "image/jpeg")}, data={"consent": consent})
@@ -70,6 +75,66 @@ class DetectionApiTest(unittest.TestCase):
             response = self.upload()
             self.assertEqual(502, response.status_code)
             self.assertNotIn("synthetic failure", response.text)
+
+    def test_local_prediction_requires_cloud_confirmation_before_catalog_link(self):
+        prediction = dict(code="cho_ben_thanh", confidence=.95, accepted=True, candidates=[])
+        with patch.object(ai.landmark_model, "predict", return_value=prediction), patch.object(ai, "analyze_google", side_effect=HTTPException(503)):
+            result = self.upload().json()
+        self.assertEqual("predicted", result["recognitionStatus"])
+        self.assertIsNone(result["landmarkCode"])
+        self.assertEqual("onnx", result["engine"])
+
+    def test_cloud_corroboration_resolves_landmark_code(self):
+        prediction = dict(code="cho_ben_thanh", confidence=.95, accepted=True, candidates=[])
+        signals = dict(landmarks=[dict(name="Chợ Bến Thành", score=.95, coordinates=None)], entities=[], guesses=[], labels=[], objects=[], ocr="")
+        with patch.object(ai.landmark_model, "predict", return_value=prediction), patch.object(ai, "analyze_google", return_value=signals):
+            result = self.upload().json()
+        self.assertEqual("identified", result["recognitionStatus"])
+        self.assertEqual("cho_ben_thanh", result["landmarkCode"])
+
+    def test_ocr_corroborates_model(self):
+        prediction = dict(code="cho_ben_thanh", confidence=.95, accepted=True, candidates=[])
+        signals = dict(landmarks=[], entities=[], guesses=[], labels=[], objects=[], ocr="CHỢ BẾN THÀNH")
+        with patch.object(ai.landmark_model, "predict", return_value=prediction), patch.object(ai, "analyze_google", return_value=signals):
+            result = self.upload().json()
+        self.assertEqual("identified", result["recognitionStatus"])
+        self.assertEqual("cho_ben_thanh", result["landmarkCode"])
+
+    def test_ocr_and_model_with_conflicting_cloud_stays_prediction(self):
+        prediction = dict(code="cho_ben_thanh", confidence=.98, accepted=True, candidates=[])
+        signals = dict(landmarks=[dict(name="Bảo tàng khác", score=.94, coordinates=None)], entities=[], guesses=[], labels=[], objects=[], ocr="CHỢ BẾN THÀNH")
+        with patch.object(ai.landmark_model, "predict", return_value=prediction), patch.object(ai, "analyze_google", return_value=signals):
+            result = self.upload().json()
+        self.assertEqual("Chợ Bến Thành", result["displayName"])
+        self.assertEqual("predicted", result["recognitionStatus"])
+        self.assertIsNone(result["landmarkCode"])
+
+    def test_cloud_result_outside_training_not_overwritten(self):
+        prediction = dict(code="cau_long_bien", confidence=.95, accepted=True, candidates=[])
+        signals = dict(landmarks=[], entities=[], guesses=[], labels=[], objects=[], ocr="")
+        cloud = dict(exactName="Big Ben", displayName="Big Ben", category="place", recognitionStatus="predicted", description="Tháp đồng hồ", reason="Google", searchQuery=None, locationHint=None)
+        with patch.object(ai.landmark_model, "predict", return_value=prediction), patch.object(ai, "analyze_google", return_value=signals), patch.object(ai, "fallback_analysis", return_value=cloud):
+            result = self.upload().json()
+        self.assertEqual("Big Ben", result["displayName"])
+        self.assertEqual("google_vision", result["engine"])
+        self.assertIsNone(result["landmarkCode"])
+
+    def test_unconfirmed_model_does_not_replace_unknown_cloud(self):
+        prediction = dict(code="cau_long_bien", confidence=.95, accepted=True, candidates=[])
+        signals = dict(landmarks=[], entities=[], guesses=[], labels=[], objects=[], ocr="")
+        with patch.object(ai.landmark_model, "predict", return_value=prediction), patch.object(ai, "analyze_google", return_value=signals):
+            result = self.upload().json()
+        self.assertEqual("unknown", result["recognitionStatus"])
+        self.assertIsNone(result["landmarkCode"])
+
+    def test_excluded_class_is_not_promoted(self):
+        from ai.landmark_model import classify_logits
+        classes = {str(i): name for i, name in enumerate(ai.LANDMARKS)}
+        logits = [0.0] * len(classes)
+        logits[list(classes.values()).index("cau_rong")] = 20.0
+        result = classify_logits(logits, classes)
+        self.assertFalse(result["accepted"])
+        self.assertEqual("cau_rong", result["code"])
 
     def test_allowed_web_origin_preflight(self):
         for origin in ("http://localhost:8081", "http://localhost:8084", "http://127.0.0.1:8084"):

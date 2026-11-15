@@ -19,6 +19,15 @@ public class Place {
     @Column(nullable = false)
     private String name;
 
+    @Column(unique = true)
+    private String landmarkCode;
+    private String province;
+    private Double latitude;
+    private Double longitude;
+    private Boolean localModelEnabled;
+    @Column(columnDefinition = "TEXT")
+    private String imageAttribution;
+
     @Column(length = 5000)
     private String description;
 

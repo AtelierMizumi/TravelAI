@@ -13,8 +13,7 @@ import { recognitionApiUrl } from "@/services/recognition";
 export default function Destination() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const place = useResource<Place>(`/places/${encodeURIComponent(id)}`);
-  const tours = useResource<CatalogItem[]>("/tours");
-  const hotels = useResource<CatalogItem[]>("/hotels");
+  const related = useResource<{ province: string | null; tours: CatalogItem[]; hotels: CatalogItem[] }>(`/places/${encodeURIComponent(id)}/services`);
   const name = place.data?.name?.trim();
   const [articleState, setArticle] = useState<{
     query: string;
@@ -43,21 +42,11 @@ export default function Destination() {
       .catch(() => {});
     return () => controller.abort();
   }, [name]);
-  const matches = (items?: CatalogItem[] | null) =>
-    name
-      ? items
-          ?.filter((item) =>
-            `${item.name} ${item.location || ""}`
-              .toLocaleLowerCase("vi")
-              .includes(name.toLocaleLowerCase("vi")),
-          )
-          .slice(0, 4)
-      : [];
-  const relatedTours = matches(tours.data);
-  const relatedHotels = matches(hotels.data);
+  const relatedTours = related.data?.tours?.slice(0, 4);
+  const relatedHotels = related.data?.hotels?.slice(0, 4);
   return (
     <Screen title={name || "Điểm đến"}>
-      <ErrorText message={place.error} />
+      <ErrorText message={place.error || related.error} />
       {!!place.data?.imageUrl && (
         <Image
           source={{ uri: place.data.imageUrl }}
@@ -65,6 +54,7 @@ export default function Destination() {
           style={[ui.image, { height: 360, borderRadius: 24 }]}
         />
       )}
+      {!!place.data?.imageAttribution && <Text style={ui.text}>Ảnh: {place.data.imageAttribution}</Text>}
       {place.data && (
         <Card>
           <View style={ui.row}>
@@ -101,9 +91,10 @@ export default function Destination() {
           <Nav href="/booking/hotels">Tìm khách sạn →</Nav>
         </View>
       </Card>
+      {related.data && relatedTours?.length === 0 && relatedHotels?.length === 0 && <Text style={ui.text}>Chưa có tour hoặc khách sạn phù hợp trong danh mục của tỉnh này.</Text>}
       {!!relatedTours?.length && (
         <Card>
-          <Text style={ui.heading}>Tour liên quan</Text>
+          <Text style={ui.heading}>Tour tại {related.data?.province}</Text>
           {relatedTours.map((item) => (
             <Nav
               key={item.id}
@@ -119,7 +110,7 @@ export default function Destination() {
       )}
       {!!relatedHotels?.length && (
         <Card>
-          <Text style={ui.heading}>Khách sạn liên quan</Text>
+          <Text style={ui.heading}>Khách sạn tại {related.data?.province}</Text>
           {relatedHotels.map((item) => (
             <Nav
               key={item.id}

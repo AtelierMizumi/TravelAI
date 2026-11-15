@@ -18,6 +18,7 @@ public class Tour {
 
     private String name;
     private String location;
+    private String province;
 
     private Double rating;
     private Double price;

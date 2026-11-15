@@ -1,5 +1,8 @@
 import { Image } from "expo-image";
 import { Ionicons } from "@expo/vector-icons";
+import { Link } from "expo-router";
+import { api } from "@/services/api";
+import type { Place } from "@/services/types";
 import * as Linking from "expo-linking";
 import * as ImagePicker from "expo-image-picker";
 import { ImageManipulator, SaveFormat } from "expo-image-manipulator";
@@ -9,6 +12,7 @@ import {
   Pressable,
   StyleSheet,
   Switch,
+  TextInput,
   Text,
   View,
 } from "react-native";
@@ -25,6 +29,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { LiveScan } from "@/components/live-scan";
 import { recognizeImage, type RecognitionResult } from "@/services/recognition";
+import { searchPlaces } from "@/services/place-search";
 
 export default function RecognitionScreen() {
   const insets = useSafeAreaInsets();
@@ -33,6 +38,13 @@ export default function RecognitionScreen() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [result, setResult] = useState<RecognitionResult | null>(null);
+  const [matchedPlace, setMatchedPlace] = useState<Place | null>(null);
+  const [manualOpen, setManualOpen] = useState(false);
+  const [places, setPlaces] = useState<Place[] | null>(null);
+  const [placeQuery, setPlaceQuery] = useState("");
+  const [selectedPlace, setSelectedPlace] = useState<Place | null>(null);
+  const [placeError, setPlaceError] = useState("");
+  const [placesBusy, setPlacesBusy] = useState(false);
   const [showLiveScan, setShowLiveScan] = useState(false);
   const reducedMotion = useReducedMotion();
   const scrollY = useSharedValue(0);
@@ -105,6 +117,10 @@ export default function RecognitionScreen() {
       setUri(prepared.uri);
       setConsent(false);
       setResult(null);
+      setMatchedPlace(null);
+      setSelectedPlace(null);
+      setManualOpen(false);
+      setPlaceQuery("");
     } catch (failure) {
       setError(
         failure instanceof Error ? failure.message : "Không mở được ảnh.",
@@ -121,10 +137,24 @@ export default function RecognitionScreen() {
     setBusy(true);
     setError("");
     setResult(null);
+    setMatchedPlace(null);
+    setSelectedPlace(null);
+    setManualOpen(false);
+    setPlaceQuery("");
     const timeout = setTimeout(() => controller.abort(), 90_000);
     try {
       const response = await recognizeImage(uri, controller.signal);
-      if (!controller.signal.aborted) setResult(response);
+      if (!controller.signal.aborted) {
+        setResult(response);
+        if (response.landmarkCode && response.recognitionStatus === "identified") {
+          try {
+            const place = await api<Place>(`/places/resolve?landmarkCode=${encodeURIComponent(response.landmarkCode)}`, { signal: controller.signal });
+            if (!controller.signal.aborted) setMatchedPlace(place);
+          } catch {
+            if (!controller.signal.aborted) setError("Không tải được danh mục địa điểm từ backend.");
+          }
+        }
+      }
     } catch (failure) {
       if (pending.current === controller) {
         setError(
@@ -141,6 +171,23 @@ export default function RecognitionScreen() {
         pending.current = null;
         setBusy(false);
       }
+    }
+  }
+
+  async function openPlacePicker() {
+    setManualOpen(true);
+    setSelectedPlace(null);
+    setPlaceError("");
+    if (places) return;
+    setPlacesBusy(true);
+    try {
+      const data = await api<Place[]>("/places");
+      if (!Array.isArray(data)) throw new Error("Danh mục địa điểm không hợp lệ.");
+      setPlaces(data.filter((place) => typeof place?.id === "number" && typeof place.name === "string"));
+    } catch {
+      setPlaceError("Không tải được danh mục địa điểm. Vui lòng thử lại.");
+    } finally {
+      setPlacesBusy(false);
     }
   }
 
@@ -291,6 +338,25 @@ export default function RecognitionScreen() {
               </Text>
             </Pressable>
           )}
+          {!!matchedPlace && <Link href={{ pathname: "/destination/[id]", params: { id: String(matchedPlace.id) } }} style={styles.secondaryText}>Xác nhận {matchedPlace.name} và xem dịch vụ →</Link>}
+          <Pressable accessibilityRole="button" style={styles.secondary} disabled={placesBusy} onPress={() => void openPlacePicker()}>
+            <Text style={styles.secondaryText}>{manualOpen ? "Tải lại danh mục địa điểm" : "Chọn hoặc xác nhận địa điểm"}</Text>
+          </Pressable>
+          {manualOpen && (
+            <View style={styles.picker}>
+              <Text style={styles.body}>Tìm và chọn đúng địa điểm trong danh mục để xem tour, khách sạn cùng tỉnh.</Text>
+              <TextInput accessibilityLabel="Tên địa điểm hoặc tỉnh thành" value={placeQuery} onChangeText={(text) => { setPlaceQuery(text); setSelectedPlace(null); }} placeholder="Ví dụ: Chợ Bến Thành" style={styles.input} />
+              {placesBusy && <ActivityIndicator accessibilityLabel="Đang tải danh mục địa điểm" />}
+              {!!placeError && <Text accessibilityRole="alert" style={styles.error}>{placeError}</Text>}
+              {places && placeQuery.trim().length >= 2 && searchPlaces(places, placeQuery).length === 0 && <Text style={styles.body}>Chưa tìm thấy địa điểm trong danh mục. Hãy thử tên khác.</Text>}
+              {places && searchPlaces(places, placeQuery).map((place) => (
+                <Pressable key={place.id} accessibilityRole="button" accessibilityState={{ selected: selectedPlace?.id === place.id }} onPress={() => setSelectedPlace(place)} style={[styles.placeOption, selectedPlace?.id === place.id && styles.placeSelected]}>
+                  <Text style={styles.secondaryText}>{place.name}{place.province ? ` · ${place.province}` : ""}</Text>
+                </Pressable>
+              ))}
+              {selectedPlace && <Link href={{ pathname: "/destination/[id]", params: { id: String(selectedPlace.id) } }} style={styles.secondaryText}>Xác nhận {selectedPlace.name} và xem dịch vụ →</Link>}
+            </View>
+          )}
           <Text style={styles.body}>Nguồn xử lý {result.engine}</Text>
         </View>
       )}
@@ -378,6 +444,10 @@ const styles = StyleSheet.create({
   permission: { flexDirection: "row", alignItems: "center", gap: 12 },
   permissionText: { flex: 1, color: "#475569", lineHeight: 23 },
   result: { padding: 20, backgroundColor: "#fff", borderRadius: 16, gap: 12 },
+  picker: { gap: 10, paddingTop: 8 },
+  input: { borderWidth: 1, borderColor: "#cbd5e1", borderRadius: 12, padding: 12, color: "#0f172a", backgroundColor: "#fff" },
+  placeOption: { padding: 12, borderRadius: 12, backgroundColor: "#f1f5f9" },
+  placeSelected: { backgroundColor: "#dbeafe", borderWidth: 1, borderColor: "#2563eb" },
   status: { color: "#1d4ed8", fontWeight: "600" },
   error: { color: "#b91c1c", lineHeight: 24 },
 });

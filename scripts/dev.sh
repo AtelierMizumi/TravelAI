@@ -82,7 +82,9 @@ if port_open 8000; then
   printf 'Đang dùng AI service ở cổng 8000.\n'
 else
   printf 'Đang khởi động AI service…\n'
-  setsid python3 -m uvicorn ai.main:app --app-dir "$project_root/ai-service" --host 0.0.0.0 --port 8000 >"$log_dir/ai-service.log" 2>&1 &
+  ai_python=python3
+  if [[ -x "$project_root/ai-service/.venv/bin/python" ]]; then ai_python="$project_root/ai-service/.venv/bin/python"; fi
+  setsid "$ai_python" -m uvicorn ai.main:app --app-dir "$project_root/ai-service" --host 0.0.0.0 --port 8000 >"$log_dir/ai-service.log" 2>&1 &
   ai_pid=$!
   started+=("$ai_pid")
   wait_for_url http://127.0.0.1:8000/ 'AI service' "$ai_pid"

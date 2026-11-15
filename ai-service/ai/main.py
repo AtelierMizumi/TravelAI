@@ -8,6 +8,8 @@ import unicodedata
 from pathlib import Path
 from difflib import SequenceMatcher
 
+from ai.landmark_model import model as landmark_model, LANDMARKS
+
 import requests
 from fastapi import FastAPI, UploadFile, File, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -907,7 +909,8 @@ def home():
         "geminiModel": GEMINI_MODEL,
         "geminiLastError": gemini_last_error,
         "transport": "REST",
-        "databaseRequired": False
+        "databaseRequired": False,
+        "localLandmarkModel": landmark_model.status()
     }
 
 
@@ -941,7 +944,21 @@ def detect(file: UploadFile = File(...), consent: bool = Form(False)):
                 detail="Chỉ hỗ trợ JPEG, PNG và WEBP."
             )
 
-        signals = analyze_google(content)
+        try:
+            local = landmark_model.predict(content)
+        except ValueError:
+            raise HTTPException(400, "Dữ liệu ảnh không hợp lệ hoặc vượt giới hạn điểm ảnh.")
+        except Exception:
+            logger.exception("Local inference failed")
+            local = None
+        cloud_error = None
+        try:
+            signals = analyze_google(content)
+        except HTTPException as error:
+            cloud_error = error
+            if not local or not local["accepted"]:
+                raise
+            signals = dict(landmarks=[], entities=[], guesses=[], labels=[], objects=[], ocr="")
         candidates = build_candidates(signals)
 
         analysis = None  # Gemini disabled: prepaid credits depleted
@@ -950,6 +967,39 @@ def detect(file: UploadFile = File(...), consent: bool = Form(False)):
 
         if analysis is None:
             analysis = fallback_analysis(signals)
+
+        local_used = False
+        if local and local["accepted"]:
+            row = LANDMARKS[local["code"]]
+            generic = {'ha noi', 'da nang', 'sai gon', 'quan 1', 'song hong', 'song han', 'ho tay', 'nha nguyen', 'thoi ly', 'viet nam', 'quang nam', 'hue'}
+            aliases = {normalize(row['name']), normalize(row['wikipediaTitle'])}
+            aliases.update(normalize(a) for a in row['aliases'] if normalize(a) not in generic)
+            aliases = {a for a in aliases if len(a.split()) >= 2}
+            def aliases_match(label):
+                return normalize(label) in aliases
+            strong = [item for item in signals['landmarks'] if item['score'] >= .75]
+            landmark_agrees = any(aliases_match(item['name']) for item in strong)
+            ocr = ' ' + normalize(signals.get('ocr', '')) + ' '
+            ocr_agrees = any(' ' + alias + ' ' in ocr for alias in aliases)
+            cloud_name = analysis.get('exactName')
+            # An unrelated strong cloud landmark or named cloud result vetoes the closed-set model.
+            cloud_conflicts = ((cloud_name and not aliases_match(cloud_name)) or
+                any(not aliases_match(item['name']) for item in strong))
+            if not cloud_conflicts and (landmark_agrees or ocr_agrees):
+                local_used = True
+                analysis = dict(exactName=row['name'], displayName=row['name'], category='place',
+                    recognitionStatus='identified', description=row['description'], searchQuery=None,
+                    locationHint=row['province'], reason='Model và tín hiệu Google Vision hoặc chữ trong ảnh cùng phù hợp với địa danh này.')
+            elif ocr_agrees and not cloud_name:
+                local_used = True
+                analysis = dict(exactName=row['name'], displayName=row['name'], category='place',
+                    recognitionStatus='predicted', description=row['description'], searchQuery=None,
+                    locationHint=row['province'], reason='Model và chữ trong ảnh gợi ý địa danh này, nhưng Google Vision trả thêm địa danh khác; cần kiểm tra lại.')
+            elif cloud_error is not None:
+                local_used = True
+                analysis = dict(exactName=row['name'], displayName=row['name'], category='place',
+                    recognitionStatus='predicted', description=row['description'], searchQuery=None,
+                    locationHint=row['province'], reason='Model dự đoán; Google Vision hiện không khả dụng để đối chiếu.')
 
         name = analysis["exactName"]
         display_name = analysis["displayName"]
@@ -1061,6 +1111,22 @@ def detect(file: UploadFile = File(...), consent: bool = Form(False)):
             )
         }
 
+        matched = next((row for row in LANDMARKS.values()
+                        if name and normalize(name) in {normalize(row['name']), *(normalize(a) for a in row['aliases'])}), None)
+        using_local = bool(local_used and local and matched and matched['code'] == local['code'])
+        if matched and status == "identified":
+            result.update(landmarkCode=matched['code'], province=matched['province'],
+                coordinates={'latitude': matched['latitude'], 'longitude': matched['longitude']})
+        else:
+            result.update(landmarkCode=None, province=None)
+        if using_local:
+            result.update(success=True, sceneRecognized=True, exactNameRecognized=True,
+                confidence=local['confidence'], confidenceType='model_softmax',
+                engine='onnx+google_vision' if cloud_error is None else 'onnx',
+                source='trained_model', modelCandidates=local['candidates'],
+                message='Đã chạy model địa danh; thông tin dịch vụ do backend cung cấp.')
+        result['localModelAvailable'] = landmark_model.status()['available']
+        result['cloudAvailable'] = cloud_error is None
         logger.info("Recognition completed: status=%s", status)
 
         return result

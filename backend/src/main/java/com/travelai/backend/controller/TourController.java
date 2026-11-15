@@ -48,6 +48,7 @@ public class TourController {
         Tour tour = Tour.builder()
                 .name(request.getName())
                 .location(request.getLocation())
+                .province(request.getProvince())
                 .rating(request.getRating() == null ? 5.0 : request.getRating())
                 .price(request.getPrice() == null ? 0.0 : request.getPrice())
                 .durationDays(request.getDurationDays() == null ? 1 : request.getDurationDays())
@@ -75,6 +76,7 @@ public class TourController {
 
         tour.setName(request.getName());
         tour.setLocation(request.getLocation());
+        tour.setProvince(request.getProvince());
         tour.setRating(request.getRating());
         tour.setPrice(request.getPrice());
         tour.setDurationDays(request.getDurationDays());

@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface PlaceRepository extends JpaRepository<Place, Long> {
+    java.util.Optional<Place> findByLandmarkCode(String landmarkCode);
 }
