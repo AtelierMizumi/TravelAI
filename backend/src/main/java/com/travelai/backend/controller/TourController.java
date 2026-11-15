@@ -3,7 +3,9 @@ package com.travelai.backend.controller;
 import com.travelai.backend.catalog.CatalogDeleteGuard;
 import com.travelai.backend.entity.Tour;
 import com.travelai.backend.repository.TourRepository;
+import jakarta.persistence.EntityManager;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -14,8 +16,10 @@ public class TourController {
 
     private final TourRepository tourRepository;
     private final CatalogDeleteGuard deleteGuard;
+    private final EntityManager entityManager;
 
-    public TourController(TourRepository tourRepository, CatalogDeleteGuard deleteGuard) {
+    public TourController(TourRepository tourRepository, CatalogDeleteGuard deleteGuard, EntityManager entityManager) {
+        this.entityManager = entityManager;
         this.tourRepository = tourRepository;
         this.deleteGuard = deleteGuard;
     }
@@ -23,7 +27,7 @@ public class TourController {
     @GetMapping
     public ResponseEntity<?> getAllTours() {
         return ResponseEntity.ok(
-                tourRepository.findAllByOrderByIdDesc()
+                tourRepository.findAllByOrderByIdDesc().stream().filter(item -> "active".equalsIgnoreCase(item.getStatus())).toList()
         );
     }
 
@@ -31,7 +35,7 @@ public class TourController {
     public ResponseEntity<?> getTourById(@PathVariable Long id) {
         Tour tour = tourRepository.findById(id).orElse(null);
 
-        if (tour == null) {
+        if (tour == null || !"active".equalsIgnoreCase(tour.getStatus())) {
             return ResponseEntity.badRequest().body(
                     Map.of("message", "Tour not found")
             );
@@ -64,11 +68,15 @@ public class TourController {
         return ResponseEntity.ok(tourRepository.save(tour));
     }
 
+    @Transactional
     @PutMapping("/{id}")
     public ResponseEntity<?> updateTour(
             @PathVariable Long id,
             @RequestBody Tour request
     ) {
+        entityManager.createNativeQuery("insert into booking_barrier(id) values (1) on conflict do nothing").executeUpdate();
+        entityManager.createNativeQuery("select id from booking_barrier where id=1 for update").getSingleResult();
+        entityManager.clear();
         Tour tour = tourRepository.findById(id).orElse(null);
 
         if (tour == null) {
