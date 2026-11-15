@@ -103,10 +103,11 @@ export default function RecognitionScreen() {
       // Normalize HEIC and other phone formats to the server's supported JPEG format.
       const context = ImageManipulator.manipulate(asset.uri);
       if (Math.max(asset.width, asset.height) > 1600) {
+        // Omit the other dimension: Expo web treats null as a zero-sized canvas.
         context.resize(
           asset.width >= asset.height
-            ? { width: 1600, height: null }
-            : { width: null, height: 1600 },
+            ? { width: 1600 }
+            : { height: 1600 },
         );
       }
       const rendered = await context.renderAsync();
