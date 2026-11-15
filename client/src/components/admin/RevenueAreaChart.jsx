@@ -13,10 +13,10 @@ export const RevenueAreaChart = ({ data = [] }) => {
   const innerWidth = width - padding.left - padding.right;
   const innerHeight = height - padding.top - padding.bottom;
 
-  const maxVal = Math.max(...data.map((d) => d.revenue)) * 1.15;
+  const maxVal = Math.max(1, ...data.map((d) => d.revenue)) * 1.15;
   const minVal = 0;
 
-  const getX = (index) => padding.left + (index / (data.length - 1)) * innerWidth;
+  const getX = (index) => padding.left + (index / Math.max(1, data.length - 1)) * innerWidth;
   const getY = (val) => padding.top + innerHeight - ((val - minVal) / (maxVal - minVal)) * innerHeight;
 
   // Construct SVG Path
@@ -82,6 +82,11 @@ export const RevenueAreaChart = ({ data = [] }) => {
                 r={isHovered ? 6 : 4}
                 className="fill-white stroke-brand-600 transition-all cursor-pointer"
                 strokeWidth={isHovered ? 3 : 2}
+                tabIndex={0}
+                role="img"
+                aria-label={`${d.month}: ${adminService.formatVND(d.revenue)}`}
+                onFocus={() => setHoveredPoint({ ...d, cx, cy, index: i })}
+                onBlur={() => setHoveredPoint(null)}
                 onMouseEnter={() => setHoveredPoint({ ...d, cx, cy, index: i })}
                 onMouseLeave={() => setHoveredPoint(null)}
               />
