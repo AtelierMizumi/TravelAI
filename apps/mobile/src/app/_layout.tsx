@@ -1,11 +1,16 @@
+import { HoverFeedback } from "@/components/hover-feedback";
+import { MotionIcon } from "@/components/motion-icon";
+import { DepthStage } from "@/components/depth-stage";
+import { Image } from "expo-image";
 import { useHydrated } from "@/hooks/use-hydrated";
+import { useCompactNavigation } from "@/hooks/use-compact-navigation";
+import { primaryTabs } from "@/navigation/tabs";
 import { Ionicons } from "@expo/vector-icons";
-import { Link, Stack, usePathname, type Href } from "expo-router";
+import { DefaultTheme, ThemeProvider, Link, Stack, router, usePathname, useSegments, type Href } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useRef } from "react";
 import {
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   useWindowDimensions,
@@ -29,13 +34,7 @@ import { useRealtime } from "@/hooks/use-realtime";
 import { useResource } from "@/hooks/use-resource";
 import type { Settings } from "@/services/types";
 
-const navigation = [
-  { title: "Trang chủ", href: "/" as const },
-  { title: "AI nhận diện", href: "/detection" as const },
-  { title: "Tour", href: "/booking/tours" as const },
-  { title: "Khách sạn", href: "/booking/hotels" as const },
-  { title: "Cộng đồng", href: "/feed" as const },
-];
+const navigation = primaryTabs.map(tab => ({ title: tab.label, href: tab.route }));
 
 function NotificationBell() {
   const { user } = useAuth();
@@ -103,20 +102,25 @@ function AppShell() {
     settings.data?.maintenanceMode &&
     user?.role !== "ADMIN" &&
     pathname !== "/login";
-  const compact = !useHydrated() || width < 900;
+  const compact = useCompactNavigation();
+  // Raw window width must not add brand markup before SSR hydration completes.
+  const hydrated = useHydrated();
+  const segments = useSegments();
+  const insideTabs = segments[0] === "(tabs)";
   return (
     <View
       style={{
         flex: 1,
-        backgroundColor: "#f8faff",
+        backgroundColor: "#f2f8fc",
         paddingTop: insets.top,
-        paddingBottom: insets.bottom,
+        paddingBottom: insideTabs ? 0 : insets.bottom,
       }}
     >
-      <StatusBar style="dark" />
+      <HoverFeedback /><StatusBar style="dark" />
       <View style={styles.header}>
         <View style={styles.headerInner}>
           <View style={styles.headerTop}>
+            {!insideTabs && <Pressable accessibilityRole="button" accessibilityLabel="Quay lại" style={styles.iconButton} onPress={() => router.canGoBack() ? router.back() : router.replace("/")}><Ionicons name="arrow-back" size={22} color="#087fba" /></Pressable>}
             <Link href="/" asChild>
               <Pressable
                 accessibilityRole="link"
@@ -126,9 +130,9 @@ function AppShell() {
                 <View style={styles.brandMark}>
                   <Ionicons name="compass" size={22} color="#fff" />
                 </View>
-                <Text style={styles.brandName}>
+                {(!compact || (hydrated && width >= 420)) && <Text style={styles.brandName}>
                   Travel<Text style={styles.brandAccent}>AI</Text>
-                </Text>
+                </Text>}
               </Pressable>
             </Link>
             {!compact && (
@@ -186,13 +190,14 @@ function AppShell() {
                 </Link>
               )}
               <NotificationBell />
+              {compact && <Support inline />}
               <Link href={user ? "/profile" : "/login"} asChild>
                 <Pressable
                   accessibilityRole="link"
                   accessibilityLabel={user ? "Hồ sơ" : "Đăng nhập"}
                   style={styles.profileButton}
                 >
-                  <Ionicons name="person-outline" size={19} color="#2563eb" />
+                  {user?.avatar ? <Image key={user.avatar} source={{ uri: user.avatar }} contentFit="cover" style={{ width: 28, height: 28, borderRadius: 14 }} accessibilityLabel="Ảnh đại diện của bạn" /> : <Ionicons name="person-outline" size={19} color="#087fba" />}
                   {!compact && (
                     <Text style={styles.profileText}>
                       {user ? "Hồ sơ" : "Đăng nhập"}
@@ -202,55 +207,7 @@ function AppShell() {
               </Link>
             </View>
           </View>
-          {compact && (
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.compactNav}
-            >
-              {navigation.map((item) => (
-                <Link href={item.href} key={item.href} asChild>
-                  <Pressable
-                    accessibilityRole="link"
-                    style={StyleSheet.flatten([
-                      styles.navItem,
-                      pathname === item.href && styles.navActive,
-                    ])}
-                  >
-                    <Text
-                      style={[
-                        styles.navText,
-                        pathname === item.href && styles.navTextActive,
-                      ]}
-                    >
-                      {item.title}
-                    </Text>
-                  </Pressable>
-                </Link>
-              ))}
-              {user && (
-                <Link href="/messages" asChild>
-                  <Pressable style={styles.navItem}>
-                    <Text style={styles.navText}>Tin nhắn</Text>
-                  </Pressable>
-                </Link>
-              )}
-              {user && (
-                <Link href="/settings" asChild>
-                  <Pressable style={styles.navItem}>
-                    <Text style={styles.navText}>Cài đặt</Text>
-                  </Pressable>
-                </Link>
-              )}
-              {user?.role === "ADMIN" && (
-                <Link href="/admin" asChild>
-                  <Pressable style={styles.navItem}>
-                    <Text style={styles.navText}>Quản trị</Text>
-                  </Pressable>
-                </Link>
-              )}
-            </ScrollView>
-          )}
+
         </View>
       </View>
       {maintenance ? (
@@ -260,17 +217,17 @@ function AppShell() {
           <Nav href="/login">Đăng nhập quản trị</Nav>
         </View>
       ) : (
-        <Stack screenOptions={{ headerShown: false }} />
+        <DepthStage><ThemeProvider value={{ ...DefaultTheme, colors: { ...DefaultTheme.colors, background: "transparent" } }}><Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: "transparent" } }}><Stack.Screen name="(tabs)" /></Stack></ThemeProvider></DepthStage>
       )}
-      {!maintenance && <Support />}
-      {!maintenance && pathname !== "/ai-chat" && (
+      {!maintenance && !compact && <Support />}
+      {!maintenance && !compact && pathname !== "/ai-chat" && (
         <Link href={"/ai-chat" as Href} asChild>
           <Pressable
             accessibilityRole="link"
             accessibilityLabel="Mở trợ lý du lịch AI"
             style={styles.aiButton}
           >
-            <Ionicons name="sparkles" color="#fff" size={24} />
+            <MotionIcon name="sparkles" color="#fff" size={26} />
           </Pressable>
         </Link>
       )}
@@ -312,7 +269,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 14,
-    backgroundColor: "#2563eb",
+    backgroundColor: "#087fba",
     alignItems: "center",
     justifyContent: "center",
   },
@@ -322,7 +279,7 @@ const styles = StyleSheet.create({
     letterSpacing: -0.8,
     color: "#16233d",
   },
-  brandAccent: { color: "#2563eb" },
+  brandAccent: { color: "#087fba" },
   navRow: {
     flex: 1,
     flexDirection: "row",
@@ -332,9 +289,9 @@ const styles = StyleSheet.create({
   },
   compactNav: { alignItems: "center", gap: 4, paddingBottom: 8 },
   navItem: { paddingVertical: 10, paddingHorizontal: 12, borderRadius: 12 },
-  navActive: { backgroundColor: "#edf4ff" },
+  navActive: { backgroundColor: "#e2f3fc" },
   navText: { fontSize: 14, fontWeight: "600", color: "#65718a" },
-  navTextActive: { color: "#2563eb" },
+  navTextActive: { color: "#087fba" },
   headerActions: { flexDirection: "row", alignItems: "center", gap: 5 },
   iconButton: {
     width: 43,
@@ -352,9 +309,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: 7,
-    backgroundColor: "#edf4ff",
+    backgroundColor: "#e2f3fc",
   },
-  profileText: { color: "#2563eb", fontWeight: "700", fontSize: 13 },
+  profileText: { color: "#087fba", fontWeight: "700", fontSize: 13 },
   badge: {
     position: "absolute",
     right: 2,
@@ -377,10 +334,10 @@ const styles = StyleSheet.create({
     width: 58,
     height: 58,
     borderRadius: 29,
-    backgroundColor: "#2563eb",
+    backgroundColor: "#087fba",
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "#1d4ed8",
+    shadowColor: "#075782",
     shadowOpacity: 0.3,
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 5 },

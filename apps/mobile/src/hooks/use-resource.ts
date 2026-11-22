@@ -2,10 +2,11 @@ import { useCallback, useRef, useState } from "react";
 import { useFocusEffect } from "expo-router";
 import { api } from "@/services/api";
 
-export function useResource<T>(path: string | null, pollMs = 0) {
+export function useResource<T>(path: string | null, pollMs = 0, retainOnFocus = false) {
   const [data, setData] = useState<T | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const previousPath = useRef<string | null | undefined>(undefined);
   const refresh = useRef<() => void>(() => {});
   const reload = useCallback(() => refresh.current(), []);
   useFocusEffect(
@@ -13,7 +14,8 @@ export function useResource<T>(path: string | null, pollMs = 0) {
       const controller = new AbortController();
       let pending = false;
       let refreshRequested = false;
-      setData(null);
+      if (!retainOnFocus || previousPath.current !== path) setData(null);
+      previousPath.current = path;
       if (!path) return () => controller.abort();
       async function load() {
         if (pending) {
@@ -56,7 +58,7 @@ export function useResource<T>(path: string | null, pollMs = 0) {
         clearInterval(interval);
         refresh.current = () => {};
       };
-    }, [path, pollMs]),
+    }, [path, pollMs, retainOnFocus]),
   );
   return { data, error, loading, reload };
 }

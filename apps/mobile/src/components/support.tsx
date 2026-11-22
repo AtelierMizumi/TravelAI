@@ -1,8 +1,9 @@
+import { MotionIcon } from "@/components/motion-icon";
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
 import { Linking, Pressable, StyleSheet, Text, View } from "react-native";
 
-export function Support() {
+export function Support({ inline = false }: { inline?: boolean }) {
   const [open, setOpen] = useState(false);
   const [error, setError] = useState("");
   const visit = async (url: string) => {
@@ -14,16 +15,16 @@ export function Support() {
     }
   };
   return (
-    <View style={styles.container}>
+    <View style={inline ? { alignItems: "flex-end", zIndex: 20 } : styles.container}>
       {open && (
-        <View style={styles.panel}>
+        <View style={[styles.panel, inline && { position: "absolute", top: 50, right: 0 }]}>
           <Text style={styles.title}>Liên hệ hỗ trợ</Text>
           <Pressable
             accessibilityRole="link"
             style={styles.link}
             onPress={() => void visit("tel:0382685400")}
           >
-            <Ionicons name="call-outline" size={19} color="#2563eb" />
+            <Ionicons name="call-outline" size={19} color="#087fba" />
             <Text style={styles.text}>0382685400</Text>
           </Pressable>
           <Pressable
@@ -31,7 +32,7 @@ export function Support() {
             style={styles.link}
             onPress={() => void visit("https://www.facebook.com/tibberrr")}
           >
-            <Ionicons name="logo-facebook" size={19} color="#2563eb" />
+            <Ionicons name="logo-facebook" size={19} color="#087fba" />
             <Text style={styles.text}>Facebook</Text>
           </Pressable>
           <Pressable
@@ -39,7 +40,7 @@ export function Support() {
             style={styles.link}
             onPress={() => void visit("mailto:ngoc492005@gmail.com")}
           >
-            <Ionicons name="mail-outline" size={19} color="#2563eb" />
+            <Ionicons name="mail-outline" size={19} color="#087fba" />
             <Text style={styles.text}>Email</Text>
           </Pressable>
           {!!error && (
@@ -56,11 +57,7 @@ export function Support() {
         onPress={() => setOpen(!open)}
         style={styles.trigger}
       >
-        <Ionicons
-          name={open ? "close" : "headset-outline"}
-          color="#2563eb"
-          size={21}
-        />
+        <MotionIcon name="support" active={open} size={23} />
       </Pressable>
     </View>
   );

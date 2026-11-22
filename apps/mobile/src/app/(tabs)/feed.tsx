@@ -1,3 +1,4 @@
+import { MotionEntry } from "@/components/motion-entry";
 import { useRealtime } from "@/hooks/use-realtime";
 import { Image } from "expo-image";
 import { Ionicons } from "@expo/vector-icons";
@@ -5,6 +6,8 @@ import * as ImagePicker from "expo-image-picker";
 import { ImageManipulator, SaveFormat } from "expo-image-manipulator";
 import { useLocalSearchParams } from "expo-router";
 import { useState } from "react";
+import Animated, { Easing, useAnimatedStyle, useReducedMotion, useSharedValue, withTiming } from "react-native-reanimated";
+import { heartReactionFrame } from "@/services/heart-reaction";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import {
   Action,
@@ -37,6 +40,16 @@ function PostCard({
   const [showComments, setShowComments] = useState(false);
   const [showShare, setShowShare] = useState(false);
   const action = useAction();
+  const reducedMotion = useReducedMotion();
+  const heartProgress = useSharedValue(1);
+  const heartMotion = useAnimatedStyle(() => {
+    const frame = heartReactionFrame(heartProgress.value, reducedMotion);
+    return { transform: [{ translateY: frame.translateY }, { scale: frame.scale }] };
+  });
+  const floatingHeartMotion = useAnimatedStyle(() => {
+    const frame = heartReactionFrame(heartProgress.value, reducedMotion);
+    return { opacity: frame.opacity, transform: [{ translateY: frame.floatY }, { scale: 0.8 + 0.4 * heartProgress.value }] };
+  });
   const identity = {
     userId: user.id,
     userName: user.name,
@@ -62,7 +75,7 @@ function PostCard({
             />
           ) : (
             <View style={feedStyles.avatarFallback}>
-              <Ionicons name="person" size={20} color="#2563eb" />
+              <Ionicons name="person" size={20} color="#087fba" />
             </View>
           )}
           <View>
@@ -116,16 +129,26 @@ function PostCard({
         <Pressable
           accessibilityRole="button"
           accessibilityLabel={post.liked ? "Bỏ thích" : "Thích"}
-          onPress={() =>
-            action.run(() => mutate(`/posts/${post.id}/like`, "POST", identity))
-          }
+          accessibilityState={{ selected: !!post.liked, disabled: action.busy }}
+          disabled={action.busy}
+          onPress={() => {
+            if (!post.liked && !reducedMotion) {
+              heartProgress.set(0);
+              heartProgress.set(withTiming(1, { duration: 650, easing: Easing.linear }));
+            }
+            void action.run(() => mutate(`/posts/${post.id}/like`, "POST", identity));
+          }}
           style={feedStyles.iconAction}
         >
-          <Ionicons
-            name={post.liked ? "heart" : "heart-outline"}
-            size={22}
-            color={post.liked ? "#ef4444" : "#64748b"}
-          />
+          <View style={{ width: 24, height: 24, alignItems: "center", justifyContent: "center" }}>
+            <Animated.View style={heartMotion}>
+              <Ionicons name={post.liked ? "heart" : "heart-outline"} size={22} color={post.liked ? "#ef4444" : "#64748b"} />
+            </Animated.View>
+            <Animated.View pointerEvents="none" accessible={false} accessibilityElementsHidden importantForAccessibility="no-hide-descendants"
+              style={[{ position: "absolute", top: 0 }, floatingHeartMotion]}>
+              <Ionicons name="heart" size={24} color="#ef4444" />
+            </Animated.View>
+          </View>
           <Text style={feedStyles.actionText}>{post.likesCount || 0}</Text>
         </Pressable>
         <Pressable
@@ -251,12 +274,12 @@ const feedStyles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: "#eaf2ff",
+    backgroundColor: "#e2f3fc",
     alignItems: "center",
     justifyContent: "center",
   },
-  follow: { color: "#2563eb", fontWeight: "700", fontSize: 13 },
-  meta: { color: "#94a3b8", fontSize: 12 },
+  follow: { color: "#087fba", fontWeight: "700", fontSize: 13 },
+  meta: { color: "#788475", fontSize: 12 },
   postText: { color: "#334155", fontSize: 16, lineHeight: 25 },
   postImage: {
     width: "100%",
@@ -286,6 +309,7 @@ export default function Feed() {
   const feed = useResource<Post[]>(
     user ? `/posts?userId=${user.id}` : null,
     15_000,
+    true,
   );
   const own = useResource<Post[]>(
     user && edit ? `/posts/user/${user.id}` : null,
@@ -327,11 +351,18 @@ export default function Feed() {
     <Screen title="Cộng đồng du lịch" protected>
       {user && (
         <>
-          <Card>
-            <Text style={ui.heading}>Chia sẻ trải nghiệm</Text>
+          <Card section="feed-compose">
+            <View style={feedStyles.postHeader}>
+              <View style={feedStyles.author}>
+                {user.avatar ? <Image source={{ uri: user.avatar }} style={feedStyles.avatar} /> : <View style={feedStyles.avatarFallback}><Ionicons name="person-outline" size={22} color="#087fba" /></View>}
+                <View style={{ flexShrink: 1 }}><Text style={ui.heading}>Chia sẻ trải nghiệm</Text><Text style={feedStyles.meta}>{user.name} · Bài viết được kiểm duyệt trước khi xuất hiện</Text></View>
+              </View>
+            </View>
             <Field
               label="Nội dung bài viết"
+              placeholder="Chuyến đi nào khiến bạn muốn kể lại?"
               multiline
+              style={{ minHeight: 120, textAlignVertical: "top" }}
               value={content}
               onChangeText={setContent}
             />
@@ -377,6 +408,7 @@ export default function Feed() {
               }
             />
           </Card>
+          <MotionEntry section="feed-stories"><Text style={ui.heading}>Câu chuyện cộng đồng</Text></MotionEntry>
           <ErrorText message={feed.error || own.error} />
           {edit && <Nav href="/feed">Xem tất cả bài viết</Nav>}
           {visible?.length === 0 && (

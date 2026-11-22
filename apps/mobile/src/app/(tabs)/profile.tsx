@@ -1,3 +1,5 @@
+import { MotionEntry } from "@/components/motion-entry";
+import { PinTabs } from "@/components/pin-ui";
 import { BankPanel } from "@/components/bank-panel";
 import { useRealtime } from "@/hooks/use-realtime";
 import { Image } from "expo-image";
@@ -98,15 +100,14 @@ interface LegacyBooking {
 }
 export default function Profile() {
   const { user, signOut } = useAuth();
-  const bookings = useResource<Booking[]>(user ? "/booking/bookings" : null);
-  const bank = useResource<Bank>(user ? "/booking/bank" : null);
-  const posts = useResource<Post[]>(user ? `/posts/user/${user.id}` : null);
+  const [tab, setTab] = useState("trips");
+  const bookings = useResource<Booking[]>(user ? "/booking/bookings" : null, 0, true);
+  const bank = useResource<Bank>(user ? "/booking/bank" : null, 0, true);
+  const posts = useResource<Post[]>(user ? `/posts/user/${user.id}` : null, 0, true);
   const tours = useResource<LegacyBooking[]>(
-    user ? `/tour-bookings/user/${user.id}` : null,
-  );
+    user ? `/tour-bookings/user/${user.id}` : null, 0, true);
   const hotels = useResource<LegacyBooking[]>(
-    user ? `/hotel-bookings/user/${user.id}` : null,
-  );
+    user ? `/hotel-bookings/user/${user.id}` : null, 0, true);
   const follows = useResource<{ followers: number; following: number }>(
     user ? `/follows/stats/${user.id}` : null,
   );
@@ -118,7 +119,14 @@ export default function Profile() {
   });
   return (
     <Screen title="Hồ sơ của bạn" protected>
-      {user && <ProfileEditor key={user.id} user={user} />}
+      <Card section="profile-intro"><Text style={ui.heading}>{user?.name ? `Xin chào, ${user.name}` : "Góc hành trình của bạn"}</Text><Text style={ui.text}>Lịch trình, thông tin cá nhân và những kỷ niệm chuyến đi — tất cả ở đây.</Text></Card>
+      <Card section="profile-tools"><Text style={ui.heading}>Tài khoản và tiện ích</Text><View style={ui.row}>
+        <Nav href="/messages">Tin nhắn</Nav><Nav href="/notifications">Thông báo</Nav><Nav href="/settings">Cài đặt</Nav>
+        <Nav href="/ai-chat">Trợ lý AI</Nav><Nav href="/policy">Chính sách</Nav>
+        {user?.role === "ADMIN" && <Nav href="/admin">Quản trị</Nav>}
+      </View></Card>
+      <PinTabs value={tab} onChange={setTab} tabs={[{ id: "trips", label: "Chuyến đi", icon: "compass-outline" }, { id: "profile", label: "Hồ sơ", icon: "person-outline" }, { id: "posts", label: "Bài viết", icon: "images-outline" }, { id: "bank", label: "Ví thử nghiệm", icon: "wallet-outline" }]} />
+      {tab === "profile" && user && <ProfileEditor key={user.id} user={user} />}
       <ErrorText
         message={
           bookings.error ||
@@ -134,11 +142,12 @@ export default function Profile() {
         {follows.data?.followers ?? 0} người theo dõi · đang theo dõi{" "}
         {follows.data?.following ?? 0} người
       </Text>
+      {tab === "trips" && <>
       {(["TOUR", "HOTEL"] as const).map((kind) => (
         <View key={kind} style={{ gap: 14 }}>
-          <Text style={ui.heading}>
+          <MotionEntry section={`profile-${kind}`}><Text style={ui.heading}>
             {kind === "TOUR" ? "Tour đã đặt" : "Khách sạn đã đặt"}
-          </Text>
+          </Text></MotionEntry>
           {bookings.data
             ?.filter(
               (booking) =>
@@ -183,7 +192,9 @@ export default function Profile() {
           </Text>
         </Card>
       ))}
-      <BankPanel data={bank.data} reload={bank.reload} />
+      </>}
+      {tab === "bank" && <BankPanel data={bank.data} reload={bank.reload} />}
+      {tab === "posts" && <>
       <Text style={ui.heading}>Bài viết của tôi</Text>
       {posts.data?.map((post) => (
         <Card key={post.id}>
@@ -194,6 +205,8 @@ export default function Profile() {
           </Nav>
         </Card>
       ))}
+      {posts.data?.length === 0 && <Text style={ui.text}>Chưa có bài viết nào. Chia sẻ kỷ niệm đầu tiên của bạn trong cộng đồng.</Text>}
+      </>}
       <Action
         secondary
         title="Đăng xuất"
