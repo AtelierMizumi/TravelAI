@@ -1,3 +1,4 @@
+import { bookingStatus, historySummary } from "@/services/booking-history";
 import { RatingForm } from "@/components/ratings";
 import { useLocalSearchParams } from "expo-router";
 import { useRef, useState } from "react";
@@ -43,7 +44,7 @@ export default function BookingDetail() {
       {booking && (
         <Card>
           <Text style={ui.heading}>
-            {booking.itinerary.name} · {booking.status}
+            {booking.itinerary.name} · {bookingStatus(booking.status)}
           </Text>
           <Text style={ui.text}>
             {booking.id} · {serviceTime(booking.itinerary.start)} →{" "}
@@ -65,7 +66,7 @@ export default function BookingDetail() {
             {money(booking.totalPaid)}
           </Text>
           <Text style={ui.text}>
-            Chính sách đã lưu {booking.itinerary.offeringVersion}. Hạn đổi lịch
+            Hạn đổi lịch
             trước {booking.itinerary.changeHours} giờ. Hạn hủy trước{" "}
             {booking.itinerary.policy.cancellationHours} giờ.
           </Text>
@@ -127,10 +128,10 @@ export default function BookingDetail() {
       <Text style={ui.heading}>Lịch sử đầy đủ</Text>
       {history.data?.map((item) => (
         <Card key={item.reference}>
-          <Text style={ui.heading}>{item.action}</Text>
+          <Text style={ui.heading}>{bookingStatus(item.action)}</Text>
           <Text style={ui.text}>{serviceTime(item.createdAt)}</Text>
           <Text selectable style={ui.text}>
-            SIMULATED · {JSON.stringify(item.details, null, 2)}
+            {historySummary(item.action, item.details)}
           </Text>
         </Card>
       ))}
