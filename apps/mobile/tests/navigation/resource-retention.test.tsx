@@ -57,3 +57,20 @@ test('changing identity scope clears retained data even when the path is unchang
   await waitFor(() => expect(screen.getByText('Loading other identity')).toBeTruthy());
   expect(screen.queryByText('First identity data')).toBeNull();
 });
+
+const painted: string[] = [];
+function PaintedResource() {
+  const { owner = 'one' } = useLocalSearchParams<{ owner: string }>();
+  const result = useResource<{ name: string }>('/synthetic/painted', 0, true, owner);
+  painted.push(`${owner}:${result.data?.name ?? 'none'}`);
+  return <Text>{result.data?.name || 'Loading painted scope'}</Text>;
+}
+test('no render ever shows the previous identity data under the new identity', async () => {
+  request.mockReset(); painted.length = 0;
+  request.mockResolvedValueOnce({ name: 'Painted identity one' }).mockImplementation(() => new Promise(() => {}));
+  await renderRouter({ index: PaintedResource });
+  await waitFor(() => expect(screen.getByText('Painted identity one')).toBeTruthy());
+  await testRouter.navigate('/?owner=two');
+  await waitFor(() => expect(screen.getByText('Loading painted scope')).toBeTruthy());
+  expect(painted).not.toContain('two:Painted identity one');
+});
