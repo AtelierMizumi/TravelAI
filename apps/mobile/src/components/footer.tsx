@@ -1,4 +1,4 @@
-import { Ionicons } from "@expo/vector-icons";
+import { HydrationSafeIonicon as Ionicons } from "@/components/hydration-safe-icon";
 import { Link, type Href } from "expo-router";
 import { Linking, Pressable, StyleSheet, Text, View } from "react-native";
 
