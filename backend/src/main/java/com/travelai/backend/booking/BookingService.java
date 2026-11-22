@@ -31,11 +31,12 @@ public class BookingService {
     private final ObjectMapper json;
     private final Clock clock;
     private final UserRepository users;
+    private final BankDataCipher bankCipher;
 
-    public BookingService(NotificationPublisher notifications, EntityManager em, ObjectMapper mapper, Clock clock, UserRepository users) {
+    public BookingService(NotificationPublisher notifications, EntityManager em, ObjectMapper mapper, Clock clock, UserRepository users, BankDataCipher bankCipher) {
         this.notifications = notifications;
         this.em=em; this.json=mapper.copy().configure(SerializationFeature.ORDER_MAP_ENTRIES_BY_KEYS,true);
-        this.clock=clock; this.users=users;
+        this.clock=clock; this.users=users; this.bankCipher=bankCipher;
     }
     private void lock() {
         em.createNativeQuery("insert into booking_barrier(id) values (1) on conflict do nothing").executeUpdate();
@@ -126,7 +127,7 @@ public class BookingService {
         return em.createQuery("select o from BookingOffering o where o.active=true",BookingOffering.class).getResultList().stream().filter(this::catalogActive).map(this::offerView).toList();
     }
     private Map<String,Object> offerView(BookingOffering offer) {
-        Map<String,Object> result=readMap(offer.definition); result.put("id",offer.id); result.put("version",offer.version);
+        Map<String,Object> result=readMap(offer.definition); result.put("id",offer.id); result.put("version",offer.version); result.put("active",offer.active);
         result.put("simulation","SIMULATED"); result.put("currency","VND"); return result;
     }
     public Map<String,Object> provisionBank(SessionService.Actor actor,BankInput input,String key) {
@@ -140,10 +141,10 @@ public class BookingService {
             BankCard card=new BankCard(); card.id=id(); card.accountId=account.id; card.syntheticId="SIM-MC-"+id();
             String name=input.bankName()==null?"Ngân hàng Mastercard SIMULATED":input.bankName().trim();
             require(name.endsWith(" SIMULATED") && name.length()<=100,"Bank name must be explicitly SIMULATED");
-            String cvv="TEST-"+id(); card.cvvHash=digest(cvv); card.bankName=name; card.linked=false; card.expiryMonth=input.expiryMonth(); card.expiryYear=input.expiryYear(); card.status="ACTIVE"; em.persist(card);
+            String cvv=String.format(java.util.Locale.ROOT,"%03d",new java.security.SecureRandom().nextInt(1000)); card.cvvHash=bankCipher.verifier(card.id,cvv); protectIdentifier(card); card.bankName=name; card.linked=false; card.expiryMonth=input.expiryMonth(); card.expiryYear=input.expiryYear(); card.status="ACTIVE"; em.persist(card);
             // Synthetic test credential is returned only at provisioning, not written to operation/history.
             return Map.of("simulation","SIMULATED","currency","VND","accountId",account.id,"balance",account.balance,
-                    "cardId",card.syntheticId,"bankName",card.bankName,"testCvv",cvv,"expiryMonth",card.expiryMonth,"expiryYear",card.expiryYear);
+                    "cardId",identifier(card),"bankName",card.bankName,"testCvv",cvv,"expiryMonth",card.expiryMonth,"expiryYear",card.expiryYear);
         },true);
     }
     public Map<String,Object> bank(SessionService.Actor actor) {
@@ -152,20 +153,20 @@ public class BookingService {
                 .setParameter("owner",actor.id()).setMaxResults(100).getResultList().stream().map(p->{ Map<String,Object> v=new LinkedHashMap<>(); v.put("id",p.id); v.put("reviewId",p.reviewId); v.put("bookingId",p.reservationId); v.put("status",p.status); v.put("reason",p.reason); v.put("amount",p.amount); v.put("createdAt",p.createdAt); return v; }).toList();
         if(a==null) return Map.of("simulation","SIMULATED","currency","VND","balance",0,"cards",List.of(),"transactions",List.of(),"paymentAttempts",attempts);
         List<Map<String,Object>> cards=em.createQuery("select c from BankCard c where c.accountId=:id and c.linked=true",BankCard.class).setParameter("id",a.id).getResultList().stream()
-                .map(c->Map.<String,Object>of("cardId",c.syntheticId,"bankName",c.bankName,"status",c.status,"expiryMonth",c.expiryMonth,"expiryYear",c.expiryYear)).toList();
+                .map(c->Map.<String,Object>of("cardId",identifier(c),"bankName",c.bankName,"status",c.status,"expiryMonth",c.expiryMonth,"expiryYear",c.expiryYear)).toList();
         List<Map<String,Object>> tx=em.createQuery("select t from BankTransaction t where t.accountId=:id order by t.createdAt",BankTransaction.class)
                 .setParameter("id",a.id).getResultList().stream().map(t->Map.<String,Object>of("reference",t.id,"bookingId",t.reservationId,"kind",t.kind,"amount",t.amount,"createdAt",t.createdAt)).toList();
         return Map.of("simulation","SIMULATED","currency","VND","accountId",a.id,"balance",a.balance,"cards",cards,"transactions",tx,"paymentAttempts",attempts);
     }
     public Map<String,Object> linkBank(SessionService.Actor actor,BankLinkInput input) {
         lock();
-        if(input==null || input.accountNumber()==null || !input.accountNumber().startsWith("SIM-MC-") || input.testCvv()==null || !input.testCvv().startsWith("TEST-") || input.testCvv().length()>200 || input.bankName()==null || input.bankName().length()>255) throw bad("Chỉ chấp nhận số tài khoản SIM-MC-… và mã TEST-… SIMULATED.");
+        if(input==null || input.accountNumber()==null || !input.accountNumber().startsWith("SIM-MC-") || input.testCvv()==null || !(input.testCvv().matches("[0-9]{3}") || input.testCvv().startsWith("TEST-")) || input.testCvv().length()>200 || input.bankName()==null || input.bankName().length()>255) throw bad("Chỉ chấp nhận tài khoản SIM-MC-… và mã SIMULATED được cấp (3 chữ số hoặc mã TEST-… cũ).");
         BankCard c=card(input.accountNumber());
         BankAccount a=c==null?null:em.find(BankAccount.class,c.accountId);
-        if(c==null || a==null || a.ownerId!=actor.id() || !Objects.equals(c.bankName,input.bankName()) || c.cvvHash==null || !MessageDigest.isEqual(digest(input.testCvv()).getBytes(StandardCharsets.UTF_8),c.cvvHash.getBytes(StandardCharsets.UTF_8)) || !cardPayable(clock.instant(),c.expiryMonth,c.expiryYear,c.status))
+        if(c==null || a==null || a.ownerId!=actor.id() || !Objects.equals(c.bankName,input.bankName()) || c.cvvHash==null || !codeMatches(c,input.testCvv()) || !cardPayable(clock.instant(),c.expiryMonth,c.expiryYear,c.status))
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"Thông tin ngân hàng SIMULATED không hợp lệ hoặc không thuộc tài khoản của bạn.");
         c.linked=true;
-        return Map.of("status","LINKED","bankName",c.bankName,"cardId",c.syntheticId,"simulation","SIMULATED");
+        return Map.of("status","LINKED","bankName",c.bankName,"cardId",identifier(c),"simulation","SIMULATED");
     }
     public List<String> institutions() {
         return em.createQuery("select distinct c.bankName from BankCard c order by c.bankName",String.class).getResultList();
@@ -173,7 +174,7 @@ public class BookingService {
     public Map<String,Object> cardStatus(SessionService.Actor actor,String syntheticId,String status) {
         actor.requireAdmin(); lock(); require(Set.of("ACTIVE","LOCKED","SUSPENDED","CLOSED").contains(status),"Invalid card status");
         BankCard card=card(syntheticId); require(card!=null,"Unknown synthetic card"); card.status=status;
-        return Map.of("simulation","SIMULATED","cardId",card.syntheticId,"status",card.status);
+        return Map.of("simulation","SIMULATED","cardId",identifier(card),"status",card.status);
     }
     public Map<String,Object> review(SessionService.Actor actor,ReviewInput input,String key) {
         lock(); Instant now=clock.instant(); expire(now);
@@ -303,7 +304,7 @@ public class BookingService {
                     &&tourClassificationEquivalent(quoted,latest),"Holiday classification or payment changed; review and confirm again");
             availability(target.resources(),current==null?null:current.id,now,review.id);
             BankCard card=card(input.cardId());
-            if(card==null||!card.linked||input.testCvv()==null||card.cvvHash==null||!MessageDigest.isEqual(digest(input.testCvv()).getBytes(StandardCharsets.UTF_8),card.cvvHash.getBytes(StandardCharsets.UTF_8))
+            if(card==null||!card.linked||input.testCvv()==null||card.cvvHash==null||!codeMatches(card,input.testCvv())
                     ||!cardPayable(now,card.expiryMonth,card.expiryYear,card.status)) return decline(actor,review,latest.total(),"Thông tin ngân hàng SIMULATED không hợp lệ.",key,now);
             BankAccount account=find(BankAccount.class,card.accountId);
             if(account.ownerId!=actor.id()) return decline(actor,review,latest.total(),"Thông tin ngân hàng SIMULATED không hợp lệ.",key,now);
@@ -347,9 +348,16 @@ public class BookingService {
         return once(actor,"CANCEL",key,Map.of("booking",id,"reason",Objects.toString(input.reason(),"")),()-> {
             Reservation booking=owned(actor,id); requireStatus(booking,"CONFIRMED"); Itinerary itinerary=read(booking.itinerary,Itinerary.class);
             boolean serviceUnavailable="SERVICE_UNAVAILABLE".equals(input.reason());
-            if(serviceUnavailable) actor.requireAdmin(); else {
+            Map<String,Object> cutoffEvaluation;
+            if(serviceUnavailable) {
+                actor.requireAdmin();
+                cutoffEvaluation=Map.of("applicable",false,"eligible",true,"evaluatedAt",now.toString(),"mode","SERVICE_UNAVAILABLE");
+            } else {
                 conflict(actor.id()==booking.ownerId,"Only the booking owner may voluntarily cancel");
-                conflict(now.isBefore(cutoff(itinerary.start(),itinerary.policy().cancellationHours())),"Cancellation deadline reached");
+                Instant deadline=cutoff(itinerary.start(),itinerary.policy().cancellationHours());
+                conflict(now.isBefore(deadline),"Cancellation deadline reached");
+                cutoffEvaluation=Map.of("applicable",true,"eligible",true,"evaluatedAt",now.toString(),"deadline",deadline.toString(),
+                        "hours",itinerary.policy().cancellationHours(),"mode","VOLUNTARY");
             }
             long paid=em.createQuery("select coalesce(sum(t.amount),0) from BankTransaction t where t.reservationId=:id and t.kind='CHARGE'",Long.class).setParameter("id",id).getSingleResult();
             require(paid==booking.totalPaid,"Payment ledger does not reconcile");
@@ -362,7 +370,11 @@ public class BookingService {
             if(serviceUnavailable) find(BookingOffering.class,booking.offeringId).active=false;
             ledger(account.id,id,"REFUND",refund,operationId(actor,"CANCEL",key),now);
             ledger(account.id,id,"CANCELLATION_FEE",fee,operationId(actor,"CANCEL",key),now);
-            history(actor,booking,"CANCELLED",Map.of("reason",serviceUnavailable?"SERVICE_UNAVAILABLE":"TRAVELER","basis",paid,"refund",refund,"fee",fee,"sourceAccountId",account.id),operationId(actor,"CANCEL",key),now);
+            // Snapshot only committed successful charges; failed attempts are not ledger CHARGE entries.
+            List<Map<String,Object>> paymentReferences=em.createQuery("select t from BankTransaction t where t.reservationId=:id and t.kind='CHARGE' order by t.createdAt,t.id",BankTransaction.class)
+                    .setParameter("id",id).getResultList().stream().map(t->Map.<String,Object>of("reference",t.id,"amount",t.amount)).toList();
+            history(actor,booking,"CANCELLED",Map.of("reason",serviceUnavailable?"SERVICE_UNAVAILABLE":"TRAVELER","basis",paid,"refund",refund,"fee",fee,"sourceAccountId",account.id,
+                    "paymentReferences",paymentReferences,"cutoffEvaluation",cutoffEvaluation),operationId(actor,"CANCEL",key),now);
             notifications.supersedeReminders(booking.id);
             notifications.inventoryChanged(booking.offeringId);
             notifyBooking(booking, "BOOKING_CANCELLED", "Đặt chỗ đã được hủy",
@@ -498,9 +510,25 @@ public class BookingService {
     private void releaseReview(String id) { em.createQuery("update InventoryAllocation a set a.status='RELEASED' where a.reviewId=:id and a.status='HOLD'").setParameter("id",id).executeUpdate(); }
     private List<InventoryAllocation> allocations(String id) { return em.createQuery("select a from InventoryAllocation a where a.reservationId=:id",InventoryAllocation.class).setParameter("id",id).getResultList(); }
     private BankAccount accountFor(long owner) { return em.createQuery("select a from BankAccount a where a.ownerId=:owner",BankAccount.class).setParameter("owner",owner).getResultStream().findFirst().orElse(null); }
+    private String identifier(BankCard card) {
+        return card.encryptedSyntheticId==null ? card.syntheticId : bankCipher.decrypt(card.id,card.encryptedSyntheticId);
+    }
+    private void protectIdentifier(BankCard card) {
+        String plain=card.syntheticId;
+        card.identifierLookup=bankCipher.lookup(plain);
+        card.encryptedSyntheticId=bankCipher.encrypt(card.id,plain);
+        card.syntheticId="SIM-MC-ENC-"+card.id;
+    }
+    private boolean codeMatches(BankCard card,String code) {
+        if(code==null || card.cvvHash==null) return false;
+        return card.cvvHash.startsWith("HMAC256:") ? bankCipher.matches(card.id,code,card.cvvHash)
+                : code.startsWith("TEST-") && MessageDigest.isEqual(digest(code).getBytes(StandardCharsets.UTF_8),card.cvvHash.getBytes(StandardCharsets.UTF_8));
+    }
     private BankCard card(String syntheticId) {
         if(syntheticId==null||!syntheticId.startsWith("SIM-MC-")||syntheticId.length()>100) return null;
-        return em.createQuery("select c from BankCard c where c.syntheticId=:id",BankCard.class).setParameter("id",syntheticId).getResultStream().findFirst().orElse(null);
+        BankCard result=em.createQuery("select c from BankCard c where c.identifierLookup=:lookup or c.syntheticId=:id",BankCard.class).setParameter("lookup",bankCipher.lookup(syntheticId)).setParameter("id",syntheticId).getResultStream().findFirst().orElse(null);
+        // Internal storage markers must never be accepted as a customer account identifier.
+        return result!=null && Objects.equals(identifier(result),syntheticId) ? result : null;
     }
     private HolidayCalendar calendar(int year) { return em.createQuery("select c from HolidayCalendar c where c.calendarYear=:y and c.approved=true order by c.approvedAt desc,c.id desc",HolidayCalendar.class).setParameter("y",year).getResultStream().findFirst().orElse(null); }
     private Set<LocalDate> holidayDates(HolidayCalendar calendar) { try { return json.readValue(calendar.dates,new TypeReference<Set<LocalDate>>(){}); } catch(Exception e) { throw new IllegalStateException("Invalid stored calendar",e); } }
@@ -526,7 +554,7 @@ public class BookingService {
         String operation=operationId(actor,action,key), hash=digest(write(payload)); BookingOperation previous=em.find(BookingOperation.class,operation);
         if(previous!=null) { conflict(previous.requestDigest.equals(hash),"Idempotency key was already used for different input"); return readMap(previous.result); }
         Map<String,Object> result=work.get(); BookingOperation op=new BookingOperation(); op.id=operation; op.ownerId=actor.id(); op.action=action; op.requestDigest=hash;
-        Map<String,Object> stored=new LinkedHashMap<>(result); if(redacted) stored.remove("testCvv"); op.result=write(stored); em.persist(op); em.flush(); return result;
+        Map<String,Object> stored=new LinkedHashMap<>(result); if(redacted) { stored.remove("testCvv"); stored.remove("cardId"); } op.result=write(stored); em.persist(op); em.flush(); return result;
     }
     private String operationId(SessionService.Actor actor,String action,String key) { return digest(actor.id()+"|"+action+"|"+Objects.toString(key,"")); }
     private String id() { return UUID.randomUUID().toString(); }

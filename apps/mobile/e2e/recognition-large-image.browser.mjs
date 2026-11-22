@@ -31,8 +31,7 @@ await page.addInitScript(() => {
   };
 });
 
-await page.goto(base, { waitUntil: 'networkidle' });
-await page.getByText('AI nhận diện', { exact: true }).first().click();
+await page.goto(`${base}/ai-detection`, { waitUntil: 'networkidle' });
 await page.getByText('Chọn ảnh từ thiết bị').first().waitFor();
 await page.waitForTimeout(1500);
 

@@ -13,7 +13,7 @@
 ## Global Constraints
 
 - Stack v2 only: `backend/` + `apps/mobile/` from `integration/ngoc-2.0@bf6c075`. No v1 (`client/` + `services/core/`) edits, no deploy/edge/AI/secret changes.
-- Work exclusively in `business harness /Users/.../TravelAI-integration`, never mutate `/home/thuanc177/Projects/School/TravelAI` (dirty home branch `feat/wbs-hardening-acceptance`).
+- Work exclusively in `business harness <users>/TravelAI-integration`, never mutate `<home>/Projects/School/TravelAI` (dirty home branch `feat/wbs-hardening-acceptance`).
 - Never `git add` binary/office artifacts; do not merge main at end; preserve production data; no re-seeding production or breaking API explicitly defined in the spec.
 - All new Java files under `backend/src/main/java/com/travelai/backend/community/` and `backend/src/main/java/com/travelai/backend/admin/` are clean/existing packages — respect existing package naming (`controller/`, `booking/`, `security/`, `repository/`, `entity/`), reuse those packages where possible.
 - Test-first: write failing regression test first; implement minimal code to pass; then full suite; never delete/xfail/skip unrelated tests.
@@ -50,7 +50,7 @@ The five failure modes most likely to bite a person using this software:
 
 - [ ] **Step 1: Inspect current script and verify wrapper existence**
 
-Run: `ls -la /home/thuanc177/.hermes/cache/scratch/travelai-plan-v2/backend/mvnw; command -v mvn || echo "mvn missing"`  
+Run: `ls -la <home>/.hermes/cache/scratch/travelai-plan-v2/backend/mvnw; command -v mvn || echo "mvn missing"`  
 Expected: `mvnw` exists in `backend/`, `mvn` missing => reproduction of current failure.
 
 - [ ] **Step 2: Patch script**
@@ -67,7 +67,7 @@ No other change to `initdb` / random port / `TRAVELAI_TEST_DB_*` exports.
 
 - [ ] **Step 3: Run backend tests locally via isolated PG**
 
-Run: `bash scripts/test-backend.sh -q` from `/home/thuanc177/.hermes/cache/scratch/travelai-plan-v2`  
+Run: `bash scripts/test-backend.sh -q` from `<home>/.hermes/cache/scratch/travelai-plan-v2`  
 Expected: `BUILD SUCCESS`, tests executed against ephemeral DB, no `mvn: command not found`.
 
 - [ ] **Step 4: Commit (toolchain)**

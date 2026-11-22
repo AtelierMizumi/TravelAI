@@ -71,3 +71,15 @@ test("server timeout completes with an unknown-result retry message", async (t) 
     (error) => error.status === 0 && error.message.includes("cùng yêu cầu"),
   );
 });
+
+test("login timeout never displays payment retry instructions", async (t) => {
+  t.mock.method(globalThis, "fetch", async (_url, { signal }) =>
+    new Promise((_resolve, reject) => {
+      signal.addEventListener("abort", () => reject(new DOMException("Aborted", "AbortError")), { once: true });
+    }),
+  );
+  await assert.rejects(
+    requestJson("https://example.test/api/auth/login", { method: "POST" }, () => {}, 10),
+    (error) => error.status === 0 && error.message.includes("Đăng nhập") && !error.message.includes("thanh toán"),
+  );
+});

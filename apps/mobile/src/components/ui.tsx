@@ -1,5 +1,9 @@
+import { HydrationSafeIonicon } from "@/components/hydration-safe-icon";
+import { MotionScroll } from "@/components/motion-scroll";
+import { MotionEntry } from "@/components/motion-entry";
+import { DepthSurface } from "@/components/depth-surface";
 import { Link, type Href } from "expo-router";
-import { type PropsWithChildren, useRef, useState } from "react";
+import { type ComponentRef, type PropsWithChildren, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -7,21 +11,20 @@ import {
   Text,
   TextInput,
   View,
+  useWindowDimensions,
   type TextInputProps,
 } from "react-native";
 import Animated, {
-  Extrapolation,
-  FadeInUp,
-  interpolate,
-  useAnimatedScrollHandler,
+  interpolateColor,
   useAnimatedStyle,
   useReducedMotion,
   useSharedValue,
+  withTiming,
 } from "react-native-reanimated";
 import { useAuth } from "@/context/auth";
 
 export const ui = StyleSheet.create({
-  page: { flex: 1, backgroundColor: "#f5f8fd" },
+  page: { flex: 1, backgroundColor: "transparent" },
   content: {
     width: "100%",
     maxWidth: 1180,
@@ -33,13 +36,13 @@ export const ui = StyleSheet.create({
   card: {
     backgroundColor: "#fff",
     borderWidth: 1,
-    borderColor: "#e5edf7",
-    borderRadius: 20,
+    borderColor: "#e5ebf5",
+    borderRadius: 22,
     padding: 22,
     gap: 12,
     shadowColor: "#294c80",
-    shadowOpacity: 0.07,
-    shadowRadius: 18,
+    shadowOpacity: 0.08,
+    shadowRadius: 22,
     shadowOffset: { width: 0, height: 6 },
     elevation: 2,
   },
@@ -49,8 +52,8 @@ export const ui = StyleSheet.create({
     alignItems: "center",
     gap: 12,
   },
-  title: { fontSize: 30, fontWeight: "800", color: "#0f172a" },
-  heading: { fontSize: 21, fontWeight: "700", color: "#0f172a" },
+  title: { fontSize: 30, fontWeight: "800", letterSpacing: -0.7, color: "#103c5b" },
+  heading: { fontSize: 21, fontWeight: "700", color: "#103c5b" },
   text: { fontSize: 16, lineHeight: 25, color: "#475569" },
   error: { color: "#b91c1c", fontSize: 15, lineHeight: 23 },
   label: { fontSize: 14, fontWeight: "600", color: "#334155" },
@@ -60,14 +63,14 @@ export const ui = StyleSheet.create({
     borderColor: "#d9e4f1",
     borderRadius: 12,
     backgroundColor: "#fff",
-    color: "#0f172a",
+    color: "#103c5b",
     fontSize: 16,
     minHeight: 48,
   },
   button: {
     paddingHorizontal: 18,
     paddingVertical: 13,
-    backgroundColor: "#2563eb",
+    backgroundColor: "#087fba",
     borderRadius: 12,
     minHeight: 48,
     justifyContent: "center",
@@ -75,7 +78,7 @@ export const ui = StyleSheet.create({
   },
   buttonText: { color: "#fff", fontWeight: "700", fontSize: 15 },
   link: {
-    color: "#1d4ed8",
+    color: "#075782",
     fontSize: 16,
     fontWeight: "600",
     paddingVertical: 8,
@@ -88,48 +91,14 @@ export function Screen({
   protected: requiresAuth = false,
 }: PropsWithChildren<{ title: string; protected?: boolean }>) {
   const { user, loading } = useAuth();
-  const reducedMotion = useReducedMotion();
-  const scrollY = useSharedValue(0);
-  const onScroll = useAnimatedScrollHandler((event) => {
-    scrollY.value = event.contentOffset.y;
-  });
-  const titleMotion = useAnimatedStyle(() =>
-    reducedMotion
-      ? {}
-      : {
-          opacity: interpolate(
-            scrollY.value,
-            [0, 140],
-            [1, 0.55],
-            Extrapolation.CLAMP,
-          ),
-          transform: [
-            {
-              translateY: interpolate(
-                scrollY.value,
-                [0, 140],
-                [0, -8],
-                Extrapolation.CLAMP,
-              ),
-            },
-          ],
-        },
-  );
+  const { width } = useWindowDimensions();
   return (
-    <Animated.ScrollView
+    <MotionEntry kind="page"><MotionScroll
       style={ui.page}
       keyboardShouldPersistTaps="handled"
-      contentContainerStyle={ui.content}
-      onScroll={onScroll}
-      scrollEventThrottle={16}
+      contentContainerStyle={[ui.content, width < 600 && { paddingHorizontal: 16, paddingTop: 18 }]}
     >
-      <Animated.View
-        entering={reducedMotion ? undefined : FadeInUp.duration(450)}
-      >
-        <Animated.View style={titleMotion}>
-          <Text style={ui.title}>{title}</Text>
-        </Animated.View>
-      </Animated.View>
+      <Text style={ui.title}>{title}</Text>
       {loading ? (
         <ActivityIndicator />
       ) : requiresAuth && !user ? (
@@ -138,22 +107,29 @@ export function Screen({
           <Nav href="/login">Đăng nhập</Nav>
         </Card>
       ) : (
-        children
+        <View style={{ gap: 20 }}>
+          {children}
+        </View>
       )}
-    </Animated.ScrollView>
+    </MotionScroll></MotionEntry>
   );
 }
-export function Card({ children }: PropsWithChildren) {
-  return <View style={ui.card}>{children}</View>;
+export function Card({ children, section, hoverSurface = false }: PropsWithChildren<{ section?: string; hoverSurface?: boolean }>) {
+  const surface = <DepthSurface style={ui.card} hoverSurface={hoverSurface}>{children}</DepthSurface>;
+  return section ? <MotionEntry section={section}>{surface}</MotionEntry> : surface;
 }
 export function Nav({ href, children }: PropsWithChildren<{ href: Href }>) {
+  const [active, setActive] = useState(false);
   return (
-    <Link href={href} style={ui.link}>
-      {children}
+    <Link href={href} asChild>
+      <Pressable accessibilityRole="link" onHoverIn={() => setActive(true)} onHoverOut={() => setActive(false)} onFocus={() => setActive(true)} onBlur={() => setActive(false)}>
+        <Text style={[ui.link, active && { color: "#064c75", textDecorationLine: "underline" }]}>{children}</Text>
+      </Pressable>
     </Link>
   );
 }
 export function Field({ label, ...props }: TextInputProps & { label: string }) {
+  const [focused, setFocused] = useState(false);
   return (
     <View style={{ gap: 6 }}>
       <Text style={ui.label}>{label}</Text>
@@ -161,10 +137,39 @@ export function Field({ label, ...props }: TextInputProps & { label: string }) {
         accessibilityLabel={label}
         placeholderTextColor="#64748b"
         {...props}
-        style={[ui.input, props.style]}
+        onFocus={(event) => { setFocused(true); props.onFocus?.(event); }}
+        onBlur={(event) => { setFocused(false); props.onBlur?.(event); }}
+        style={[ui.input, focused && { borderColor: "#38a8d9", backgroundColor: "#fbfdff" }, props.style]}
       />
     </View>
   );
+}
+/** Search-only presentation; callers retain their existing query and filtering logic. */
+export function SearchBar({ label, loading = false, ...props }: TextInputProps & { label: string; loading?: boolean }) {
+  const input = useRef<ComponentRef<typeof TextInput>>(null);
+  const reducedMotion = useReducedMotion();
+  const focus = useSharedValue(0);
+  const ring = useAnimatedStyle(() => ({
+    borderColor: interpolateColor(focus.value, [0, 1], ["#d9e4f1", "#168bbd"]),
+    backgroundColor: interpolateColor(focus.value, [0, 1], ["#ffffff", "#f0faff"]),
+  }));
+  return <View style={{ gap: 6 }}>
+    <Text style={ui.label}>{label}</Text>
+    <Animated.View style={[{ flexDirection: "row", alignItems: "center", borderWidth: 1, borderRadius: 14, paddingHorizontal: 8, minHeight: 50 }, ring]}>
+      <View style={{ width: 32, alignItems: "center" }}>
+        {loading ? <ActivityIndicator size="small" color="#087fba" accessibilityLabel="Đang tìm kiếm" /> : <HydrationSafeIonicon name="search-outline" size={21} color="#087fba" />}
+      </View>
+      <TextInput {...props} ref={input} accessibilityLabel={label} placeholderTextColor="#64748b"
+        onFocus={event => { focus.set(withTiming(1, { duration: reducedMotion ? 0 : 150 })); props.onFocus?.(event); }}
+        onBlur={event => { focus.set(withTiming(0, { duration: reducedMotion ? 0 : 150 })); props.onBlur?.(event); }}
+        style={[ui.input, { flex: 1, minWidth: 0, borderWidth: 0, backgroundColor: "transparent", paddingHorizontal: 8 }, props.style]} />
+      <Pressable accessibilityRole="button" accessibilityLabel={`Xóa tìm kiếm: ${label}`} disabled={!props.value || props.editable === false}
+        onPress={() => { props.onChangeText?.(""); input.current?.focus(); }}
+        style={({ pressed }) => ({ width: 40, height: 40, borderRadius: 20, alignItems: "center", justifyContent: "center", opacity: props.value ? (pressed ? 0.55 : 1) : 0, backgroundColor: pressed ? "#d8eef9" : "transparent" })}>
+        <HydrationSafeIonicon name="close-circle-outline" size={21} color="#246786" />
+      </Pressable>
+    </Animated.View>
+  </View>;
 }
 export function Action({
   title,
@@ -177,19 +182,31 @@ export function Action({
   disabled?: boolean;
   secondary?: boolean;
 }) {
+  const reducedMotion = useReducedMotion();
+  const interaction = useSharedValue(0);
+  const motion = useAnimatedStyle(() => ({
+    opacity: reducedMotion ? 1 : 1 - 0.06 * interaction.value,
+  }));
+  const highlight = (active: boolean) => {
+    interaction.value = reducedMotion ? 0 : withTiming(active ? 1 : 0, { duration: 160 });
+  };
   return (
     <Pressable
       accessibilityRole="button"
+      accessibilityState={{ disabled }}
       disabled={disabled}
       onPress={onPress}
-      style={({ pressed }) => [
-        ui.button,
-        secondary && { backgroundColor: "#475569" },
-        disabled && { opacity: 0.45 },
-        pressed && !disabled && { opacity: 0.85, transform: [{ scale: 0.98 }] },
-      ]}
+      onHoverIn={() => highlight(true)}
+      onHoverOut={() => highlight(false)}
+      onFocus={() => highlight(true)}
+      onBlur={() => highlight(false)}
+      onPressIn={() => highlight(false)}
+      onPressOut={() => highlight(false)}
+      style={({ pressed }) => [disabled && { opacity: 0.45 }, pressed && !disabled && { opacity: 0.82 }]}
     >
-      <Text style={ui.buttonText}>{title}</Text>
+      <Animated.View style={[ui.button, secondary && { backgroundColor: "#e2f3fc", borderWidth: 1, borderColor: "#c8e4f3" }, motion]}>
+        <Text style={[ui.buttonText, secondary && { color: "#075782" }]}>{title}</Text>
+      </Animated.View>
     </Pressable>
   );
 }

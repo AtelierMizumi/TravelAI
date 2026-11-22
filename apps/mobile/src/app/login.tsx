@@ -1,4 +1,5 @@
-import { Ionicons } from "@expo/vector-icons";
+import { landmarkImage } from "@/services/landmark-media";
+import { HydrationSafeIonicon as Ionicons } from "@/components/hydration-safe-icon";
 import { Image } from "expo-image";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
@@ -21,7 +22,7 @@ import { Action, ErrorText, Field } from "@/components/ui";
 import { useAuth } from "@/context/auth";
 import { useHydrated } from "@/hooks/use-hydrated";
 import { useResource } from "@/hooks/use-resource";
-import { api } from "@/services/api";
+import { api, ApiError } from "@/services/api";
 import type { Place } from "@/services/types";
 
 type Mode = "login" | "register" | "forgot" | "verify" | "reset";
@@ -81,9 +82,11 @@ export default function Login() {
       await work();
     } catch (failure) {
       setError(
-        failure instanceof Error
-          ? failure.message
-          : "Không thể hoàn tất yêu cầu.",
+        mode === "login" && failure instanceof ApiError && failure.status === 401
+          ? "Email hoặc mật khẩu chưa đúng, hoặc tài khoản đã bị khóa. Vui lòng kiểm tra lại."
+          : failure instanceof Error
+            ? failure.message
+            : "Không thể hoàn tất yêu cầu.",
       );
     } finally {
       running.current = false;
@@ -276,7 +279,7 @@ export default function Login() {
                   }
                 />
               )}
-              {busy && <ActivityIndicator color="#2563eb" />}
+              {busy && <ActivityIndicator color="#087fba" />}
             </View>
             <View style={styles.switchRow}>
               {mode === "login" ? (
@@ -325,7 +328,7 @@ export default function Login() {
             />
             {!!cover?.imageUrl && (
               <Image
-                source={{ uri: cover.imageUrl }}
+                source={landmarkImage(cover)}
                 contentFit="cover"
                 style={StyleSheet.absoluteFill}
               />
@@ -383,14 +386,14 @@ const styles = StyleSheet.create({
     width: 42,
     height: 42,
     borderRadius: 14,
-    backgroundColor: "#2563eb",
+    backgroundColor: "#087fba",
     alignItems: "center",
     justifyContent: "center",
   },
   brandName: { fontSize: 24, fontWeight: "900", color: "#172744" },
-  accent: { color: "#2563eb" },
+  accent: { color: "#087fba" },
   kicker: {
-    color: "#2563eb",
+    color: "#087fba",
     fontSize: 11,
     fontWeight: "800",
     letterSpacing: 1.2,
@@ -406,7 +409,7 @@ const styles = StyleSheet.create({
   fields: { gap: 16, marginTop: 18 },
   forgot: { alignSelf: "flex-end" },
   link: {
-    color: "#2563eb",
+    color: "#087fba",
     fontSize: 14,
     fontWeight: "800",
     paddingVertical: 6,
@@ -431,7 +434,7 @@ const styles = StyleSheet.create({
   artText: { padding: 48, gap: 15 },
   artBadge: { flexDirection: "row", gap: 8, alignItems: "center" },
   artBadgeText: {
-    color: "#dbeafe",
+    color: "#e0ebce",
     fontSize: 11,
     fontWeight: "800",
     letterSpacing: 1,

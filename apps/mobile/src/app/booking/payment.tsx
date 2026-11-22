@@ -253,7 +253,7 @@ export default function Payment() {
                 <Nav href="/profile">Liên kết ngân hàng SIMULATED</Nav>
               )}
               <Field
-                label="Mã thử nghiệm TEST-… được cấp cùng thẻ SIMULATED"
+                label="Mã kiểm tra 3 chữ số được cấp (hoặc mã TEST-… cũ)"
                 value={cvv}
                 onChangeText={setCvv}
                 secureTextEntry

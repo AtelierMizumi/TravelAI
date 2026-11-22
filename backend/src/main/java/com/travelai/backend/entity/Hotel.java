@@ -28,4 +28,8 @@ public class Hotel {
 
     @Column(columnDefinition = "TEXT")
     private String image;
+    @ElementCollection(fetch = FetchType.EAGER)
+    @OrderColumn(name = "scene_order")
+    // null means "not sent": an update that omits scenes must keep the stored ones.
+    private java.util.List<ImmersiveScene> scenes;
 }

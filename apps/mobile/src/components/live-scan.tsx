@@ -216,7 +216,7 @@ const styles = StyleSheet.create({
   box: { position: "absolute", borderColor: "#3b82f6", borderWidth: 2 },
   boxLabel: {
     color: "white",
-    backgroundColor: "#1d4ed8",
+    backgroundColor: "#075782",
     fontSize: 12,
     alignSelf: "flex-start",
     paddingHorizontal: 4,

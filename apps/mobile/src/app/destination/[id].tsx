@@ -1,3 +1,6 @@
+import { LandmarkPoc } from "@/components/landmark-poc";
+import { ImageCredit } from "@/components/image-credit";
+import { landmarkImage } from "@/services/landmark-media";
 import { Ionicons } from "@expo/vector-icons";
 import { Image } from "expo-image";
 import { useLocalSearchParams } from "expo-router";
@@ -49,16 +52,17 @@ export default function Destination() {
       <ErrorText message={place.error || related.error} />
       {!!place.data?.imageUrl && (
         <Image
-          source={{ uri: place.data.imageUrl }}
+          source={landmarkImage(place.data)}
           contentFit="cover"
           style={[ui.image, { height: 360, borderRadius: 24 }]}
         />
       )}
-      {!!place.data?.imageAttribution && <Text style={ui.text}>Ảnh: {place.data.imageAttribution}</Text>}
+      {place.data && <ImageCredit place={place.data} />}
+      {id === "14" && <LandmarkPoc poster={place.data?.imageUrl || undefined} />}
       {place.data && (
-        <Card>
+        <Card section="destination-info">
           <View style={ui.row}>
-            <Ionicons name="compass-outline" size={24} color="#2563eb" />
+            <Ionicons name="compass-outline" size={24} color="#087fba" />
             <Text style={ui.heading}>Khám phá {name}</Text>
           </View>
           <Text style={ui.text}>
@@ -69,7 +73,7 @@ export default function Destination() {
         </Card>
       )}
       {!!article && (
-        <Card>
+        <Card section="destination-article">
           <Text style={ui.heading}>Tìm hiểu thêm về {article.title}</Text>
           <Text style={ui.text}>{article.description}</Text>
           <Text
@@ -81,7 +85,7 @@ export default function Destination() {
           </Text>
         </Card>
       )}
-      <Card>
+      <Card section="destination-plan">
         <Text style={ui.heading}>Lên kế hoạch cho chuyến đi</Text>
         <Text style={ui.text}>
           Tìm tour và nơi lưu trú được cung cấp trong hệ thống.

@@ -39,9 +39,17 @@ wait_for_url() {
   return 1
 }
 
-if [[ "$mode" != app && "$mode" != web ]]; then
-  printf 'Sử dụng: scripts/dev.sh [app|web]\n' >&2
+if [[ "$mode" != app && "$mode" != web && "$mode" != tunnel ]]; then
+  printf 'Sử dụng: scripts/dev.sh [app|web|tunnel]\n' >&2
   exit 2
+fi
+# Resolve the current Wi-Fi route on every start rather than keeping an old DHCP address.
+EXPO_PUBLIC_API_URL=$(python3 "$project_root/scripts/configure-lan.py")
+export EXPO_PUBLIC_API_URL
+printf 'API cho thiết bị: %s\n' "$EXPO_PUBLIC_API_URL"
+if port_open "$expo_port"; then
+  printf 'Cổng Expo %s đang được sử dụng. Dừng Expo cũ hoặc đặt EXPO_PORT khác.\n' "$expo_port" >&2
+  exit 1
 fi
 if ! pg_isready -q -h 127.0.0.1 -p 5432; then
   printf 'PostgreSQL chưa sẵn sàng tại 127.0.0.1:5432.\n' >&2
@@ -57,6 +65,16 @@ else
     exit 1
   fi
   export TRAVELAI_MESSAGE_KEY_FILE="$key_file"
+  if [[ ! ${SPRING_DATASOURCE_PASSWORD+x} ]]; then
+    # Reuse existing passwordless local auth only if PostgreSQL already permits it.
+    # Never change pg_hba.conf, reset a password, or print credentials.
+    if [[ -z ${SPRING_DATASOURCE_URL:-} ]] && psql -X -q -h 127.0.0.1 -U "${SPRING_DATASOURCE_USERNAME:-postgres}" -d travel_ai -w -c 'select 1' >/dev/null 2>&1; then
+      export SPRING_DATASOURCE_PASSWORD=''
+    else
+      printf 'Cần đặt SPRING_DATASOURCE_PASSWORD trong terminal trước khi chạy.\n' >&2
+      exit 1
+    fi
+  fi
   java_cmd=${JAVA_HOME:+"$JAVA_HOME/bin/"}java
   java_version=$("$java_cmd" -version 2>&1 | sed -n '1s/.*version "\([0-9]*\).*/\1/p')
   maven_args=()
@@ -77,7 +95,10 @@ else
 fi
 # These credentials are needed only by the backend, never the AI or Expo process.
 unset TRAVELAI_SMTP_USERNAME TRAVELAI_SMTP_PASSWORD TRAVELAI_SMTP_FROM TRAVELAI_RESET_SECRET
-if port_open 8000; then
+unset SPRING_DATASOURCE_PASSWORD SPRING_DATASOURCE_USERNAME SPRING_DATASOURCE_URL TRAVELAI_MESSAGE_KEY TRAVELAI_MESSAGE_KEY_FILE
+if [[ ${TRAVELAI_SKIP_AI:-0} == 1 ]]; then
+  printf 'Bỏ qua AI service theo cấu hình demo; đăng nhập và đặt chỗ vẫn dùng backend.\n'
+elif port_open 8000; then
   curl -fsS --max-time 2 http://127.0.0.1:8000/ >/dev/null || { printf 'Cổng 8000 đang dùng bởi dịch vụ khác.\n' >&2; exit 1; }
   printf 'Đang dùng AI service ở cổng 8000.\n'
 else
@@ -93,11 +114,16 @@ if port_open "$expo_port"; then
   printf 'Cổng Expo %s đang được sử dụng. Đặt EXPO_PORT sang cổng khác.\n' "$expo_port" >&2
   exit 1
 fi
-printf 'Backend: http://localhost:8080 · AI: http://localhost:8000 · Expo: http://localhost:%s\n' "$expo_port"
+curl -fsS --max-time 5 "${EXPO_PUBLIC_API_URL%/}/places" >/dev/null || {
+  printf 'Backend chưa truy cập được qua địa chỉ API đã cấu hình.\n' >&2; exit 1;
+}
+printf 'Backend: %s · Expo local: http://localhost:%s\n' "$EXPO_PUBLIC_API_URL" "$expo_port"
 printf 'Dừng bằng Ctrl+C. Log dịch vụ tại %s.\n' "$log_dir"
 cd "$project_root/apps/mobile"
 if [[ "$mode" == web ]]; then
-  ./node_modules/.bin/expo start --web --port "$expo_port"
+  ./node_modules/.bin/expo start --web --lan --clear --port "$expo_port"
+elif [[ "$mode" == tunnel ]]; then
+  ./node_modules/.bin/expo start --tunnel --clear --port "$expo_port"
 else
-  ./node_modules/.bin/expo start --port "$expo_port"
+  ./node_modules/.bin/expo start --lan --clear --port "$expo_port"
 fi

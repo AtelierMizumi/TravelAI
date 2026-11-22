@@ -1,11 +1,14 @@
+import { destinationFor } from "@/services/catalog-media";
+import { PinTabs } from "@/components/pin-ui";
 import { Ionicons } from "@expo/vector-icons";
-import { Image } from "expo-image";
+import { CatalogPhoto } from "@/components/catalog-photo";
 import { useMemo, useState } from "react";
 import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import {
   Card,
   ErrorText,
   Field,
+  SearchBar,
   Nav,
   Screen,
   money,
@@ -13,12 +16,13 @@ import {
 } from "@/components/ui";
 import { useResource } from "@/hooks/use-resource";
 import { provinceFor, provinces } from "@/services/provinces";
-import type { CatalogItem } from "@/services/types";
+import type { CatalogItem, Place } from "@/services/types";
 
 export function Catalog({ kind }: { kind: "tours" | "hotels" }) {
   const resource = useResource<CatalogItem[]>(`/${kind}`);
+  const places = useResource<Place[]>(kind === "tours" ? "/places" : null);
   const [query, setQuery] = useState("");
-  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchOpen, setSearchOpen] = useState(true);
   const [province, setProvince] = useState("");
   const [provinceOpen, setProvinceOpen] = useState(false);
   const [area, setArea] = useState("");
@@ -75,6 +79,7 @@ export function Catalog({ kind }: { kind: "tours" | "hotels" }) {
       : [""];
   return (
     <Screen title={kind === "tours" ? "Khám phá tour" : "Tìm khách sạn"}>
+      <Text style={ui.text}>{kind === "hotels" ? "Chọn một nơi nghỉ phù hợp. Khám phá không gian, so sánh mức giá và xem lịch còn phòng." : "Bạn muốn hành trình tiếp theo đưa mình đi đâu? Tìm theo tên điểm đến để bắt đầu."}</Text>
       <View style={styles.toolbar}>
         <Pressable
           accessibilityRole="button"
@@ -86,13 +91,13 @@ export function Catalog({ kind }: { kind: "tours" | "hotels" }) {
           <Ionicons
             name={searchOpen ? "close" : "search"}
             size={23}
-            color="#2563eb"
+            color="#087fba"
           />
         </Pressable>
         <Text style={styles.hint}>Tìm chuyến đi phù hợp với bạn</Text>
       </View>
       {searchOpen && (
-        <Field
+        <SearchBar loading={resource.loading}
           label="Tìm theo tên hoặc địa điểm"
           value={query}
           onChangeText={setQuery}
@@ -108,14 +113,14 @@ export function Catalog({ kind }: { kind: "tours" | "hotels" }) {
             onPress={() => setProvinceOpen(!provinceOpen)}
             style={styles.filterToggle}
           >
-            <Ionicons name="location-outline" size={18} color="#2563eb" />
+            <Ionicons name="location-outline" size={18} color="#087fba" />
             <Text style={styles.filterText}>
               {province || "Tất cả tỉnh/thành"}
             </Text>
             <Ionicons
               name={provinceOpen ? "chevron-up" : "chevron-down"}
               size={18}
-              color="#2563eb"
+              color="#087fba"
             />
           </Pressable>
           {provinceOpen && (
@@ -168,21 +173,7 @@ export function Catalog({ kind }: { kind: "tours" | "hotels" }) {
             placeholder="Không giới hạn"
           />
           <Text style={ui.label}>Điểm danh mục tối thiểu</Text>
-          <View style={styles.chips}>
-            {[0, 3, 4, 5].map((value) => (
-              <Pressable
-                key={value}
-                accessibilityRole="button"
-                accessibilityState={{ selected: value === rating }}
-                onPress={() => setRating(value)}
-                style={[styles.chip, value === rating && styles.chipSelected]}
-              >
-                <Text style={styles.chipText}>
-                  {value ? `${value}+ ★` : "Tất cả"}
-                </Text>
-              </Pressable>
-            ))}
-          </View>
+          <PinTabs tabs={[0, 3, 4, 5].map(value => ({ id: String(value), label: value ? `${value}+ ★` : "Tất cả" }))} value={String(rating)} onChange={value => setRating(Number(value))} />
           <Text style={styles.hint}>
             Giá và điểm là thông tin danh mục, không phải giá chốt theo lịch
             hoặc đánh giá đã xác minh. Khu vực phụ thuộc địa chỉ đã nhập.
@@ -208,15 +199,9 @@ export function Catalog({ kind }: { kind: "tours" | "hotels" }) {
                   (itemProvince(item) || "Chưa xác định tỉnh/thành") === group,
               )
               .map((item) => (
-                <View key={item.id} style={{ flexBasis: 320, flexGrow: 1 }}>
-                  <Card>
-                    {!!item.image && (
-                      <Image
-                        source={{ uri: item.image }}
-                        contentFit="cover"
-                        style={ui.image}
-                      />
-                    )}
+                <View key={item.id} style={{ flexBasis: 280, flexGrow: 1, minWidth: 0, maxWidth: 540 }}>
+                  <Card hoverSurface>
+                    <CatalogPhoto key={`${item.id}:${item.image || ""}`} source={item.image} fallback={kind === "tours" ? destinationFor(item.location, places.data || [])?.imageUrl : undefined} label={item.name} />
                     <Nav
                       href={{
                         pathname:
@@ -259,11 +244,11 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#e7f0ff",
+    backgroundColor: "#e7efdf",
   },
   hint: { color: "#64748b", fontSize: 13, lineHeight: 20, flexShrink: 1 },
   filterToggle: { flexDirection: "row", alignItems: "center", gap: 8 },
-  filterText: { color: "#2563eb", fontWeight: "700", flex: 1 },
+  filterText: { color: "#087fba", fontWeight: "700", flex: 1 },
   chips: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   chip: {
     borderWidth: 1,
@@ -273,7 +258,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
     backgroundColor: "#fff",
   },
-  chipSelected: { backgroundColor: "#e5efff", borderColor: "#9dbdff" },
+  chipSelected: { backgroundColor: "#e0ebce", borderColor: "#9dbdff" },
   chipText: { color: "#334155", fontSize: 13 },
-  price: { color: "#1d4ed8", fontWeight: "700" },
+  price: { color: "#075782", fontWeight: "700" },
 });

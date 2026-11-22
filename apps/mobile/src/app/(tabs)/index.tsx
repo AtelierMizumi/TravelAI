@@ -1,62 +1,36 @@
+import { useState } from "react";
+import { MotionScroll } from "@/components/motion-scroll";
+import { MotionEntry } from "@/components/motion-entry";
+import { MotionIcon } from "@/components/motion-icon";
+import { DestinationDeck } from "@/components/destination-deck";
+import { ImageCredit } from "@/components/image-credit";
+import { PinTaskCard } from "@/components/pin-ui";
+import { landmarkCredit, landmarkImage } from "@/services/landmark-media";
 import { useHydrated } from "@/hooks/use-hydrated";
-import { Ionicons } from "@expo/vector-icons";
+import { HydrationSafeIonicon as Ionicons } from "@/components/hydration-safe-icon";
 import { Image } from "expo-image";
-import { LinearGradient } from "expo-linear-gradient";
-import { Link } from "expo-router";
+import { Link, router } from "expo-router";
 import {
+  Platform,
   Pressable,
   StyleSheet,
   Text,
   useWindowDimensions,
   View,
 } from "react-native";
-import Animated, {
-  FadeInDown,
-  FadeInUp,
-  Extrapolation,
-  interpolate,
-  useAnimatedScrollHandler,
-  useAnimatedStyle,
-  useReducedMotion,
-  useSharedValue,
-  withTiming,
-  type SharedValue,
-} from "react-native-reanimated";
+
 import { Footer } from "@/components/footer";
 import { ErrorText } from "@/components/ui";
 import { useResource } from "@/hooks/use-resource";
 import type { CatalogItem, Offer, Place } from "@/services/types";
 
 export default function Home() {
-  const places = useResource<Place[]>("/places");
-  const offers = useResource<Offer[]>("/booking/offers");
-  const tours = useResource<CatalogItem[]>("/tours");
-  const hotels = useResource<CatalogItem[]>("/hotels");
-  const { width, height } = useWindowDimensions();
+  const places = useResource<Place[]>("/places", 0, true);
+  const offers = useResource<Offer[]>("/booking/offers", 0, true);
+  const tours = useResource<CatalogItem[]>("/tours", 0, true);
+  const hotels = useResource<CatalogItem[]>("/hotels", 0, true);
+  const { width } = useWindowDimensions();
   const compact = !useHydrated() || width < 760;
-  const reducedMotion = useReducedMotion();
-  const scrollY = useSharedValue(0);
-  const gridY = useSharedValue(0);
-  const onScroll = useAnimatedScrollHandler((event) => {
-    scrollY.value = event.contentOffset.y;
-  });
-  const artworkMotion = useAnimatedStyle(() =>
-    reducedMotion
-      ? {}
-      : {
-          transform: [
-            {
-              translateY: interpolate(
-                scrollY.value,
-                [0, 450],
-                [0, 35],
-                Extrapolation.CLAMP,
-              ),
-            },
-          ],
-        },
-  );
-  const cover = places.data?.find((place) => !!place.imageUrl);
   const today = new Intl.DateTimeFormat("sv-SE", {
     timeZone: "Asia/Ho_Chi_Minh",
   }).format(new Date());
@@ -83,103 +57,61 @@ export default function Home() {
     })
     .slice(0, 4);
   return (
-    <Animated.ScrollView
+    <MotionScroll
       style={styles.page}
       contentContainerStyle={styles.container}
-      onScroll={onScroll}
-      scrollEventThrottle={16}
     >
-      <View style={[styles.hero, compact && styles.heroCompact]}>
-        <Animated.View
-          entering={reducedMotion ? undefined : FadeInUp.duration(650)}
+      <MotionEntry kind="hero"><View style={[styles.hero, compact && styles.heroCompact]}>
+        <View
+
           style={[styles.heroCopy, compact && styles.heroCopyCompact]}
         >
           <View style={styles.eyebrow}>
-            <Ionicons name="sparkles" size={15} color="#2563eb" />
+            <MotionIcon name="sparkles" size={18} />
             <Text style={styles.eyebrowText}>KHÁM PHÁ VIỆT NAM CÙNG AI</Text>
           </View>
           <Text style={[styles.heroTitle, compact && styles.heroTitleCompact]}>
-            Mỗi bức ảnh,{" "}
-            <Text style={styles.heroAccent}>một hành trình mới.</Text>
+            Đi để thấy,{" "}
+            <Text style={styles.heroAccent}>chạm để khám phá.</Text>
           </Text>
           <Text style={styles.heroDescription}>
-            Nhận diện địa danh từ hình ảnh, tìm tour và khách sạn, rồi lưu lại
-            những trải nghiệm đáng nhớ cùng TravelAI.
+            Chụp điều khiến bạn tò mò. Khám phá điểm đến, tìm một nơi để ở và lên kế hoạch cho chuyến đi tiếp theo.
           </Text>
           <View style={styles.actions}>
             <Link href="/detection" asChild>
               <Pressable style={styles.primary}>
-                <Ionicons name="camera-outline" color="#fff" size={20} />
-                <Text style={styles.primaryText}>Thử nhận diện ảnh</Text>
+                <MotionIcon name="camera" color="#fff" size={22} />
+                <Text style={styles.primaryText}>Chụp & khám phá</Text>
                 <Ionicons name="arrow-forward" color="#fff" size={18} />
               </Pressable>
             </Link>
             <Link href="/booking/tours" asChild>
               <Pressable style={styles.secondary}>
                 <Text style={styles.secondaryText}>Khám phá tour</Text>
-                <Ionicons name="arrow-forward" color="#2563eb" size={17} />
+                <Ionicons name="arrow-forward" color="#087fba" size={17} />
               </Pressable>
             </Link>
           </View>
           <View style={styles.heroFootnote}>
             <View style={styles.footnoteIcon}>
-              <Ionicons name="flash" size={15} color="#2563eb" />
+              <Ionicons name="flash" size={15} color="#087fba" />
             </View>
             <Text style={styles.footnoteText}>
               Một nơi cho cảm hứng và kế hoạch của bạn
             </Text>
           </View>
-        </Animated.View>
-        <Animated.View
-          entering={
-            reducedMotion ? undefined : FadeInDown.delay(180).duration(750)
-          }
+        </View>
+        <View
+
           style={[styles.artwork, compact && styles.artworkCompact]}
         >
-          <Animated.View style={[styles.artworkContent, artworkMotion]}>
-            <LinearGradient
-              colors={["#bed9ff", "#dceaff", "#f4f8ff"]}
-              style={StyleSheet.absoluteFill}
-            />
-            {cover?.imageUrl ? (
-              <Image
-                source={{ uri: cover.imageUrl }}
-                contentFit="cover"
-                style={StyleSheet.absoluteFill}
-                transition={350}
-              />
-            ) : (
-              <View style={styles.abstractScene}>
-                <View style={styles.sun} />
-                <View style={styles.mountainBack} />
-                <View style={styles.mountainFront} />
-                <View style={styles.water} />
-              </View>
-            )}
-            <LinearGradient
-              colors={["transparent", "rgba(8,32,71,0.64)"]}
-              style={styles.coverGradient}
-            />
-            <View style={styles.artworkLabel}>
-              <View style={styles.locationIcon}>
-                <Ionicons name="location" size={20} color="#2563eb" />
-              </View>
-              <View>
-                <Text style={styles.labelOverline}>BẮT ĐẦU KHÁM PHÁ</Text>
-                <Text style={styles.labelTitle}>
-                  {cover?.name || "Việt Nam trong tầm tay"}
-                </Text>
-              </View>
-            </View>
-            <View style={styles.floatingCard}>
-              <Ionicons name="sparkles" size={18} color="#2563eb" />
-              <Text style={styles.floatingText}>Khám phá qua hình ảnh</Text>
-            </View>
-          </Animated.View>
-        </Animated.View>
-      </View>
-      <Animated.View
-        entering={reducedMotion ? undefined : FadeInUp.delay(250).duration(650)}
+          <View >
+            <DestinationDeck places={(places.data || []).filter(place => !!place.imageUrl).sort((a, b) => Number(!!landmarkCredit(b)) - Number(!!landmarkCredit(a))).slice(0, 8)} />
+          </View>
+        </View>
+      </View></MotionEntry>
+      <MotionEntry section="home-features"><View
+
         style={styles.featureBar}
       >
         <Feature
@@ -197,10 +129,15 @@ export default function Home() {
           title="Kết nối cộng đồng"
           description="Chia sẻ trải nghiệm"
         />
-      </Animated.View>
-      {featured.length > 0 && (
+      </View>
+      </MotionEntry><MotionEntry section="home-actions"><View style={[styles.grid, { marginTop: 32 }]}>
+        <PinTaskCard eyebrow="01 · NHÌN THẤY" title="Bạn đang ở đâu?" description="Mở camera, chụp địa danh trước mắt và tìm câu chuyện đằng sau bức ảnh." icon="camera-outline" action="Mở camera nhận diện" onPress={() => router.push("/detection")} />
+        <PinTaskCard eyebrow="02 · TRẢI NGHIỆM" title="Đi theo cảm hứng" description="Tìm một hành trình phù hợp với điểm đến và khoảng thời gian của bạn." icon="compass-outline" action="Chọn tour cho bạn" onPress={() => router.push("/booking/tours")} />
+        <PinTaskCard eyebrow="03 · NGHỈ NGƠI" title="Một nơi để trở về" description="Khám phá nơi lưu trú, tìm căn phòng yêu thích và chọn lịch nghỉ." icon="bed-outline" action="Tìm nơi lưu trú" onPress={() => router.push("/booking/hotels")} />
+      </View>
+      </MotionEntry>{featured.length > 0 && (
         <>
-          <View style={styles.destinationHeader}>
+      <MotionEntry section="home-offers"><View style={styles.destinationHeader}>
             <View>
               <Text style={styles.sectionOverline}>ƯU ĐÃI THEO LỊCH</Text>
               <Text style={styles.sectionTitle}>Chuyến đi đang chờ bạn</Text>
@@ -209,9 +146,9 @@ export default function Home() {
               </Text>
             </View>
           </View>
-          <View style={styles.grid}>
+          </MotionEntry><View style={styles.grid}>
             {featured.map(({ offer, item, sale }) => (
-              <View key={offer.id} style={styles.destinationCard}>
+              <View key={offer.id} style={styles.destinationCard} {...(Platform.OS === "web" ? { dataSet: { hoverSurface: "card" } } : {})}>
                 <Link
                   href={{
                     pathname:
@@ -254,7 +191,7 @@ export default function Home() {
           </View>
         </>
       )}
-      <View style={styles.destinationHeader}>
+      <MotionEntry section="home-destinations"><View style={styles.destinationHeader}>
         <View>
           <Text style={styles.sectionOverline}>CẢM HỨNG CHO BẠN</Text>
           <Text style={styles.sectionTitle}>Điểm đến nổi bật</Text>
@@ -266,7 +203,7 @@ export default function Home() {
           Xem tour →
         </Link>
       </View>
-      <ErrorText message={places.error} />
+      </MotionEntry><ErrorText message={places.error} />
       {places.loading && !places.data && (
         <Text style={styles.empty}>Đang tải điểm đến…</Text>
       )}
@@ -275,126 +212,55 @@ export default function Home() {
       )}
       <View
         style={styles.grid}
-        onLayout={(event) => {
-          gridY.value = event.nativeEvent.layout.y;
-        }}
+
       >
-        {places.data?.map((place, index) => (
+        {places.data?.map((place) => (
           <PlaceCard
             key={place.id}
             place={place}
-            index={index}
             compact={compact}
-            reducedMotion={reducedMotion}
-            scrollY={scrollY}
-            gridY={gridY}
-            viewportHeight={height}
           />
         ))}
       </View>
-      <Footer />
-    </Animated.ScrollView>
+      <MotionEntry section="home-footer"><Footer /></MotionEntry>
+    </MotionScroll>
   );
 }
-function PlaceCard({
-  place,
-  index,
-  compact,
-  reducedMotion,
-  scrollY,
-  gridY,
-  viewportHeight,
-}: {
-  place: Place;
-  index: number;
-  compact: boolean;
-  reducedMotion: boolean;
-  scrollY: SharedValue<number>;
-  gridY: SharedValue<number>;
-  viewportHeight: number;
-}) {
-  const itemY = useSharedValue(0);
-  const hovered = useSharedValue(0);
-  const motion = useAnimatedStyle(() => {
-    const reveal = reducedMotion
-      ? 1
-      : interpolate(
-          scrollY.value + viewportHeight - gridY.value - itemY.value,
-          [40, 230],
-          [0, 1],
-          Extrapolation.CLAMP,
-        );
-    return {
-      opacity: 0.35 + reveal * 0.65,
-      transform: [
-        { translateY: (1 - reveal) * 24 - hovered.value * 7 },
-        { scale: 1 + hovered.value * 0.025 },
-      ],
-      shadowOpacity: 0.05 + hovered.value * 0.22,
-      shadowRadius: 16,
-      shadowColor: "#244c83",
-      shadowOffset: { width: 0, height: 6 },
-    };
-  });
-  const hover = (active: boolean) => {
-    hovered.value = reducedMotion
-      ? active
-        ? 1
-        : 0
-      : withTiming(active ? 1 : 0, { duration: 220 });
-  };
-  return (
-    <Animated.View
-      entering={
-        reducedMotion
-          ? undefined
-          : FadeInUp.delay(Math.min(index, 5) * 80).duration(500)
-      }
-      onLayout={(event) => {
-        itemY.value = event.nativeEvent.layout.y;
-      }}
-      style={[styles.destinationSlot, compact && styles.destinationCompact]}
-    >
-      <Animated.View style={[styles.destinationCard, motion]}>
-        <Link
-          href={{ pathname: "/destination/[id]", params: { id: place.id } }}
-          asChild
-        >
-          <Pressable
-            style={styles.placePressable}
-            onHoverIn={() => hover(true)}
-            onHoverOut={() => hover(false)}
-            onFocus={() => hover(true)}
-            onBlur={() => hover(false)}
-          >
-            <View style={styles.placeImage}>
-              {!!place.imageUrl && (
-                <Image
-                  source={{ uri: place.imageUrl }}
-                  contentFit="cover"
-                  style={StyleSheet.absoluteFill}
-                  transition={250}
-                />
-              )}
-              <View style={styles.placeTag}>
-                <Ionicons name="location-outline" size={13} color="#2563eb" />
-                <Text style={styles.placeTagText}>Điểm đến</Text>
+function PlaceCard({ place, compact }: { place: Place; compact: boolean }) {
+  const [pressed, setPressed] = useState(false);
+  return <View style={[styles.destinationSlot, compact && styles.destinationCompact]}>
+    <Link href={{ pathname: "/destination/[id]", params: { id: place.id } }} asChild>
+      <Pressable style={styles.placePressable} onPressIn={() => setPressed(true)} onPressOut={() => setPressed(false)}>
+        <View style={[styles.destinationCard, pressed && styles.destinationPressed]} {...(Platform.OS === "web" ? { dataSet: { hoverSurface: "card", featuredDestination: "true", pressed: String(pressed) } } : {})}>
+              <View style={styles.placeImage}>
+                {!!place.imageUrl && (
+                  <Image
+                    source={landmarkImage(place)}
+                    contentFit="cover"
+                    style={StyleSheet.absoluteFill}
+                    transition={250}
+                  />
+                )}
+                <View style={styles.placeTag}>
+                  <Ionicons name="location-outline" size={13} color="#087fba" />
+                  <Text style={styles.placeTagText}>Điểm đến</Text>
+                </View>
               </View>
-            </View>
-            <View style={styles.placeBody}>
-              <Text numberOfLines={1} style={styles.placeTitle}>
-                {place.name}
-              </Text>
-              <Text numberOfLines={2} style={styles.placeDescription}>
-                {place.description}
-              </Text>
-              <Text style={styles.placeLink}>Khám phá chi tiết →</Text>
-            </View>
-          </Pressable>
-        </Link>
-      </Animated.View>
-    </Animated.View>
-  );
+              <View style={styles.placeBody}>
+                <Text numberOfLines={1} style={styles.placeTitle}>
+                  {place.name}
+                </Text>
+                <Text numberOfLines={2} style={styles.placeDescription}>
+                  {place.description}
+                </Text>
+                <Text style={styles.placeLink}>Khám phá chi tiết →</Text>
+              </View>
+
+        </View>
+      </Pressable>
+    </Link>
+    <View style={{ paddingHorizontal: 8, paddingTop: 6 }}><ImageCredit place={place} /></View>
+  </View>;
 }
 function Feature({
   icon,
@@ -408,7 +274,7 @@ function Feature({
   return (
     <View style={styles.feature}>
       <View style={styles.featureIcon}>
-        <Ionicons name={icon} size={23} color="#2563eb" />
+        <MotionIcon name={icon === "camera-outline" ? "camera" : icon === "map-outline" ? "compass" : "people"} size={26} />
       </View>
       <View style={{ flex: 1 }}>
         <Text style={styles.featureTitle}>{title}</Text>
@@ -418,7 +284,7 @@ function Feature({
   );
 }
 const styles = StyleSheet.create({
-  page: { flex: 1, backgroundColor: "#f8faff" },
+  page: { flex: 1, backgroundColor: "transparent" },
   container: {
     width: "100%",
     maxWidth: 1440,
@@ -438,17 +304,17 @@ const styles = StyleSheet.create({
     gap: 8,
     paddingHorizontal: 13,
     paddingVertical: 9,
-    backgroundColor: "#eaf2ff",
+    backgroundColor: "#e2f3fc",
     borderRadius: 30,
   },
   eyebrowText: {
-    color: "#2563eb",
+    color: "#087fba",
     fontSize: 11,
     fontWeight: "800",
     letterSpacing: 1,
   },
   heroTitle: {
-    color: "#122341",
+    color: "#103c5b",
     fontSize: 58,
     lineHeight: 65,
     fontWeight: "900",
@@ -457,7 +323,7 @@ const styles = StyleSheet.create({
     maxWidth: 680,
   },
   heroTitleCompact: { fontSize: 42, lineHeight: 49, letterSpacing: -1.5 },
-  heroAccent: { color: "#2563eb" },
+  heroAccent: { color: "#087fba" },
   heroDescription: {
     color: "#64748b",
     fontSize: 17,
@@ -474,7 +340,7 @@ const styles = StyleSheet.create({
     minHeight: 54,
     paddingHorizontal: 22,
     borderRadius: 15,
-    backgroundColor: "#2563eb",
+    backgroundColor: "#087fba",
   },
   primaryText: { color: "#fff", fontSize: 15, fontWeight: "800" },
   secondary: {
@@ -489,7 +355,7 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     backgroundColor: "#fff",
   },
-  secondaryText: { color: "#2563eb", fontSize: 15, fontWeight: "700" },
+  secondaryText: { color: "#087fba", fontSize: 15, fontWeight: "700" },
   pressed: { opacity: 0.75, transform: [{ scale: 0.985 }] },
   heroFootnote: {
     flexDirection: "row",
@@ -507,99 +373,14 @@ const styles = StyleSheet.create({
   },
   footnoteText: { color: "#728097", fontWeight: "600", fontSize: 13 },
   artwork: {
-    flex: 1,
+    flexGrow: 1,
+    flexShrink: 1,
+    flexBasis: 0,
     minHeight: 500,
     borderRadius: 32,
-    overflow: "hidden",
-    backgroundColor: "#dceaff",
+    backgroundColor: "#e2f3fc",
   },
-  artworkCompact: { flex: 0, minHeight: 340 },
-  artworkContent: { flex: 1 },
-  abstractScene: {
-    position: "absolute",
-    top: 0,
-    right: 0,
-    bottom: 0,
-    left: 0,
-    overflow: "hidden",
-  },
-  sun: {
-    position: "absolute",
-    width: 110,
-    height: 110,
-    borderRadius: 55,
-    backgroundColor: "#fff4d3",
-    top: "12%",
-    right: "20%",
-  },
-  mountainBack: {
-    position: "absolute",
-    width: "120%",
-    height: "85%",
-    backgroundColor: "#96c5dd",
-    transform: [{ rotate: "-22deg" }],
-    top: "46%",
-    left: "-48%",
-    borderRadius: 70,
-  },
-  mountainFront: {
-    position: "absolute",
-    width: "120%",
-    height: "85%",
-    backgroundColor: "#6ca7ba",
-    transform: [{ rotate: "23deg" }],
-    top: "50%",
-    right: "-48%",
-    borderRadius: 70,
-  },
-  water: {
-    position: "absolute",
-    bottom: 0,
-    width: "100%",
-    height: "22%",
-    backgroundColor: "#72b5c4",
-  },
-  coverGradient: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    bottom: 0,
-    height: "45%",
-  },
-  artworkLabel: {
-    position: "absolute",
-    bottom: 25,
-    left: 25,
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-  },
-  locationIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 14,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#fff",
-  },
-  labelOverline: {
-    color: "#e2e8f0",
-    fontSize: 10,
-    fontWeight: "800",
-    letterSpacing: 1,
-  },
-  labelTitle: { color: "#fff", fontSize: 17, fontWeight: "800", marginTop: 3 },
-  floatingCard: {
-    position: "absolute",
-    top: 22,
-    right: 22,
-    flexDirection: "row",
-    gap: 8,
-    padding: 12,
-    borderRadius: 14,
-    backgroundColor: "rgba(255,255,255,0.95)",
-  },
-  floatingText: { color: "#334155", fontSize: 12, fontWeight: "700" },
+  artworkCompact: { flexGrow: 0, flexShrink: 0, flexBasis: "auto", minHeight: 0 },
   featureBar: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -622,12 +403,12 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 16,
-    backgroundColor: "#eff5ff",
+    backgroundColor: "#e2f3fc",
     alignItems: "center",
     justifyContent: "center",
   },
   featureTitle: { color: "#1e293b", fontWeight: "800", fontSize: 14 },
-  featureDescription: { color: "#94a3b8", marginTop: 5, fontSize: 12 },
+  featureDescription: { color: "#54738b", marginTop: 5, fontSize: 12 },
   destinationHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
@@ -640,7 +421,7 @@ const styles = StyleSheet.create({
     fontSize: 11,
     fontWeight: "800",
     letterSpacing: 1.4,
-    color: "#2563eb",
+    color: "#087fba",
   },
   sectionTitle: {
     fontSize: 31,
@@ -649,7 +430,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   sectionDescription: { color: "#8290a5", marginTop: 7, fontSize: 14 },
-  sectionLink: { color: "#2563eb", fontWeight: "700", paddingVertical: 8 },
+  sectionLink: { color: "#087fba", fontWeight: "700", paddingVertical: 8 },
   empty: { color: "#64748b", paddingVertical: 20 },
   grid: { flexDirection: "row", flexWrap: "wrap", gap: 18 },
   destinationSlot: {
@@ -665,6 +446,7 @@ const styles = StyleSheet.create({
     borderRadius: 22,
     overflow: "hidden",
   },
+  destinationPressed: { borderColor: "#36a8ce", backgroundColor: "#e8f6fd", shadowColor: "#086792", shadowOpacity: 0.18, shadowRadius: 16, shadowOffset: { width: 0, height: 6 }, elevation: 4 },
   destinationCompact: { maxWidth: "100%", flexBasis: 280 },
   placePressable: { flex: 1 },
   placeImage: { height: 220, backgroundColor: "#e6effb", overflow: "hidden" },
@@ -680,12 +462,12 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     backgroundColor: "rgba(255,255,255,0.93)",
   },
-  placeTagText: { color: "#2563eb", fontWeight: "700", fontSize: 11 },
+  placeTagText: { color: "#087fba", fontWeight: "700", fontSize: 11 },
   placeBody: { gap: 9, padding: 20 },
   placeTitle: { color: "#14233b", fontSize: 19, fontWeight: "800" },
   placeDescription: { color: "#8190a5", fontSize: 13, lineHeight: 21 },
   placeLink: {
-    color: "#2563eb",
+    color: "#087fba",
     fontSize: 13,
     fontWeight: "700",
     marginTop: 3,

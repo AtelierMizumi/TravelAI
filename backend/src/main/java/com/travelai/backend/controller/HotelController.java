@@ -9,6 +9,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
+import jakarta.persistence.EntityManager;
+import org.springframework.transaction.annotation.Transactional;
 
 @RestController
 @RequestMapping("/api/hotels")
@@ -39,6 +41,7 @@ public class HotelController {
             );
         }
 
+        com.travelai.backend.catalog.SceneValidation.validate(request.getScenes());
         Hotel hotel = Hotel.builder()
                 .name(request.getName())
                 .location(request.getLocation())
@@ -47,6 +50,7 @@ public class HotelController {
                 .rooms(request.getRooms() == null ? 1 : request.getRooms())
                 .price(request.getPrice() == null ? 0.0 : request.getPrice())
                 .status(request.getStatus() == null ? "active" : request.getStatus())
+                .scenes(request.getScenes() == null ? new java.util.ArrayList<>() : request.getScenes())
                 .image(request.getImage())
                 .build();
 
@@ -70,6 +74,8 @@ public class HotelController {
             );
         }
 
+        com.travelai.backend.catalog.SceneValidation.validate(request.getScenes());
+        if (request.getScenes() != null) hotel.setScenes(request.getScenes());
         hotel.setName(request.getName());
         hotel.setLocation(request.getLocation());
         if (request.getProvince() != null) hotel.setProvince(request.getProvince());

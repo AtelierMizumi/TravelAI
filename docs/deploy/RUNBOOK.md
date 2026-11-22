@@ -59,7 +59,7 @@ Compose project: `travelai-prod` (separate from the dev stack). Nothing publishe
 ## Rotate a secret
 - `POSTGRES_PASSWORD`: change it in `.env` AND inside Postgres (`ALTER USER`); otherwise the backend cannot connect.
 - Resend API key: create a new sending-only key, revoke the old one, update `TRAVELAI_SMTP_PASSWORD`, run `scripts/prod-apply.sh`. `TRAVELAI_RESET_SECRET` must stay stable (changing it only invalidates codes in flight).
-- Message key: rotating it makes existing chat messages unreadable; only do it on an empty chat table.
+- Message key: it also protects bank card identifiers (BankDataCipher uses the same key file). Rotating it makes existing chat messages unreadable AND makes encrypted bank cards fail with a server error on `/booking/bank`, bank linking and payment; do not rotate it while chat or encrypted cards exist. The backend refuses to start without the key.
 - Tunnel token: Cloudflare -> Tunnel -> Refresh token, update `.env`, then `scripts/prod-apply.sh cloudflared`.
 
 ## Survive a reboot

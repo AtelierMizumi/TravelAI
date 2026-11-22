@@ -28,12 +28,12 @@ export default function Settings() {
               width: 48,
               height: 48,
               borderRadius: 16,
-              backgroundColor: "#eaf2ff",
+              backgroundColor: "#e2f3fc",
               alignItems: "center",
               justifyContent: "center",
             }}
           >
-            <Ionicons name="person-outline" size={24} color="#2563eb" />
+            <Ionicons name="person-outline" size={24} color="#087fba" />
           </View>
           <View>
             <Text style={ui.heading}>{user?.name}</Text>
@@ -47,7 +47,7 @@ export default function Settings() {
       </Card>
       <Card>
         <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
-          <Ionicons name="shield-checkmark-outline" size={24} color="#2563eb" />
+          <Ionicons name="shield-checkmark-outline" size={24} color="#087fba" />
           <Text style={ui.heading}>Mật khẩu và bảo mật</Text>
         </View>
         <Field
