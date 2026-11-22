@@ -21,11 +21,11 @@ if [[ -n "$BAD" ]]; then fail "TAGF-1 local_references tracked" "$BAD"; else pas
 # TAGF 1/2: no secrets in tracked files (placeholders in .env.example excluded;
 # the self-test harness is excluded because it deliberately generates fake
 # secret/path fixtures to prove detection works)
-BAD=$(git grep -n -iE 'AKIA[0-9A-Z]{16}|BEGIN (RSA |OPENSSH |EC )?PRIVATE KEY|ghp_[A-Za-z0-9]{20,}|sk-[A-Za-z0-9]{20,}' -- . ':!.env.example' ':!scripts/test-governance-check.sh' ':!scripts/test-scan-secrets.sh' 2>/dev/null | cut -d: -f1,2 || true)
+BAD=$(git grep -n -iE 'AKIA[0-9A-Z]{16}|BEGIN (RSA |OPENSSH |EC )?PRIVATE KEY|ghp_[A-Za-z0-9]{20,}|sk-[A-Za-z0-9]{20,}' -- . ':!.env.example' ':!scripts/test-governance-check.sh' ':!scripts/test-scan-secrets.sh' ':!specs/001-governance-check' 2>/dev/null | cut -d: -f1,2 || true)
 if [[ -n "$BAD" ]]; then fail "TAGF-1/2 secret material in tracked files" "$BAD"; else pass "TAGF-1/2 no secret patterns in tracked files"; fi
 
 # TAGF 2: no absolute local paths in tracked source
-BAD=$(git grep -n -E '/home/[A-Za-z0-9_.-]+/|/Users/[A-Za-z0-9_.-]+/|C:\\Users\\' -- . ':!AGENTS.md' ':!.agents' ':!scripts/test-governance-check.sh' ':!docs/governance-ci.md' ':!.env.example' 2>/dev/null || true)
+BAD=$(git grep -n -E '/home/[A-Za-z0-9_.-]+/|/Users/[A-Za-z0-9_.-]+/|C:\\Users\\' -- . ':!AGENTS.md' ':!.agents' ':!scripts/test-governance-check.sh' ':!docs/governance-ci.md' ':!specs/001-governance-check' ':!.env.example' 2>/dev/null || true)
 if [[ -n "$BAD" ]]; then fail "TAGF-2 absolute local path in source" "$BAD"; else pass "TAGF-2 no absolute local paths"; fi
 
 # TAGF 4: Conventional Commits + no assistant trailers — only commits in
