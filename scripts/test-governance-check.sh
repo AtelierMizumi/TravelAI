@@ -80,7 +80,7 @@ TMP2="$(mktemp -d)"
 (
   cd "$TMP2" && git init -q && git config user.email t@example.com && git config user.name T && git config commit.gpgsign false
   mkdir -p scripts && cp "$CHECK_SRC" scripts/governance-check.sh
-  printf -- '-----BEGIN PRIVATE KEY-----\nabc\n' > scripts/test-scan-secrets.sh
+  printf -- '-----BEGIN PRIVATE %s-----\nabc\n' KEY > scripts/test-scan-secrets.sh
   printf '# key file, e.g. /home/you/secrets/sa.json\n' > .env.example
   git add -A
   bash scripts/governance-check.sh >/dev/null 2>&1

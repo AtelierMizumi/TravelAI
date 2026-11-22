@@ -87,6 +87,7 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm test
+      - run: npm run test:components
       - run: npx tsc --noEmit
       - name: Export web bundle
         env:
