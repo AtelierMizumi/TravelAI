@@ -25,8 +25,7 @@ await page.route(`${origin}/ai/detect`, (route) => route.fulfill({ json: predict
 await page.route(`${origin}/api/places`, (route) => route.fulfill({ json: places }));
 await page.route(`${origin}/api/**`, (route) => (route.request().url().endsWith('/places') ? route.fallback() : route.fulfill({ status: 401, json: {} })));
 
-await page.goto(base, { waitUntil: 'networkidle' });
-await page.getByText('AI nhận diện', { exact: true }).first().click();
+await page.goto(`${base}/ai-detection`, { waitUntil: 'networkidle' });
 await page.waitForTimeout(1500);
 const [chooser] = await Promise.all([
   page.waitForEvent('filechooser'),
