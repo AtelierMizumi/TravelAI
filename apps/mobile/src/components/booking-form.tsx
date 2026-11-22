@@ -1,3 +1,5 @@
+import { DateField } from "@/components/date-field";
+import { validStay } from "@/services/calendar";
 import { useRealtime } from "@/hooks/use-realtime";
 import { operationAttempt } from "@/services/attempt";
 import { router } from "expo-router";
@@ -25,6 +27,7 @@ export function BookingForm({
   current?: Booking;
 }) {
   const old = current?.itinerary.selection;
+  const [now] = useState(() => Date.now());
   const [departure, setDeparture] = useState(old?.departure || "");
   const [checkIn, setCheckIn] = useState(old?.checkIn || "");
   const [checkOut, setCheckOut] = useState(old?.checkOut || "");
@@ -104,7 +107,9 @@ export function BookingForm({
       />
       {offer.kind === "TOUR" ? (
         <>
-          {offer.departures?.map((item) => (
+          <Text style={ui.label}>Lịch khởi hành có thể chọn</Text>
+          <Text style={ui.text}>Chọn một ngày để xem giá và tình trạng giữ chỗ. Giá dưới đây là SIMULATED VND.</Text>
+          {offer.departures?.filter(item => new Date(item.start).getTime() > now).map((item) => (
             <Action
               key={item.start}
               secondary={departure !== item.start}
@@ -152,18 +157,14 @@ export function BookingForm({
         </>
       ) : (
         <>
-          <Field
-            label="Ngày nhận phòng (YYYY-MM-DD)"
-            value={checkIn}
-            onChangeText={setCheckIn}
-            placeholder="YYYY-MM-DD"
-          />
-          <Field
-            label="Ngày trả phòng (YYYY-MM-DD)"
-            value={checkOut}
-            onChangeText={setCheckOut}
-            placeholder="YYYY-MM-DD"
-          />
+          <DateField label="Ngày nhận phòng" value={checkIn} min={new Date().toLocaleDateString("sv-SE", { timeZone: "Asia/Ho_Chi_Minh" })} onChange={(value) => {
+            setCheckIn(value);
+            if (checkOut && checkOut <= value) setCheckOut("");
+            setRoomGuests({});
+            setPairs({});
+          }} />
+          <DateField label="Ngày trả phòng" value={checkOut} min={checkIn || new Date().toLocaleDateString("sv-SE", { timeZone: "Asia/Ho_Chi_Minh" })} onChange={(value) => { setCheckOut(value); setRoomGuests({}); setPairs({}); }} />
+          {!!checkIn && !!checkOut && !validStay(checkIn, checkOut) && <Text style={ui.error}>Ngày trả phòng phải sau ngày nhận phòng ít nhất một đêm.</Text>}
           <Text style={ui.text}>
             Nhận phòng {offer.checkInTime}, trả phòng {offer.checkOutTime}, múi
             giờ Asia/Ho_Chi_Minh. Server kiểm tra từng đêm phòng trước khi tạo
@@ -174,12 +175,12 @@ export function BookingForm({
               <View style={ui.row}>
                 <Switch
                   value={room.id in roomGuests}
-                  disabled={roomOccupied(room.id)}
+                  disabled={!validStay(checkIn, checkOut) || roomOccupied(room.id)}
                   accessibilityLabel={`Chọn phòng ${room.number}`}
                   onValueChange={(selected) => {
                     setRoomGuests((value) => {
                       const next = { ...value };
-                      if (selected) next[room.id] = 0;
+                      if (selected) next[room.id] = Math.min(room.maxGuests, Math.max(1, Number(guests) - Object.values(value).reduce((sum, count) => sum + count, 0)));
                       else delete next[room.id];
                       return next;
                     });
@@ -253,7 +254,8 @@ export function BookingForm({
       <Action
         title="Kiểm tra chỗ và xem lại thanh toán"
         disabled={
-          action.busy || !Number.isInteger(Number(guests)) || Number(guests) < 1
+          action.busy || availability.loading || !Number.isInteger(Number(guests)) || Number(guests) < 1 ||
+          (offer.kind === "TOUR" ? !selectedDeparture : !validStay(checkIn, checkOut) || Object.keys(roomGuests).length === 0 || Object.entries(roomGuests).some(([id, value]) => !Number.isInteger(value) || value < 1 || value > (offer.rooms?.find(room => room.id === id)?.maxGuests || 0)) || Object.values(roomGuests).reduce((sum, count) => sum + count, 0) !== Number(guests))
         }
         onPress={() => action.run(review)}
       />

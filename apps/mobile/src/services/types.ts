@@ -1,3 +1,10 @@
+export interface ImmersiveScene {
+  label: string;
+  panoramaUrl: string;
+  attribution: string;
+  sourceUrl: string;
+  category: "area" | "building" | "room";
+}
 export interface User {
   id: number;
   name: string;
@@ -8,6 +15,9 @@ export interface User {
   avatar: string;
 }
 export interface Place {
+  scenes?: ImmersiveScene[];
+  latitude?: number;
+  longitude?: number;
   id: number;
   name: string;
   description: string;
@@ -17,6 +27,7 @@ export interface Place {
   imageAttribution?: string | null;
 }
 export interface CatalogItem {
+  scenes?: ImmersiveScene[];
   id: number;
   name: string;
   location: string;

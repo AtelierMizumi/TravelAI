@@ -42,3 +42,18 @@ test('changing resource scope clears retained data before revalidation completes
   await waitFor(() => expect(screen.getByText('Loading changed scope')).toBeTruthy());
   expect(screen.queryByText('Previous scope')).toBeNull();
 });
+
+function IdentityResource() {
+  const { owner = 'one' } = useLocalSearchParams<{ owner: string }>();
+  const result = useResource<{ name: string }>('/synthetic/private', 0, true, owner);
+  return <Text>{result.data?.name || 'Loading other identity'}</Text>;
+}
+test('changing identity scope clears retained data even when the path is unchanged', async () => {
+  request.mockReset();
+  request.mockResolvedValueOnce({ name: 'First identity data' }).mockImplementation(() => new Promise(() => {}));
+  await renderRouter({ index: IdentityResource });
+  await waitFor(() => expect(screen.getByText('First identity data')).toBeTruthy());
+  await testRouter.navigate('/?owner=two');
+  await waitFor(() => expect(screen.getByText('Loading other identity')).toBeTruthy());
+  expect(screen.queryByText('First identity data')).toBeNull();
+});

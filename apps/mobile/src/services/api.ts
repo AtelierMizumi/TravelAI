@@ -2,6 +2,7 @@ import Constants from "expo-constants";
 import { randomUUID } from "expo-crypto";
 import { Platform } from "react-native";
 import { requestJson } from "./transport";
+import { resolveBackendUrl } from "./backend-url";
 export { ApiError } from "./transport";
 
 let token: string | null = null;
@@ -16,14 +17,13 @@ export function onSessionExpired(callback: () => void) {
   expired = callback;
 }
 export function apiBaseUrl() {
-  const configured = process.env.EXPO_PUBLIC_API_URL?.trim();
-  if (configured) return configured.replace(/\/$/, "");
-  if (Platform.OS === "web")
-    return `${window.location.protocol}//${window.location.hostname}:8080/api`;
-  const host = Constants.expoConfig?.hostUri;
-  if (host) return `http://${new URL(`http://${host}`).hostname}:8080/api`;
-  throw new Error("Cần cấu hình EXPO_PUBLIC_API_URL cho backend.");
+  return resolveBackendUrl({
+    configured: process.env.EXPO_PUBLIC_API_URL,
+    webOrigin: Platform.OS === "web" ? window.location.origin : undefined,
+    expoHost: Constants.expoConfig?.hostUri,
+  });
 }
+
 export async function api<T>(
   path: string,
   options: {

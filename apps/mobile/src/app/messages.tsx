@@ -10,6 +10,7 @@ import {
   Card,
   ErrorText,
   Field,
+  SearchBar,
   Nav,
   Screen,
   ui,
@@ -66,7 +67,8 @@ export default function Messages() {
           people.error || inbox.error || conversation.error || action.error
         }
       />
-      <Field label="Tìm người dùng" value={search} onChangeText={setSearch} />
+      <Text style={ui.text}>Tìm bạn đồng hành hoặc mở cuộc trò chuyện gần đây.</Text>
+      <SearchBar loading={people.loading} label="Tìm người dùng" value={search} onChangeText={setSearch} />
       {people.data
         ?.filter((person) => person.id !== user?.id)
         .map((person) => (
@@ -88,7 +90,7 @@ export default function Messages() {
         <Card>
           <View style={msgStyles.header}>
             <View style={msgStyles.avatar}>
-              <Ionicons name="person" size={23} color="#2563eb" />
+              <Ionicons name="person" size={23} color="#087fba" />
             </View>
             <View>
               <Text style={ui.heading}>
@@ -97,29 +99,22 @@ export default function Messages() {
               <Text style={msgStyles.meta}>Tin nhắn riêng tư</Text>
             </View>
           </View>
-          {conversation.data?.map((message) => (
-            <View
-              key={message.id}
-              style={[
-                msgStyles.bubble,
-                {
-                  backgroundColor:
-                    message.senderId === user?.id ? "#e6efff" : "#f2f5f9",
-                  alignSelf:
-                    message.senderId === user?.id ? "flex-end" : "flex-start",
-                  minWidth: 200,
-                  maxWidth: "90%",
-                },
-              ]}
-            >
-              <Text style={ui.label}>{message.senderName}</Text>
-              {isVoice(message.content) ? (
-                <VoicePlayer content={message.content} />
-              ) : (
-                <Text style={ui.text}>{message.content}</Text>
-              )}
-            </View>
-          ))}
+          {conversation.data?.map((message) => {
+            const own = message.senderId === user?.id;
+            const avatar = own ? user?.avatar : people.data?.find(person => person.id === message.senderId)?.avatar;
+            const portrait = <View style={msgStyles.messageAvatar}>
+              {avatar ? <Image source={avatar} accessibilityLabel={own ? "Ảnh đại diện của bạn" : `Ảnh đại diện ${message.senderName}`} style={{ width: 28, height: 28, borderRadius: 14 }} /> : <Text style={{ color: "#17678e", fontSize: 12, fontWeight: "700" }}>{message.senderName?.trim().charAt(0).toUpperCase() || "?"}</Text>}
+            </View>;
+            return <View key={message.id} testID={`message-${message.id}`} style={{ flexDirection: "row", alignItems: "flex-end", justifyContent: own ? "flex-end" : "flex-start", gap: 8, width: "100%" }}>
+              {!own && portrait}
+              <View style={[msgStyles.bubble, { backgroundColor: own ? "#0879ad" : "#edf5fb", borderBottomLeftRadius: own ? 18 : 5, borderBottomRightRadius: own ? 5 : 18, minWidth: 0, maxWidth: "82%" }]}>
+                <Text style={[ui.label, { color: own ? "#e2f5ff" : "#246182", fontSize: 12 }]}>{own ? "Bạn" : message.senderName}</Text>
+                {isVoice(message.content) ? <VoicePlayer content={message.content} /> : <Text style={[ui.text, { color: own ? "#ffffff" : "#173e59", lineHeight: 23 }]}>{message.content}</Text>}
+                <Text style={[msgStyles.meta, { color: own ? "#e0f3ff" : "#526c80", alignSelf: "flex-end", fontSize: 11 }]}>{new Date(message.createdAt).toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit" })}</Text>
+              </View>
+              {own && portrait}
+            </View>;
+          })}
           <Field
             label="Tin nhắn mới"
             multiline
@@ -218,7 +213,7 @@ function PersonRow({ person, userId }: { person: User; userId: number }) {
             <Image source={{ uri: person.avatar }} style={msgStyles.avatar} />
           ) : (
             <View style={msgStyles.avatar}>
-              <Ionicons name="person" size={22} color="#2563eb" />
+              <Ionicons name="person" size={22} color="#087fba" />
             </View>
           )}
           <Text style={ui.label}>{person.name}</Text>
@@ -261,12 +256,13 @@ const msgStyles = StyleSheet.create({
     width: 44,
     height: 44,
     borderRadius: 22,
-    backgroundColor: "#eaf2ff",
+    backgroundColor: "#e2f3fc",
     alignItems: "center",
     justifyContent: "center",
   },
-  meta: { fontSize: 12, color: "#94a3b8" },
-  bubble: { borderRadius: 18, padding: 12, gap: 5 },
+  meta: { fontSize: 12, color: "#788475" },
+  bubble: { borderRadius: 18, paddingVertical: 10, paddingHorizontal: 14, gap: 4 },
+  messageAvatar: { width: 28, height: 28, borderRadius: 14, backgroundColor: "#e0f0fa", alignItems: "center", justifyContent: "center", overflow: "hidden" },
   personRow: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -279,5 +275,5 @@ const msgStyles = StyleSheet.create({
     gap: 10,
     flexGrow: 1,
   },
-  follow: { color: "#2563eb", fontWeight: "700" },
+  follow: { color: "#087fba", fontWeight: "700" },
 });

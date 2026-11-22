@@ -101,9 +101,9 @@ interface LegacyBooking {
 export default function Profile() {
   const { user, signOut } = useAuth();
   const [tab, setTab] = useState("trips");
-  const bookings = useResource<Booking[]>(user ? "/booking/bookings" : null, 0, true);
-  const bank = useResource<Bank>(user ? "/booking/bank" : null, 0, true);
-  const posts = useResource<Post[]>(user ? `/posts/user/${user.id}` : null, 0, true);
+  const bookings = useResource<Booking[]>(user ? "/booking/bookings" : null, 0, true, user?.id);
+  const bank = useResource<Bank>(user ? "/booking/bank" : null, 0, true, user?.id);
+  const posts = useResource<Post[]>(user ? `/posts/user/${user.id}` : null, 0, true, user?.id);
   const tours = useResource<LegacyBooking[]>(
     user ? `/tour-bookings/user/${user.id}` : null, 0, true);
   const hotels = useResource<LegacyBooking[]>(

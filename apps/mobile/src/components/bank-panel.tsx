@@ -70,10 +70,11 @@ export function BankPanel({
               autoCapitalize="characters"
             />
             <Field
-              label="Mã kiểm tra TEST-… SIMULATED"
+              label="Mã kiểm tra 3 chữ số SIMULATED"
               value={testCvv}
               onChangeText={setTestCvv}
               autoCapitalize="none"
+              placeholder="3 chữ số được cấp, hoặc mã TEST-… cũ"
               secureTextEntry
             />
             <ErrorText message={action.error} />
@@ -82,14 +83,14 @@ export function BankPanel({
               disabled={
                 action.busy ||
                 !bankName ||
-                !accountNumber.startsWith("SIM-MC-") ||
-                !testCvv.startsWith("TEST-")
+                !accountNumber.trim().startsWith("SIM-MC-") ||
+                !(/^[0-9]{3}$/.test(testCvv.trim()) || testCvv.trim().startsWith("TEST-"))
               }
               onPress={() =>
                 action.run(async () => {
                   await api("/booking/bank/link", {
                     method: "POST",
-                    body: { bankName, accountNumber, testCvv },
+                    body: { bankName, accountNumber: accountNumber.trim(), testCvv: testCvv.trim() },
                   });
                   setTestCvv("");
                   setAccountNumber("");

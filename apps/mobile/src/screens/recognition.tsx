@@ -1,12 +1,14 @@
+import { MotionEntry } from "@/components/motion-entry";
+import { MotionScroll } from "@/components/motion-scroll";
 import { Image } from "expo-image";
 import { Ionicons } from "@expo/vector-icons";
-import { Link } from "expo-router";
+import { Link, useFocusEffect } from "expo-router";
 import { api } from "@/services/api";
 import type { Place } from "@/services/types";
 import * as Linking from "expo-linking";
 import * as ImagePicker from "expo-image-picker";
 import { ImageManipulator, SaveFormat } from "expo-image-manipulator";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Platform,
@@ -17,24 +19,17 @@ import {
   Text,
   View,
 } from "react-native";
-import Animated, {
-  Extrapolation,
-  FadeInUp,
-  interpolate,
-  useAnimatedScrollHandler,
-  useAnimatedStyle,
-  useReducedMotion,
-  useSharedValue,
-} from "react-native-reanimated";
+
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+import { CapturePhoto } from "@/components/capture-photo";
 import { LiveScan } from "@/components/live-scan";
 import { recognizeImage, type RecognitionResult } from "@/services/recognition";
 import { searchPlaces } from "@/services/place-search";
 import { suggestedPlaceQuery } from "@/services/suggestion";
 import { prepareWebImage } from "@/services/webImage";
 
-async function prepareNativeImage(asset: ImagePicker.ImagePickerAsset): Promise<string> {
+async function prepareNativeImage(asset: { uri: string; width: number; height: number }): Promise<string> {
   const context = ImageManipulator.manipulate(asset.uri);
   if (Math.max(asset.width, asset.height) > 1600) {
     context.resize(asset.width >= asset.height ? { width: 1600 } : { height: 1600 });
@@ -59,66 +54,37 @@ export default function RecognitionScreen() {
   const [placeError, setPlaceError] = useState("");
   const [placesBusy, setPlacesBusy] = useState(false);
   const [showLiveScan, setShowLiveScan] = useState(false);
-  const reducedMotion = useReducedMotion();
-  const scrollY = useSharedValue(0);
-  const onScroll = useAnimatedScrollHandler((event) => {
-    scrollY.value = event.contentOffset.y;
-  });
-  const headingMotion = useAnimatedStyle(() =>
-    reducedMotion
-      ? {}
-      : {
-          opacity: interpolate(
-            scrollY.value,
-            [0, 140],
-            [1, 0.55],
-            Extrapolation.CLAMP,
-          ),
-          transform: [
-            {
-              translateY: interpolate(
-                scrollY.value,
-                [0, 140],
-                [0, -8],
-                Extrapolation.CLAMP,
-              ),
-            },
-          ],
-        },
-  );
+  const [showCamera, setShowCamera] = useState(false);
   const pending = useRef<AbortController | null>(null);
 
   useEffect(() => () => pending.current?.abort(), []);
+  useFocusEffect(useCallback(() => () => {
+    pending.current?.abort();
+    setShowCamera(false);
+    setShowLiveScan(false);
+  }, []));
 
-  async function chooseImage(camera: boolean) {
+  async function chooseImage() {
     if (busy) return;
     setBusy(true);
     setError("");
     try {
-      if (camera) {
-        const permission = await ImagePicker.requestCameraPermissionsAsync();
-        if (!permission.granted)
-          throw new Error(
-            "Cần quyền camera để chụp ảnh. Bạn có thể chọn ảnh từ thư viện.",
-          );
-      }
-      const selection = camera
-        ? await ImagePicker.launchCameraAsync({
-            mediaTypes: ["images"],
-            quality: 0.85,
-          })
-        : await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ["images"],
-            quality: 0.85,
-          });
+      const selection = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ["images"], quality: 0.85 });
       if (selection.canceled) return;
       const asset = selection.assets[0];
+      await prepareImage(asset.uri, asset.width, asset.height);
+    } catch (failure) {
+      setError(failure instanceof Error ? failure.message : "Không mở được ảnh.");
+    } finally { setBusy(false); }
+  }
+
+  async function prepareImage(imageUri: string, width: number, height: number) {
       // Browsers shrink the photo straight into a small canvas (large photos broke the generic
       // manipulator); native normalizes HEIC and other phone formats to the server's JPEG.
       const preparedUri =
         Platform.OS === "web"
-          ? await prepareWebImage(asset.uri)
-          : await prepareNativeImage(asset);
+          ? await prepareWebImage(imageUri)
+          : await prepareNativeImage({ uri: imageUri, width, height });
       setUri(preparedUri);
       setConsent(false);
       setResult(null);
@@ -126,13 +92,6 @@ export default function RecognitionScreen() {
       setSelectedPlace(null);
       setManualOpen(false);
       setPlaceQuery("");
-    } catch (failure) {
-      setError(
-        failure instanceof Error ? failure.message : "Không mở được ảnh.",
-      );
-    } finally {
-      setBusy(false);
-    }
   }
 
   async function recognize() {
@@ -207,33 +166,31 @@ export default function RecognitionScreen() {
   }
 
   return (
-    <Animated.ScrollView
+    <MotionScroll
       style={styles.screen}
-      onScroll={onScroll}
-      scrollEventThrottle={16}
       contentContainerStyle={[
         styles.content,
         { paddingTop: insets.top + 24, paddingBottom: insets.bottom + 100 },
       ]}
     >
-      <View style={styles.hero}>
+      <MotionEntry section="detection-intro"><View style={styles.hero}>
         <View style={styles.heroIcon}>
-          <Ionicons name="sparkles" size={28} color="#2563eb" />
+          <Ionicons name="sparkles" size={28} color="#087fba" />
         </View>
-        <Animated.View
-          entering={reducedMotion ? undefined : FadeInUp.duration(450)}
+        <View
+
         >
-          <Animated.Text style={[styles.heading, headingMotion]}>
+          <Text style={styles.heading}>
             Khám phá qua hình ảnh
-          </Animated.Text>
-        </Animated.View>
+          </Text>
+        </View>
         <Text style={styles.body}>
           Một bức ảnh có thể mở ra cả hành trình. Chọn ảnh hoặc chụp một địa
           điểm để TravelAI giúp bạn khám phá.
         </Text>
       </View>
-      <View style={styles.upload}>
-        <Ionicons name="images-outline" size={36} color="#2563eb" />
+      </MotionEntry><MotionEntry section="detection-upload"><View style={styles.upload}>
+        <Ionicons name="images-outline" size={36} color="#087fba" />
         <Text style={styles.title}>Bắt đầu với một bức ảnh</Text>
         <Text style={styles.helper}>
           Ảnh địa danh, thiên nhiên, món ăn hoặc vật phẩm văn hóa
@@ -243,7 +200,7 @@ export default function RecognitionScreen() {
             accessibilityRole="button"
             style={styles.primary}
             disabled={busy}
-            onPress={() => chooseImage(false)}
+            onPress={() => chooseImage()}
           >
             <Ionicons name="image-outline" size={20} color="#fff" />
             <Text style={styles.primaryText}>Chọn ảnh từ thiết bị</Text>
@@ -252,13 +209,14 @@ export default function RecognitionScreen() {
             accessibilityRole="button"
             style={styles.secondary}
             disabled={busy}
-            onPress={() => chooseImage(true)}
+            onPress={() => { setShowLiveScan(false); setShowCamera(true); }}
           >
-            <Ionicons name="camera-outline" size={20} color="#2563eb" />
-            <Text style={styles.secondaryText}>Chụp ảnh</Text>
+            <Ionicons name="camera-outline" size={20} color="#087fba" />
+            <Text style={styles.secondaryText}>Mở camera chụp ngay</Text>
           </Pressable>
         </View>
       </View>
+      </MotionEntry>{showCamera && <CapturePhoto onSelect={prepareImage} onClose={() => setShowCamera(false)} />}
       {uri && (
         <Image
           source={{ uri }}
@@ -375,13 +333,13 @@ export default function RecognitionScreen() {
         style={styles.secondary}
         onPress={() => setShowLiveScan(!showLiveScan)}
       >
-        <Ionicons name="scan-outline" size={20} color="#2563eb" />
+        <Ionicons name="scan-outline" size={20} color="#087fba" />
         <Text style={styles.secondaryText}>
           {showLiveScan ? "Đóng quét camera" : "Quét camera trực tiếp"}
         </Text>
       </Pressable>
       {showLiveScan && <LiveScan />}
-    </Animated.ScrollView>
+    </MotionScroll>
   );
 }
 
@@ -391,7 +349,7 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 18,
-    backgroundColor: "#e6efff",
+    backgroundColor: "#e4ecdc",
     alignItems: "center",
     justifyContent: "center",
   },
@@ -401,11 +359,11 @@ const styles = StyleSheet.create({
     padding: 32,
     borderWidth: 1.5,
     borderStyle: "dashed",
-    borderColor: "#a9c5f7",
+    borderColor: "#a4baa0",
     borderRadius: 24,
     backgroundColor: "#fff",
   },
-  helper: { color: "#94a3b8", textAlign: "center", lineHeight: 21 },
+  helper: { color: "#788475", textAlign: "center", lineHeight: 21 },
   primary: {
     minHeight: 52,
     borderRadius: 14,
@@ -414,7 +372,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: 9,
-    backgroundColor: "#2563eb",
+    backgroundColor: "#087fba",
   },
   primaryText: { color: "#fff", fontWeight: "800", fontSize: 15 },
   secondary: {
@@ -425,10 +383,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: 9,
-    backgroundColor: "#eff5ff",
+    backgroundColor: "#edf2e6",
   },
-  secondaryText: { color: "#2563eb", fontWeight: "700", fontSize: 15 },
-  screen: { flex: 1, backgroundColor: "#f8fafc" },
+  secondaryText: { color: "#087fba", fontWeight: "700", fontSize: 15 },
+  screen: { flex: 1, backgroundColor: "#f2f8fc" },
   content: {
     paddingHorizontal: 24,
     gap: 20,
@@ -436,8 +394,8 @@ const styles = StyleSheet.create({
     width: "100%",
     alignSelf: "center",
   },
-  heading: { fontSize: 28, fontWeight: "700", color: "#0f172a" },
-  title: { fontSize: 22, fontWeight: "600", color: "#0f172a" },
+  heading: { fontSize: 28, fontWeight: "700", color: "#103c5b" },
+  title: { fontSize: 22, fontWeight: "600", color: "#103c5b" },
   body: { fontSize: 16, lineHeight: 25, color: "#475569" },
   actions: {
     flexDirection: "row",
@@ -455,9 +413,9 @@ const styles = StyleSheet.create({
   permissionText: { flex: 1, color: "#475569", lineHeight: 23 },
   result: { padding: 20, backgroundColor: "#fff", borderRadius: 16, gap: 12 },
   picker: { gap: 10, paddingTop: 8 },
-  input: { borderWidth: 1, borderColor: "#cbd5e1", borderRadius: 12, padding: 12, color: "#0f172a", backgroundColor: "#fff" },
+  input: { borderWidth: 1, borderColor: "#cbd5e1", borderRadius: 12, padding: 12, color: "#103c5b", backgroundColor: "#fff" },
   placeOption: { padding: 12, borderRadius: 12, backgroundColor: "#f1f5f9" },
-  placeSelected: { backgroundColor: "#dbeafe", borderWidth: 1, borderColor: "#2563eb" },
-  status: { color: "#1d4ed8", fontWeight: "600" },
+  placeSelected: { backgroundColor: "#e0ebce", borderWidth: 1, borderColor: "#087fba" },
+  status: { color: "#075782", fontWeight: "600" },
   error: { color: "#b91c1c", lineHeight: 24 },
 });

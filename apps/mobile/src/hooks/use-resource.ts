@@ -2,11 +2,12 @@ import { useCallback, useRef, useState } from "react";
 import { useFocusEffect } from "expo-router";
 import { api } from "@/services/api";
 
-export function useResource<T>(path: string | null, pollMs = 0, retainOnFocus = false) {
+/** `scope` identifies who the data belongs to (for example the signed-in user id); retained data is dropped when it changes. */
+export function useResource<T>(path: string | null, pollMs = 0, retainOnFocus = false, scope: string | number | null = null) {
   const [data, setData] = useState<T | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const previousPath = useRef<string | null | undefined>(undefined);
+  const previousKey = useRef<string | null | undefined>(undefined);
   const refresh = useRef<() => void>(() => {});
   const reload = useCallback(() => refresh.current(), []);
   useFocusEffect(
@@ -14,8 +15,9 @@ export function useResource<T>(path: string | null, pollMs = 0, retainOnFocus = 
       const controller = new AbortController();
       let pending = false;
       let refreshRequested = false;
-      if (!retainOnFocus || previousPath.current !== path) setData(null);
-      previousPath.current = path;
+      const key = path === null ? null : `${scope ?? ""}|${path}`;
+      if (!retainOnFocus || previousKey.current !== key) setData(null);
+      previousKey.current = key;
       if (!path) return () => controller.abort();
       async function load() {
         if (pending) {
@@ -58,7 +60,7 @@ export function useResource<T>(path: string | null, pollMs = 0, retainOnFocus = 
         clearInterval(interval);
         refresh.current = () => {};
       };
-    }, [path, pollMs, retainOnFocus]),
+    }, [path, pollMs, retainOnFocus, scope]),
   );
   return { data, error, loading, reload };
 }

@@ -23,7 +23,7 @@ export function MapsLink({ destination }: { destination: string }) {
         onPress={() => void open()}
         style={styles.button}
       >
-        <Ionicons name="navigate-outline" size={18} color="#2563eb" />
+        <Ionicons name="navigate-outline" size={18} color="#087fba" />
         <Text style={styles.text}>Chỉ đường bằng Google Maps</Text>
       </Pressable>
       {!!error && (
@@ -40,10 +40,10 @@ const styles = StyleSheet.create({
     gap: 8,
     alignItems: "center",
     alignSelf: "flex-start",
-    backgroundColor: "#edf4ff",
+    backgroundColor: "#e2f3fc",
     padding: 12,
     borderRadius: 12,
   },
-  text: { color: "#2563eb", fontWeight: "700" },
+  text: { color: "#087fba", fontWeight: "700" },
   error: { color: "#b91c1c", marginTop: 8 },
 });

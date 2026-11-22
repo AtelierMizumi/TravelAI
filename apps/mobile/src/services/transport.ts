@@ -37,7 +37,9 @@ export async function requestJson<T>(
     if (options.signal?.aborted || error instanceof ApiError) throw error;
     throw new ApiError(
       controller.signal.aborted
-        ? "Backend phản hồi quá lâu. Nếu đã gửi thanh toán, thử lại cùng yêu cầu để truy vấn kết quả."
+        ? new URL(url).pathname.endsWith("/auth/login")
+          ? "Đăng nhập phản hồi quá lâu. Kiểm tra kết nối Wi-Fi và địa chỉ backend rồi thử lại."
+          : "Backend phản hồi quá lâu. Nếu đã gửi thanh toán, thử lại cùng yêu cầu để truy vấn kết quả."
         : "Không kết nối được backend. Kiểm tra địa chỉ server và kết nối mạng.",
       0,
     );
