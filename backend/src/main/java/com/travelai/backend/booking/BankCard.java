@@ -9,6 +9,8 @@ class BankCard {
     @Id String id;
     @Column(nullable=false) String accountId;
     @Column(nullable=false, unique=true) String syntheticId;
+    @Column(columnDefinition="TEXT") @com.fasterxml.jackson.annotation.JsonIgnore String encryptedSyntheticId;
+    @Column(unique=true, length=64) @com.fasterxml.jackson.annotation.JsonIgnore String identifierLookup;
     @com.fasterxml.jackson.annotation.JsonIgnore String cvvHash;
     @Column(nullable=false) String bankName;
     @Column(nullable=false) boolean linked;

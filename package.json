@@ -8,6 +8,9 @@
     "ios": "npm --prefix apps/mobile run ios",
     "check": "npm --prefix apps/mobile run lint && npm --prefix apps/mobile run typecheck && npm --prefix apps/mobile test",
     "dev": "bash scripts/dev.sh app",
-    "dev:web": "bash scripts/dev.sh web"
+    "dev:web": "bash scripts/dev.sh web",
+    "demo:web": "TRAVELAI_SKIP_AI=1 bash scripts/dev.sh web",
+    "demo:mobile": "TRAVELAI_SKIP_AI=1 bash scripts/dev.sh app",
+    "demo:tunnel": "TRAVELAI_SKIP_AI=1 bash scripts/dev.sh tunnel"
   }
 }

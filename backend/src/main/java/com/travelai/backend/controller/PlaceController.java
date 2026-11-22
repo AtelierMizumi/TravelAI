@@ -39,6 +39,8 @@ public class PlaceController {
     @PutMapping("/{id}")
     public ResponseEntity<Place> update(@PathVariable Long id, @RequestBody Place request) {
         return repo.findById(id).map(place -> {
+            com.travelai.backend.catalog.SceneValidation.validate(request.getScenes());
+            if (request.getScenes() != null) place.setScenes(request.getScenes());
             place.setName(request.getName()); place.setDescription(request.getDescription()); place.setImageUrl(request.getImageUrl());
             if (request.getProvince() != null) place.setProvince(request.getProvince());
             return ResponseEntity.ok(repo.save(place));
@@ -47,6 +49,7 @@ public class PlaceController {
 
     @PostMapping
     public ResponseEntity<Place> add(@RequestBody Place place) {
+        com.travelai.backend.catalog.SceneValidation.validate(place.getScenes());
         return ResponseEntity.ok(repo.save(place));
     }
 

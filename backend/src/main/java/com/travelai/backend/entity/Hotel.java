@@ -28,4 +28,8 @@ public class Hotel {
 
     @Column(columnDefinition = "TEXT")
     private String image;
+    @ElementCollection(fetch = FetchType.EAGER)
+    @OrderColumn(name = "scene_order")
+    @Builder.Default
+    private java.util.List<ImmersiveScene> scenes = new java.util.ArrayList<>();
 }

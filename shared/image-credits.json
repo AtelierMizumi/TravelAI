@@ -42,5 +42,115 @@
     "artist": "<a rel=\"nofollow\" class=\"external text\" href=\"https://www.flickr.com/photos/rnugraha/\">Riza</a>",
     "credit": "<a rel=\"nofollow\" class=\"external text\" href=\"https://www.flickr.com/photos/rnugraha/3095172663/sizes/o/\">Flickr</a>",
     "sha256": "aa28ebe1dd641f03f67527748bce53f732d403a498299627af9e46ded4464fa5"
+  },
+  {
+    "code": "chua_cau_hoi_an",
+    "path": "/images/landmarks/chua_cau_hoi_an.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Cau_Nhat_Ban.jpg",
+    "downloadUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/c1/Cau_Nhat_Ban.jpg/960px-Cau_Nhat_Ban.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "license": "CC BY 1.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/1.0",
+    "artist": "User dalbera on Flickr",
+    "credit": "on Flickr <a rel=\"nofollow\" class=\"external free\" href=\"https://www.flickr.com/photos/dalbera/4401866381/\">https://www.flickr.com/photos/dalbera/4401866381/</a>",
+    "sha256": "4df3b44706b10bc13b910e4c93ad5d75bdc064ea30622d403f3158233a6e6bea"
+  },
+  {
+    "code": "chua_mot_cot",
+    "path": "/images/landmarks/chua_mot_cot.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:One_Pillar_Pagoda_Hanoi.jpg",
+    "downloadUrl": "https://upload.wikimedia.org/wikipedia/commons/9/90/One_Pillar_Pagoda_Hanoi.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail_unscaled",
+    "license": "CC BY 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/2.0",
+    "artist": "Staffan Scherz",
+    "credit": "<a rel=\"nofollow\" class=\"external free\" href=\"https://www.flickr.com/photos/staffanscherz/9054778241\">https://www.flickr.com/photos/staffanscherz/9054778241</a>",
+    "sha256": "f91bc889d0dc96d67d3ccd11d790fcb6de71568d04845ce0dabfbcafcae9cac6"
+  },
+  {
+    "code": "chua_tran_quoc",
+    "path": "/images/landmarks/chua_tran_quoc.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Ch%C3%B9a_Tr%E1%BA%A5n_Qu%E1%BB%91c,_H%C3%A0_N%E1%BB%99i.jpg",
+    "downloadUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/e5/Ch%C3%B9a_Tr%E1%BA%A5n_Qu%E1%BB%91c%2C_H%C3%A0_N%E1%BB%99i.jpg/960px-Ch%C3%B9a_Tr%E1%BA%A5n_Qu%E1%BB%91c%2C_H%C3%A0_N%E1%BB%99i.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "license": "CC BY-SA 2.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/2.0",
+    "artist": "<a rel=\"nofollow\" class=\"external text\" href=\"https://www.flickr.com/photos/70209763@N00\">Thang Nguyen</a>",
+    "credit": "originally posted to <b><a href=\"//commons.wikimedia.org/wiki/Flickr\" class=\"mw-redirect\" title=\"Flickr\">Flickr</a></b> as <a rel=\"nofollow\" class=\"external text\" href=\"https://www.flickr.com/photos/70209763@N00/263394339\">DSCF2931</a>",
+    "sha256": "c24704621ef77046b5b9f57ce59240f672fbd4b03ad3f777ec4a164c7a402371"
+  },
+  {
+    "code": "dinh_doc_lap",
+    "path": "/images/landmarks/dinh_doc_lap.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Dinh_%C4%90%E1%BB%99c_L%E1%BA%ADp_v%C3%A0o_n%C3%A0m_2024.jpg",
+    "downloadUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d0/Dinh_%C4%90%E1%BB%99c_L%E1%BA%ADp_v%C3%A0o_n%C3%A0m_2024.jpg/960px-Dinh_%C4%90%E1%BB%99c_L%E1%BA%ADp_v%C3%A0o_n%C3%A0m_2024.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "artist": "<a href=\"//commons.wikimedia.org/w/index.php?title=User:Yesvn123&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:Yesvn123 (page does not exist)\">Yesvn123</a>",
+    "credit": "<span class=\"int-own-work\" lang=\"en\">Own work</span>",
+    "sha256": "84016f4e3b64421040bcff759a352b07c4c9c7ac758c9cafa7924aeac8de1b55"
+  },
+  {
+    "code": "ho_hoan_kiem",
+    "path": "/images/landmarks/ho_hoan_kiem.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Hoan_Kiem_10082026.jpg",
+    "downloadUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/81/Hoan_Kiem_10082026.jpg/960px-Hoan_Kiem_10082026.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "license": "CC0",
+    "licenseUrl": "http://creativecommons.org/publicdomain/zero/1.0/deed.en",
+    "artist": "<a href=\"//commons.wikimedia.org/w/index.php?title=User:Chuhai07&amp;action=edit&amp;redlink=1\" class=\"new\" title=\"User:Chuhai07 (page does not exist)\">Chuhai07</a>",
+    "credit": "<span class=\"int-own-work\" lang=\"en\">Own work</span>",
+    "sha256": "23d608541e2dc3a465d83412f105b76eb6e19d6582500adda287da72363e02a3"
+  },
+  {
+    "code": "lang_khai_dinh",
+    "path": "/images/landmarks/lang_khai_dinh.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:L%C4%83ng_Kh%E1%BA%A3i_%C4%90%E1%BB%8Bnh_-_NKS.jpg",
+    "downloadUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/49/L%C4%83ng_Kh%E1%BA%A3i_%C4%90%E1%BB%8Bnh_-_NKS.jpg/960px-L%C4%83ng_Kh%E1%BA%A3i_%C4%90%E1%BB%8Bnh_-_NKS.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "license": "CC BY-SA 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0",
+    "artist": "<a href=\"//commons.wikimedia.org/wiki/User:NKSTTSSHNVN\" title=\"User:NKSTTSSHNVN\">NKSTTSSHNVN</a>",
+    "credit": "<span class=\"int-own-work\" lang=\"en\">Own work</span>",
+    "sha256": "3bdf78c2f41683f547bf67d966d51d6010e82b0be685403aa7aa90287311f3ef"
+  },
+  {
+    "code": "lang_tu_duc",
+    "path": "/images/landmarks/lang_tu_duc.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Annam_-_Hu%C3%A9_-_Pavillons_sur_le_bassin_fleuri_au_Tombeau_de_Tu-Duc.jpg",
+    "downloadUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/dd/Annam_-_Hu%C3%A9_-_Pavillons_sur_le_bassin_fleuri_au_Tombeau_de_Tu-Duc.jpg/960px-Annam_-_Hu%C3%A9_-_Pavillons_sur_le_bassin_fleuri_au_Tombeau_de_Tu-Duc.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "license": "Public domain",
+    "licenseUrl": "",
+    "artist": "Unknown author<span style=\"display: none;\">Unknown author</span>",
+    "credit": "<a rel=\"nofollow\" class=\"external free\" href=\"https://www.delcampe.net/en_US/collectibles/postcards/vietnam/asie-viet-nam-indochine-annam-hue-pavillons-sur-le-bassin-fleuri-au-tombeau-de-tu-duc-1805706280.html\">https://www.delcampe.net/en_US/collectibles/postcards/vietnam/asie-viet-nam-indochine-annam-hue-pavillons-sur-le-bassin-fleuri-au-tombeau-de-tu-duc-1805706280.html</a>",
+    "sha256": "a90da33d03154e779ef9c2a6a470f12969341b79c9f8cd20006f161b52cc2949"
+  },
+  {
+    "code": "ngu_hanh_son",
+    "path": "/images/landmarks/ngu_hanh_son.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Ngu_hanh_son_toan_canh.jpg",
+    "downloadUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/c/ce/Ngu_hanh_son_toan_canh.jpg/960px-Ngu_hanh_son_toan_canh.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "license": "Public domain",
+    "licenseUrl": "",
+    "artist": "<a href=\"https://vi.wikipedia.org/wiki/User:Viethavvh\" class=\"extiw\" title=\"vi:User:Viethavvh\">Viethavvh</a> at <a class=\"external text\" data-mw-original-href=\"http://vi.wikipedia.org\" href=\"https://vi.wikipedia.org\">vi.wikipedia</a>",
+    "credit": "<span class=\"int-own-work\" lang=\"en\">Own work</span><br>Transferred from <a class=\"external text\" data-mw-original-href=\"http://vi.wikipedia.org\" href=\"https://vi.wikipedia.org\">vi.wikipedia</a>",
+    "sha256": "af87f3b1f1eccf4840ebdaedcaee199edc5d4f9bbe7486885426fecee6f3a48b"
+  },
+  {
+    "code": "nha_tho_duc_ba",
+    "path": "/images/landmarks/nha_tho_duc_ba.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:Bas%C3%ADlica_de_Nuestra_Se%C3%B1ora,_Ciudad_Ho_Chi_Minh,_Vietnam,_2013-08-14,_DD_05.JPG",
+    "downloadUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/34/Bas%C3%ADlica_de_Nuestra_Se%C3%B1ora%2C_Ciudad_Ho_Chi_Minh%2C_Vietnam%2C_2013-08-14%2C_DD_05.JPG/960px-Bas%C3%ADlica_de_Nuestra_Se%C3%B1ora%2C_Ciudad_Ho_Chi_Minh%2C_Vietnam%2C_2013-08-14%2C_DD_05.JPG?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "license": "CC BY-SA 3.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by-sa/3.0",
+    "artist": "<bdi><a href=\"https://www.wikidata.org/wiki/Q28147777\" class=\"extiw\" title=\"d:Q28147777\"><span title=\"Spanish photographer\">Diego Delso</span></a></bdi>",
+    "credit": "<span class=\"int-own-work\" lang=\"en\">Own work</span>",
+    "sha256": "5a1480fe255ae344a3913aed83b4923e208aed91d04bf162f6730b5505c8989b"
+  },
+  {
+    "code": "thanh_dia_my_son",
+    "path": "/images/landmarks/thanh_dia_my_son.jpg",
+    "sourceUrl": "https://commons.wikimedia.org/wiki/File:2024_-_M%E1%BB%B9_S%C6%A1n_Group_B,_C_and_D_-_img_23.jpg",
+    "downloadUrl": "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/07/2024_-_M%E1%BB%B9_S%C6%A1n_Group_B%2C_C_and_D_-_img_23.jpg/960px-2024_-_M%E1%BB%B9_S%C6%A1n_Group_B%2C_C_and_D_-_img_23.jpg?utm_source=commons.wikimedia.org&utm_campaign=imageinfo&utm_content=thumbnail",
+    "license": "CC BY 4.0",
+    "licenseUrl": "https://creativecommons.org/licenses/by/4.0",
+    "artist": "<a href=\"//commons.wikimedia.org/wiki/User:Chainwit.\" title=\"User:Chainwit.\">Chainwit.</a>",
+    "credit": "<span class=\"int-own-work\" lang=\"en\">Own work</span>",
+    "sha256": "2368c6c426db71701a6a1967b27856170042236470974bbe8750df3cf451ecb7"
   }
 ]

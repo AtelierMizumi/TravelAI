@@ -427,4 +427,22 @@ class BookingTransactionsTest {
         ReviewInput stay=new ReviewInput(hotel,null,null,null,LocalDate.of(2026,6,1),LocalDate.of(2026,6,2),1,List.of(),Map.of("R1",1),Map.of());
         assertThrows(IllegalArgumentException.class, () -> service.review(traveler,stay,key()));
     }
+    @Test void bankUsesThreeDigitTestCodeAndEncryptsAccountIdentifier() {
+        jdbc.execute("ALTER TABLE simulated_cards ADD CONSTRAINT legacy_bank_prefix_qa CHECK (synthetic_id LIKE 'SIM-MC-%')");
+        String code = (String) card.get("testCvv");
+        assertTrue(code.matches("[0-9]{3}"));
+        String identifier = (String) card.get("cardId");
+        String stored = jdbc.queryForObject("select encrypted_synthetic_id from simulated_cards where identifier_lookup is not null and account_id=?", String.class, card.get("accountId"));
+        assertNotNull(stored);
+        assertFalse(stored.contains(identifier));
+        assertEquals(0, jdbc.queryForObject("select count(*) from simulated_cards where synthetic_id=?", Integer.class, identifier));
+        assertEquals("LINKED", service.linkBank(traveler, new BankLinkInput((String)card.get("bankName"), identifier, code)).get("status"));
+        String internalMarker = jdbc.queryForObject("select synthetic_id from simulated_cards where account_id=?", String.class, card.get("accountId"));
+        assertTrue(internalMarker.startsWith("SIM-MC-ENC-"));
+        assertThrows(ResponseStatusException.class, () -> service.linkBank(traveler, new BankLinkInput((String)card.get("bankName"), internalMarker, code)));
+        String wrong = code.equals("000") ? "001" : "000";
+        assertThrows(ResponseStatusException.class, () -> service.linkBank(traveler, new BankLinkInput((String)card.get("bankName"), identifier, wrong)));
+        assertThrows(ResponseStatusException.class, () -> service.linkBank(admin, new BankLinkInput((String)card.get("bankName"), identifier, code)));
+        assertThrows(ResponseStatusException.class, () -> service.linkBank(traveler, new BankLinkInput("Other SIMULATED", identifier, code)));
+    }
 }
