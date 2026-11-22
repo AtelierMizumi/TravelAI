@@ -35,6 +35,6 @@ public class Place {
     private String imageUrl;
     @ElementCollection(fetch = FetchType.EAGER)
     @OrderColumn(name = "scene_order")
-    @Builder.Default
-    private java.util.List<ImmersiveScene> scenes = new java.util.ArrayList<>();
+    // null means "not sent": an update that omits scenes must keep the stored ones.
+    private java.util.List<ImmersiveScene> scenes;
 }

@@ -25,4 +25,10 @@ class ImmersiveScenesTest {
         loaded.getScenes().clear(); hotels.save(loaded); entities.flush(); entities.clear();
         assertTrue(hotels.findById(hotel.getId()).orElseThrow().getScenes().isEmpty());
     }
+    @Test void requestBodyWithoutScenesLeavesScenesUntouched() throws Exception {
+        var json = new com.fasterxml.jackson.databind.ObjectMapper();
+        assertNull(json.readValue("{\"name\":\"Edit without scenes\"}", Hotel.class).getScenes());
+        assertNull(json.readValue("{\"name\":\"Edit without scenes\"}", Place.class).getScenes());
+        assertEquals(1, json.readValue("{\"name\":\"x\",\"scenes\":[{\"label\":\"a\"}]}", Hotel.class).getScenes().size());
+    }
 }
