@@ -10,9 +10,11 @@ from difflib import SequenceMatcher
 
 from ai.catalog_resolve import resolve_catalog
 from ai.landmark_model import model as landmark_model, LANDMARKS
+from ai.ui import LANDMARK_UI_HTML
 
 import requests
-from fastapi import FastAPI, UploadFile, File, Form, HTTPException
+from fastapi import FastAPI, UploadFile, File, Form, HTTPException, Request
+from fastapi.responses import HTMLResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from google.cloud import vision
 from google.cloud.vision_v1.services.image_annotator.transports import (
@@ -899,8 +901,13 @@ def place_summary(name: str):
         return {"found": False}
     return {"found": True, "title": article["title"], "description": article["description"], "url": article["url"]}
 
+ALLOWED_SAMPLE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".webp"}
+
+
 @app.get("/")
-def home():
+def home(request: Request = None):
+    if request is not None and "text/html" in request.headers.get("accept", ""):
+        return HTMLResponse(content=LANDMARK_UI_HTML)
     return {
         "message": "TravelAI AI Service Running",
         "version": "7.4.0",
@@ -913,6 +920,24 @@ def home():
         "databaseRequired": False,
         "localLandmarkModel": landmark_model.status()
     }
+
+
+@app.get("/ui", response_class=HTMLResponse)
+def get_ui():
+    return HTMLResponse(content=LANDMARK_UI_HTML)
+
+
+@app.get("/samples/{filename}")
+def get_sample_image(filename: str):
+    safe_name = os.path.basename(filename)
+    ext = Path(safe_name).suffix.lower()
+    if not safe_name or safe_name != filename or ext not in ALLOWED_SAMPLE_EXTENSIONS:
+        raise HTTPException(404, "Không tìm thấy ảnh mẫu.")
+    resolved_base = BASE_DIR.resolve()
+    candidate = (resolved_base / safe_name).resolve()
+    if candidate.parent != resolved_base or not candidate.is_file():
+        raise HTTPException(404, "Không tìm thấy ảnh mẫu.")
+    return FileResponse(candidate)
 
 
 # ============================================================

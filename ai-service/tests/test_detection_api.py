@@ -176,6 +176,26 @@ class DetectionApiTest(unittest.TestCase):
         self.assertEqual("unknown", body["recognitionStatus"])
         self.assertEqual([], body["catalogCandidates"])
 
+    def test_home_returns_json_by_default_and_html_for_browser_accept(self):
+        json_resp = self.client.get("/", headers={"Accept": "application/json"})
+        self.assertEqual(200, json_resp.status_code)
+        self.assertEqual("TravelAI AI Service Running", json_resp.json()["message"])
+
+        html_resp = self.client.get("/", headers={"Accept": "text/html"})
+        self.assertEqual(200, html_resp.status_code)
+        self.assertIn("text/html", html_resp.headers["content-type"])
+        self.assertIn("TravelAI Landmark Vision", html_resp.text)
+
+    def test_ui_endpoint_serves_demo_interface(self):
+        resp = self.client.get("/ui")
+        self.assertEqual(200, resp.status_code)
+        self.assertIn("TravelAI Landmark Vision", resp.text)
+
+    def test_sample_image_endpoint_blocks_non_image_files(self):
+        self.assertEqual(404, self.client.get("/samples/main.py").status_code)
+        self.assertEqual(404, self.client.get("/samples/service-account.json").status_code)
+        self.assertEqual(404, self.client.get("/samples/missing.jpeg").status_code)
+
 
 if __name__ == "__main__":
     unittest.main()
