@@ -2,18 +2,22 @@ package com.travelai.backend.booking;
 
 import com.travelai.backend.entity.Hotel;
 import com.travelai.backend.entity.Notification;
+import com.travelai.backend.entity.Place;
 import com.travelai.backend.entity.Tour;
 import com.travelai.backend.repository.HotelRepository;
+import com.travelai.backend.repository.PlaceRepository;
 import com.travelai.backend.repository.TourRepository;
 import com.travelai.backend.repository.UserRepository;
 import com.travelai.backend.security.SessionService;
 import com.travelai.backend.service.NotificationPublisher;
 import jakarta.persistence.EntityManager;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.math.BigInteger;
 import java.text.Normalizer;
 import java.time.*;
 import java.util.*;
@@ -32,6 +36,7 @@ public class MonetizationService {
     private final EntityManager em;
     private final TourRepository tours;
     private final HotelRepository hotels;
+    private final PlaceRepository places;
     private final UserRepository users;
     private final NotificationPublisher notifications;
     private final Clock clock;
@@ -45,10 +50,25 @@ public class MonetizationService {
             NotificationPublisher notifications,
             Clock clock
     ) {
+        this(bookingService, em, tours, hotels, null, users, notifications, clock);
+    }
+
+    @Autowired
+    public MonetizationService(
+            BookingService bookingService,
+            EntityManager em,
+            TourRepository tours,
+            HotelRepository hotels,
+            @Autowired(required = false) PlaceRepository places,
+            UserRepository users,
+            NotificationPublisher notifications,
+            Clock clock
+    ) {
         this.bookingService = bookingService;
         this.em = em;
         this.tours = tours;
         this.hotels = hotels;
+        this.places = places;
         this.users = users;
         this.notifications = notifications;
         this.clock = clock;
@@ -181,15 +201,202 @@ public class MonetizationService {
                 .setParameter("uid", actor.id())
                 .setMaxResults(50)
                 .getResultList().stream().map(this::campaignView).toList();
+        long totalSaved = em.createQuery(
+                        "select r from Reservation r where r.ownerId=:uid and r.status in ('CONFIRMED','RESCHEDULED')",
+                        Reservation.class)
+                .setParameter("uid", actor.id())
+                .getResultList().stream()
+                .mapToLong(r -> Math.max(0L, r.originalAmount - r.totalPaid))
+                .sum();
 
         Map<String, Object> result = new LinkedHashMap<>();
         result.put("simulation", "SIMULATED");
         result.put("currency", "VND");
         result.put("currentSubscription", current == null ? freeSubscriptionView() : subscriptionView(current));
+        result.put("totalBookingSavedVnd", totalSaved);
         result.put("aiQuota", quotaSnapshot(actor, current, now));
         result.put("subscriptionHistory", history);
         result.put("campaigns", campaigns);
         return result;
+    }
+
+    private UserSubscription requirePremiumMember(SessionService.Actor actor, Instant now) {
+        UserSubscription current = findActiveSubscription(actor.id(), now);
+        if (current == null) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "Tính năng đặc quyền chỉ mở cho Hội viên TravelAI Plus hoặc Explorer VIP. Hãy nâng cấp gói để sử dụng."
+            );
+        }
+        return current;
+    }
+
+    private static long discountedMemberPrice(long basePrice, int discountPercent) {
+        if (basePrice <= 0 || discountPercent <= 0) return Math.max(0L, basePrice);
+        long discount = BigInteger.valueOf(basePrice)
+                .multiply(BigInteger.valueOf(discountPercent))
+                .add(BigInteger.valueOf(50))
+                .divide(BigInteger.valueOf(100))
+                .longValueExact();
+        return Math.max(0L, Math.subtractExact(basePrice, discount));
+    }
+
+    public Map<String, Object> vipDeals(SessionService.Actor actor) {
+        ensureSeedCatalog();
+        Instant now = clock.instant();
+        expireStaleRecords(now);
+        UserSubscription sub = requirePremiumMember(actor, now);
+
+        List<Map<String, Object>> deals = new ArrayList<>();
+        for (Tour t : tours.findAllByOrderByIdDesc()) {
+            if (!"active".equalsIgnoreCase(t.getStatus()) || t.getPrice() == null) continue;
+            long orig = Math.round(t.getPrice());
+            long member = discountedMemberPrice(orig, sub.discountPercent);
+            Map<String, Object> d = new LinkedHashMap<>();
+            d.put("kind", "TOUR");
+            d.put("id", t.getId());
+            d.put("name", t.getName());
+            d.put("location", t.getLocation());
+            d.put("province", t.getProvince());
+            d.put("rating", t.getRating());
+            d.put("image", t.getImage());
+            d.put("originalPrice", orig);
+            d.put("memberPrice", member);
+            d.put("savedAmount", Math.subtractExact(orig, member));
+            deals.add(d);
+        }
+        for (Hotel h : hotels.findAllByOrderByIdDesc()) {
+            if (!"active".equalsIgnoreCase(h.getStatus()) || h.getPrice() == null) continue;
+            long orig = Math.round(h.getPrice());
+            long member = discountedMemberPrice(orig, sub.discountPercent);
+            Map<String, Object> d = new LinkedHashMap<>();
+            d.put("kind", "HOTEL");
+            d.put("id", h.getId());
+            d.put("name", h.getName());
+            d.put("location", h.getLocation());
+            d.put("province", h.getProvince());
+            d.put("rating", h.getRating());
+            d.put("image", h.getImage());
+            d.put("originalPrice", orig);
+            d.put("memberPrice", member);
+            d.put("savedAmount", Math.subtractExact(orig, member));
+            deals.add(d);
+        }
+        deals.sort(Comparator.comparingLong((Map<String, Object> m) -> ((Number) m.get("savedAmount")).longValue()).reversed());
+
+        Map<String, Object> out = new LinkedHashMap<>();
+        out.put("simulation", "SIMULATED");
+        out.put("currency", "VND");
+        out.put("tier", sub.planCode);
+        out.put("planName", sub.planName);
+        out.put("badge", sub.badge);
+        out.put("discountPercent", sub.discountPercent);
+        out.put("waiveFirstRescheduleFee", sub.waiveFirstRescheduleFee);
+        out.put("deals", deals.stream().limit(12).toList());
+        return out;
+    }
+
+    public Map<String, Object> generateVipItinerary(SessionService.Actor actor, VipItineraryInput input) {
+        ensureSeedCatalog();
+        Instant now = clock.instant();
+        expireStaleRecords(now);
+        UserSubscription sub = requirePremiumMember(actor, now);
+
+        String province = input == null || input.province() == null ? "" : input.province().trim();
+        if (province.isEmpty() || province.length() > 80) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Vui lòng chọn tỉnh/thành phố hợp lệ.");
+        }
+        int daysCount = input.days() == null ? 3 : input.days();
+        if (daysCount < 1 || daysCount > 7) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Số ngày lịch trình VIP từ 1 đến 7 ngày.");
+        }
+        String style = input.style() == null ? "LUXURY" : input.style().trim().toUpperCase(Locale.ROOT);
+        String normProv = normalizeText(province);
+
+        List<Place> matchedPlaces = places == null ? List.of() : places.findAll().stream()
+                .filter(p -> normalizeText(Objects.toString(p.getProvince(), "") + " " + Objects.toString(p.getName(), "")).contains(normProv))
+                .toList();
+        List<Tour> matchedTours = tours.findAllByOrderByIdDesc().stream()
+                .filter(t -> "active".equalsIgnoreCase(t.getStatus())
+                        && normalizeText(Objects.toString(t.getProvince(), "") + " " + Objects.toString(t.getLocation(), "")).contains(normProv))
+                .toList();
+        List<Hotel> matchedHotels = hotels.findAllByOrderByIdDesc().stream()
+                .filter(h -> "active".equalsIgnoreCase(h.getStatus())
+                        && normalizeText(Objects.toString(h.getProvince(), "") + " " + Objects.toString(h.getLocation(), "")).contains(normProv))
+                .toList();
+
+        String styleName = switch (style) {
+            case "CULTURE" -> "Khám phá văn hóa & di sản chuyên sâu";
+            case "OPTIMAL" -> "Tối ưu thời gian & ngân sách thông minh";
+            default -> "Nghỉ dưỡng đặc quyền hạng sang (VIP Concierge)";
+        };
+
+        List<Map<String, Object>> dayPlans = new ArrayList<>();
+        for (int d = 1; d <= daysCount; d++) {
+            Place spotMorning = matchedPlaces.isEmpty() ? null : matchedPlaces.get((d - 1) % matchedPlaces.size());
+            Place spotAfternoon = matchedPlaces.size() > 1 ? matchedPlaces.get(d % matchedPlaces.size()) : spotMorning;
+            Tour sampleTour = matchedTours.isEmpty() ? null : matchedTours.get((d - 1) % matchedTours.size());
+            Hotel stayHotel = matchedHotels.isEmpty() ? null : matchedHotels.get(0);
+
+            Map<String, Object> day = new LinkedHashMap<>();
+            day.put("day", d);
+            day.put("title", "Ngày " + d + " tại " + province + " · " + styleName);
+            day.put("morning", spotMorning != null
+                    ? "Tham quan & chụp ảnh check-in tại " + spotMorning.getName() + " (khung giờ vàng sáng sớm ít đông khách)."
+                    : "Khởi hành khám phá trung tâm " + province + " và thưởng thức ẩm thực bản địa buổi sáng.");
+            day.put("afternoon", sampleTour != null
+                    ? "Trải nghiệm hành trình tiêu điểm: " + sampleTour.getName() + " (" + Objects.toString(sampleTour.getLocation(), province) + ")."
+                    : (spotAfternoon != null
+                        ? "Khám phá chiều sâu văn hóa tại " + spotAfternoon.getName() + " và điểm ngắm hoàng hôn."
+                        : "Tham quan danh thắng nổi bật tại " + province + " theo lộ trình riêng cho Hội viên."));
+            day.put("evening", stayHotel != null
+                    ? "Nghỉ ngơi tại " + stayHotel.getName() + " (ưu đãi Hội viên -" + sub.discountPercent + "%) và dạo phố đêm " + province + "."
+                    : "Thưởng thức đặc sản địa phương buổi tối và thư giãn tại khu lưu trú trung tâm " + province + ".");
+            dayPlans.add(day);
+        }
+
+        long origEstimate = 0L;
+        if (!matchedTours.isEmpty() && matchedTours.get(0).getPrice() != null) {
+            origEstimate = Math.addExact(origEstimate, Math.round(matchedTours.get(0).getPrice()));
+        }
+        if (!matchedHotels.isEmpty() && matchedHotels.get(0).getPrice() != null) {
+            int nights = Math.max(1, daysCount - 1);
+            origEstimate = Math.addExact(origEstimate, Math.multiplyExact(Math.round(matchedHotels.get(0).getPrice()), nights));
+        }
+        long memberEstimate = discountedMemberPrice(origEstimate, sub.discountPercent);
+        long savedEstimate = Math.subtractExact(origEstimate, memberEstimate);
+
+        String spokenSummary = "Lịch trình đặc quyền " + sub.badge + " " + daysCount + " ngày tại " + province
+                + " theo phong cách " + styleName + ". "
+                + (savedEstimate > 0
+                    ? "Dự kiến với thẻ " + sub.planName + ", bạn được giảm trực tiếp " + sub.discountPercent + " phần trăm, tiết kiệm " + savedEstimate + " đồng."
+                    : "Bạn được hưởng ưu đãi giảm " + sub.discountPercent + " phần trăm cho mọi dịch vụ đặt kèm.");
+
+        Map<String, Object> response = new LinkedHashMap<>();
+        response.put("simulation", "SIMULATED");
+        response.put("currency", "VND");
+        response.put("tier", sub.planCode);
+        response.put("badge", sub.badge);
+        response.put("discountPercent", sub.discountPercent);
+        response.put("province", province);
+        response.put("style", style);
+        response.put("styleLabel", styleName);
+        response.put("days", dayPlans);
+        response.put("estimatedOriginalVnd", origEstimate);
+        response.put("estimatedMemberVnd", memberEstimate);
+        response.put("estimatedSavedVnd", savedEstimate);
+        response.put("conciergeSummary", spokenSummary);
+        response.put("recommendedTours", matchedTours.stream().limit(3).map(t -> {
+            long o = t.getPrice() == null ? 0L : Math.round(t.getPrice());
+            long m = discountedMemberPrice(o, sub.discountPercent);
+            return Map.<String, Object>of("id", t.getId(), "name", t.getName(), "originalPrice", o, "memberPrice", m, "savedAmount", o - m);
+        }).toList());
+        response.put("recommendedHotels", matchedHotels.stream().limit(3).map(h -> {
+            long o = h.getPrice() == null ? 0L : Math.round(h.getPrice());
+            long m = discountedMemberPrice(o, sub.discountPercent);
+            return Map.<String, Object>of("id", h.getId(), "name", h.getName(), "originalPrice", o, "memberPrice", m, "savedAmount", o - m);
+        }).toList());
+        return response;
     }
 
     public Map<String, Object> getAiQuota(SessionService.Actor actor) {

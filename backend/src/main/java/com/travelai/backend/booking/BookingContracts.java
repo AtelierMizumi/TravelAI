@@ -54,4 +54,5 @@ public final class BookingContracts {
                                   String description, Boolean active) {}
     public record PackageUpdateInput(String name, Long priceVnd, Integer durationDays, String placement,
                                      String description, Boolean active) {}
+    public record VipItineraryInput(String province, Integer days, String style) {}
 }

@@ -79,6 +79,19 @@ public class MonetizationController {
         return service.purchaseAdCampaign(ApiSecurity.actor(request), input, key);
     }
 
+    @GetMapping("/api/monetization/vip/deals")
+    public Map<String, Object> vipDeals(HttpServletRequest request) {
+        return service.vipDeals(ApiSecurity.actor(request));
+    }
+
+    @PostMapping("/api/monetization/vip/itinerary")
+    public Map<String, Object> vipItinerary(
+            HttpServletRequest request,
+            @RequestBody VipItineraryInput input
+    ) {
+        return service.generateVipItinerary(ApiSecurity.actor(request), input);
+    }
+
     @GetMapping("/api/admin/monetization/overview")
     public Map<String, Object> adminOverview(HttpServletRequest request) {
         return service.adminOverview(ApiSecurity.actor(request));
