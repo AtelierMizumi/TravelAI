@@ -3,6 +3,7 @@
 Người dùng tải ảnh lên, hệ thống nhận diện địa danh (Google Cloud Vision, có thể kết hợp mô hình nội bộ tùy chọn), hiển thị mô tả, tọa độ, độ tin cậy, rồi gợi ý tour và khách sạn **cùng tỉnh** để đặt chỗ. Ngoài ra có bảng tin cộng đồng, nhắn tin thời gian thực, đánh giá và khu quản trị.
 
 - **Bản chạy công khai:** https://travelai.minhthuan.dev
+- **Bản cài Android (APK):** [GitHub Releases (mới nhất)](https://github.com/AtelierMizumi/TravelAI/releases/latest)
 - **Bảng công việc:** [GitHub Project #2](https://github.com/users/AtelierMizumi/projects/2)
 - **Đồ án môn Quản trị dự án phần mềm**, nhóm 3 kỹ sư (xem mục "Đội ngũ").
 

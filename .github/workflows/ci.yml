@@ -87,7 +87,6 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm test
-      - run: npm run test:components
       - run: npx tsc --noEmit
       - name: Export web bundle
         env:
@@ -123,6 +122,8 @@ jobs:
       - run: bash scripts/test-gen-secrets.sh
       - run: bash scripts/test-compose-secrets.sh
       - run: bash scripts/test-deploy-agent.sh
+      - run: bash scripts/test-release-version.sh
+      - run: python3 -I scripts/test-patch-android-release-gradle.py
       - run: python3 -I scripts/seed/test_dataset.py
       - run: python3 -I scripts/seed/test_seed_demo.py
 

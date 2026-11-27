@@ -1,0 +1,296 @@
+name: Release Android APK
+
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+*"
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: "SemVer bump type (auto-computed from latest vX.Y.Z tag)"
+        type: choice
+        default: patch
+        options:
+          - patch
+          - minor
+          - major
+          - custom
+      custom_version:
+        description: "Explicit version when bump=custom (e.g. 2.2.0 or 2.2.0-rc.1)"
+        type: string
+        required: false
+        default: ""
+      prerelease:
+        description: "Mark GitHub Release as pre-release"
+        type: boolean
+        default: false
+      allow_debug_signing:
+        description: "Allow debug keystore fallback if ANDROID_KEYSTORE_BASE64 secret is unset (preview only)"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-android-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    name: Compute release version
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      previous_tag: ${{ steps.ver.outputs.previous_tag }}
+      version: ${{ steps.ver.outputs.version }}
+      tag: ${{ steps.ver.outputs.tag }}
+      version_code: ${{ steps.ver.outputs.version_code }}
+      prerelease: ${{ steps.ver.outputs.prerelease }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Compute SemVer and Android versionCode
+        id: ver
+        run: |
+          if [[ "${{ github.event_name }}" == "push" && "${{ github.ref_type }}" == "tag" ]]; then
+            TAG_NAME="${GITHUB_REF_NAME}"
+            PREV_TAG="$(git tag -l 'v[0-9]*.[0-9]*.[0-9]*' --sort=-v:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | grep -v "^${TAG_NAME}$" | head -n 1 || true)"
+            BASE_TAG="$PREV_TAG" bash scripts/compute-release-version.sh custom "$TAG_NAME" >> "$GITHUB_OUTPUT"
+            if [[ "$TAG_NAME" == *-* ]]; then
+              echo "prerelease=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "prerelease=false" >> "$GITHUB_OUTPUT"
+            fi
+          else
+            bash scripts/compute-release-version.sh "${{ inputs.bump }}" "${{ inputs.custom_version }}" >> "$GITHUB_OUTPUT"
+            echo "prerelease=${{ inputs.prerelease }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Guard against duplicate tag on workflow_dispatch
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          if git rev-parse "refs/tags/${{ steps.ver.outputs.tag }}" >/dev/null 2>&1; then
+            echo "::error::Tag ${{ steps.ver.outputs.tag }} already exists."
+            exit 1
+          fi
+
+  build-android:
+    name: Build & sign Android APK (${{ needs.prepare.outputs.tag }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    needs: [prepare]
+    outputs:
+      apk_name: ${{ steps.package.outputs.apk_name }}
+      apk_sha256: ${{ steps.package.outputs.apk_sha256 }}
+      apk_size_mb: ${{ steps.package.outputs.apk_size_mb }}
+      signing_mode: ${{ steps.signing.outputs.mode }}
+      signer_sha256: ${{ steps.package.outputs.signer_sha256 }}
+    env:
+      PUBLIC_ORIGIN: ${{ vars.PUBLIC_ORIGIN || 'https://travelai.minhthuan.dev' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: apps/mobile/package-lock.json
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: android-actions/setup-android@v3
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Validate release signing secrets
+        id: signing
+        env:
+          KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_PASS: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASS: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          if [[ -n "$KEYSTORE_B64" && -n "$KEYSTORE_PASS" && -n "$KEY_ALIAS" && -n "$KEY_PASS" ]]; then
+            echo "$KEYSTORE_B64" | base64 --decode > "$RUNNER_TEMP/travelai-release.keystore"
+            chmod 600 "$RUNNER_TEMP/travelai-release.keystore"
+            echo "mode=release" >> "$GITHUB_OUTPUT"
+          elif [[ "${{ inputs.allow_debug_signing }}" == "true" ]]; then
+            echo "::warning::ANDROID_KEYSTORE_* secrets missing; falling back to debug keystore (sideload preview only)."
+            echo "mode=debug" >> "$GITHUB_OUTPUT"
+          else
+            echo "::error::Missing Android signing secrets (ANDROID_KEYSTORE_BASE64, ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD). Configure them in Settings -> Secrets and variables -> Actions, or re-run with allow_debug_signing=true for a preview build."
+            exit 1
+          fi
+
+      - name: Install mobile dependencies and run quality gate
+        working-directory: apps/mobile
+        run: |
+          npm ci --no-audit --no-fund
+          npm run lint
+          npm test
+          npx tsc --noEmit
+
+      - name: Expo Android prebuild
+        working-directory: apps/mobile
+        env:
+          CI: "1"
+        run: npx expo prebuild --platform android --clean
+
+      - name: Patch Android version and release signingConfig
+        run: |
+          python3 -I scripts/patch-android-release-gradle.py \
+            apps/mobile/android/app/build.gradle \
+            "${{ needs.prepare.outputs.version_code }}" \
+            "${{ needs.prepare.outputs.version }}"
+
+      - name: Build Android Release APK
+        working-directory: apps/mobile/android
+        env:
+          EXPO_PUBLIC_API_URL: ${{ env.PUBLIC_ORIGIN }}/api
+          EXPO_PUBLIC_AI_API_URL: ${{ env.PUBLIC_ORIGIN }}/ai
+          KEYSTORE_PASS: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASS: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          GRADLE_ARGS=(assembleRelease --no-daemon)
+          if [[ "${{ steps.signing.outputs.mode }}" == "release" ]]; then
+            GRADLE_ARGS+=(
+              "-PtravelaiReleaseStoreFile=$RUNNER_TEMP/travelai-release.keystore"
+              "-PtravelaiReleaseStorePassword=$KEYSTORE_PASS"
+              "-PtravelaiReleaseKeyAlias=$KEY_ALIAS"
+              "-PtravelaiReleaseKeyPassword=$KEY_PASS"
+            )
+          fi
+          ./gradlew "${GRADLE_ARGS[@]}"
+
+      - name: Package, checksum, and verify APK signature
+        id: package
+        run: |
+          OUT="$RUNNER_TEMP/release-assets"
+          mkdir -p "$OUT"
+          APK_NAME="TravelAI-${{ needs.prepare.outputs.tag }}-android.apk"
+          cp apps/mobile/android/app/build/outputs/apk/release/app-release.apk "$OUT/$APK_NAME"
+
+          APKSIGNER="$(ls "$ANDROID_HOME"/build-tools/*/apksigner | sort -V | tail -n 1)"
+          CERT_OUT="$("$APKSIGNER" verify --print-certs "$OUT/$APK_NAME")"
+          echo "$CERT_OUT"
+          SIGNER_SHA256="$(echo "$CERT_OUT" | awk '/certificate SHA-256 digest:/ {print $NF; exit}')"
+
+          (cd "$OUT" && sha256sum "$APK_NAME" > SHA256SUMS.txt)
+          APK_SHA256="$(awk '{print $1}' "$OUT/SHA256SUMS.txt")"
+          APK_BYTES="$(stat -c%s "$OUT/$APK_NAME")"
+          APK_SIZE_MB="$(( (APK_BYTES + 524288) / 1048576 ))"
+
+          echo "apk_name=$APK_NAME" >> "$GITHUB_OUTPUT"
+          echo "apk_sha256=$APK_SHA256" >> "$GITHUB_OUTPUT"
+          echo "apk_size_mb=$APK_SIZE_MB" >> "$GITHUB_OUTPUT"
+          echo "signer_sha256=$SIGNER_SHA256" >> "$GITHUB_OUTPUT"
+
+      - name: Clean up temporary keystore
+        if: always()
+        run: rm -f "$RUNNER_TEMP/travelai-release.keystore"
+
+      - name: Upload release artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-release-${{ needs.prepare.outputs.tag }}
+          path: ${{ runner.temp }}/release-assets/*
+          retention-days: 14
+
+  publish-release:
+    name: Publish GitHub Release (${{ needs.prepare.outputs.tag }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    needs: [prepare, build-android]
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      PUBLIC_ORIGIN: ${{ vars.PUBLIC_ORIGIN || 'https://travelai.minhthuan.dev' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: android-release-${{ needs.prepare.outputs.tag }}
+          path: ${{ runner.temp }}/release-assets
+
+      - name: Generate release notes
+        run: |
+          TAG="${{ needs.prepare.outputs.tag }}"
+          PREV="${{ needs.prepare.outputs.previous_tag }}"
+          APK_NAME="${{ needs.build-android.outputs.apk_name }}"
+          APK_SHA256="${{ needs.build-android.outputs.apk_sha256 }}"
+          APK_SIZE_MB="${{ needs.build-android.outputs.apk_size_mb }}"
+          SIGNING_MODE="${{ needs.build-android.outputs.signing_mode }}"
+          SIGNER_SHA256="${{ needs.build-android.outputs.signer_sha256 }}"
+          VERSION="${{ needs.prepare.outputs.version }}"
+          VERSION_CODE="${{ needs.prepare.outputs.version_code }}"
+
+          if [[ -n "$PREV" ]]; then
+            COMMITS="$(git log --no-merges --pretty=format:'- %s (`%h`)' "${PREV}..HEAD")"
+            COMPARE_LINE="**Full Changelog:** https://github.com/${GITHUB_REPOSITORY}/compare/${PREV}...${TAG}"
+          else
+            COMMITS="$(git log --no-merges -n 20 --pretty=format:'- %s (`%h`)')"
+            COMPARE_LINE=""
+          fi
+
+          if [[ -z "$COMMITS" ]]; then
+            COMMITS="- Maintenance release build."
+          fi
+
+          sed 's/^          //' <<EOF > "$RUNNER_TEMP/release-notes.md"
+          ## TravelAI ${TAG} — Android Release APK
+
+          Built automatically by GitHub Actions from \`${GITHUB_SHA::7}\`, configured for **${PUBLIC_ORIGIN}**.
+
+          ### Changes
+          ${COMMITS}
+
+          ### Android APK Details
+          | Field | Value |
+          |---|---|
+          | File | \`${APK_NAME}\` (~${APK_SIZE_MB} MB) |
+          | Version | \`${VERSION}\` (\`versionCode: ${VERSION_CODE}\`) |
+          | Signing | \`${SIGNING_MODE}\` (V2 Signer SHA-256: \`${SIGNER_SHA256}\`) |
+          | SHA-256 | \`${APK_SHA256}\` |
+
+          ### Quick Install
+          1. Download \`${APK_NAME}\` from **Assets** below onto your Android device (Android 7.0+).
+          2. Allow installing from unknown sources if prompted, then open **TravelAI**.
+
+          ${COMPARE_LINE}
+          EOF
+
+      - name: Create or update GitHub Release
+        run: |
+          TAG="${{ needs.prepare.outputs.tag }}"
+          APK_FILE="$RUNNER_TEMP/release-assets/${{ needs.build-android.outputs.apk_name }}"
+          SUM_FILE="$RUNNER_TEMP/release-assets/SHA256SUMS.txt"
+          TITLE="TravelAI ${TAG} — Android Release APK"
+
+          FLAGS=()
+          if [[ "${{ needs.prepare.outputs.prerelease }}" == "true" || "${{ needs.build-android.outputs.signing_mode }}" == "debug" ]]; then
+            FLAGS+=(--prerelease)
+          else
+            FLAGS+=(--latest)
+          fi
+
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" "$APK_FILE" "$SUM_FILE" --clobber
+            gh release edit "$TAG" --title "$TITLE" --notes-file "$RUNNER_TEMP/release-notes.md"
+          else
+            gh release create "$TAG" "$APK_FILE" "$SUM_FILE" \
+              --target "$GITHUB_SHA" \
+              --title "$TITLE" \
+              --notes-file "$RUNNER_TEMP/release-notes.md" \
+              "${FLAGS[@]}"
+          fi
