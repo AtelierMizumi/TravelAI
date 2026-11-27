@@ -13,6 +13,7 @@ import { AdminSettings } from "@/components/admin/settings";
 import { AdminPolicies, AdminCalendar } from "@/components/admin/policies";
 import { AdminBank } from "@/components/admin/bank";
 import { AdminBookings } from "@/components/admin/bookings";
+import { AdminMonetization } from "@/components/admin/monetization";
 import { adminAccess } from "@/context/authGuard";
 import { bookingSplit } from "@/services/admin-stats";
 type Icon = ComponentProps<typeof Ionicons>["name"];
@@ -27,6 +28,7 @@ const sections: { key: string; label: string; icon: Icon }[] = [
   { key: "policies", label: "Chính sách và tồn chỗ", icon: "shield-checkmark-outline" },
   { key: "calendar", label: "Lịch lễ", icon: "today-outline" },
   { key: "bank", label: "Ngân hàng SIMULATED", icon: "card-outline" },
+  { key: "monetization", label: "Gói & Quảng cáo", icon: "ribbon-outline" },
   { key: "settings", label: "Hệ thống", icon: "settings-outline" },
 ];
 const metrics: { key: string; title: string; icon: Icon; description: string }[] = [
@@ -34,6 +36,8 @@ const metrics: { key: string; title: string; icon: Icon; description: string }[]
   { key: "totalBookings", title: "Đặt chỗ đã xác nhận", icon: "calendar-outline", description: "Tour và khách sạn" },
   { key: "places", title: "Điểm đến", icon: "location-outline", description: "Địa điểm trong danh mục" },
   { key: "posts", title: "Bài viết", icon: "document-text-outline", description: "Nội dung cộng đồng" },
+  { key: "activeSubscribers", title: "Hội viên Plus/VIP", icon: "ribbon-outline", description: "Đang có gói hiệu lực" },
+  { key: "activeCampaigns", title: "Quảng cáo đang chạy", icon: "megaphone-outline", description: "Chiến dịch đã duyệt" },
 ];
 const TOUR = "#5064e9";
 const HOTEL = "#10b9a0";
@@ -154,6 +158,7 @@ export default function Admin() {
               {section === "policies" && <AdminPolicies />}
               {section === "calendar" && <AdminCalendar />}
               {section === "bank" && <AdminBank />}
+              {section === "monetization" && <AdminMonetization />}
               {section === "settings" && <AdminSettings />}
             </View>
           </View>
