@@ -5,13 +5,16 @@ import { Text } from "react-native";
 import { Ratings } from "@/components/ratings";
 import { MapsLink } from "@/components/maps-link";
 import { BookingForm } from "@/components/booking-form";
-import { ErrorText, Nav, Screen, ui } from "@/components/ui";
+import { ErrorText, money, Nav, Screen, ui } from "@/components/ui";
 import { useAuth } from "@/context/auth";
+import { useMembership } from "@/context/membership";
 import { useResource } from "@/hooks/use-resource";
+import { computeMemberPrice, vipTeaserPrice } from "@/services/monetization-helpers";
 import type { CatalogItem, Offer, Place } from "@/services/types";
 export function CatalogDetail({ kind }: { kind: "tours" | "hotels" }) {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { user } = useAuth();
+  const membership = useMembership();
   const item = useResource<CatalogItem>(`/${kind}/${encodeURIComponent(id)}`);
   const offers = useResource<Offer[]>("/booking/offers");
   const places = useResource<Place[]>(kind === "tours" ? "/places" : null);
@@ -26,6 +29,27 @@ export function CatalogDetail({ kind }: { kind: "tours" | "hotels" }) {
       <CatalogPhoto key={`${id}:${item.data?.image || ""}`} source={item.data?.image} fallback={kind === "tours" ? destinationFor(item.data?.location, places.data || [])?.imageUrl : undefined} label={item.data?.name || "Dịch vụ"} height={320} />
       <Text style={ui.text}>{item.data?.location}</Text>
       <Text style={ui.text}>{item.data?.description}</Text>
+      {item.data?.price != null && (
+        membership.isPremium ? (
+          <Text
+            style={{
+              backgroundColor: "#1e1b4b",
+              color: "#fde68a",
+              padding: 14,
+              borderRadius: 14,
+              fontWeight: "800",
+              borderWidth: 1.5,
+              borderColor: "#f59e0b",
+            }}
+          >
+            {`${membership.badge} Đặc quyền ${membership.planName}: Giá niêm yết ${money(item.data.price)} → Giá Hội viên của bạn chỉ còn ${money(computeMemberPrice(item.data.price, membership.discountPercent).memberPrice)} (-${membership.discountPercent}%, tiết kiệm ${money(computeMemberPrice(item.data.price, membership.discountPercent).savedAmount)})!`}
+          </Text>
+        ) : (
+          <Nav href="/subscriptions">
+            {`🔒 Hội viên Explorer VIP chỉ trả ${money(vipTeaserPrice(item.data.price).vipPrice)} (tiết kiệm ${money(vipTeaserPrice(item.data.price).savedAmount)}) → Nâng cấp ngay`}
+          </Nav>
+        )
+      )}
       {!!offer?.promotion && (
         <Text style={[ui.text, { color: "#075782", fontWeight: "700" }]}>
           Ưu đãi giảm {offer.promotion.percent}% cho ngày sử dụng từ{" "}

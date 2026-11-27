@@ -20,6 +20,7 @@ import {
   useAction,
 } from "@/components/ui";
 import { useAuth } from "@/context/auth";
+import { useMembership } from "@/context/membership";
 import { useResource } from "@/hooks/use-resource";
 import { api } from "@/services/api";
 import type { Bank, Booking, MonetizationSummary, Post, User } from "@/services/types";
@@ -100,6 +101,7 @@ interface LegacyBooking {
 }
 export default function Profile() {
   const { user, signOut } = useAuth();
+  const membership = useMembership();
   const [tab, setTab] = useState("trips");
   const bookings = useResource<Booking[]>(user ? "/booking/bookings" : null, 0, true, user?.id);
   const bank = useResource<Bank>(user ? "/booking/bank" : null, 0, true, user?.id);
@@ -125,25 +127,67 @@ export default function Profile() {
   });
   return (
     <Screen title="Hồ sơ của bạn" protected>
-      <Card section="profile-intro">
-        <Text style={ui.heading}>
-          {user?.name ? `Xin chào, ${user.name}` : "Góc hành trình của bạn"}{" "}
-          {monetization.data?.currentSubscription?.badge
-            ? `· ${monetization.data.currentSubscription.badge}`
-            : ""}
-        </Text>
-        <Text style={ui.text}>
-          Lịch trình, thông tin cá nhân và những kỷ niệm chuyến đi — tất cả ở đây.
-        </Text>
-        {monetization.data && (
-          <Text style={ui.text}>
-            Hạng thẻ: {monetization.data.currentSubscription.planName} · AI hôm nay:{" "}
-            {monetization.data.aiQuota.unlimited
-              ? "Không giới hạn"
-              : `${monetization.data.aiQuota.usedToday}/${monetization.data.aiQuota.dailyLimit} lượt`}
+      {membership.isPremium ? (
+        <View
+          style={{
+            backgroundColor: membership.isVip ? "#1e1b4b" : "#0f172a",
+            borderRadius: 24,
+            borderWidth: 2,
+            borderColor: "#f59e0b",
+            padding: 22,
+            gap: 12,
+          }}
+        >
+          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
+            <Text style={{ color: "#fbbf24", fontSize: 12, fontWeight: "900", letterSpacing: 1 }}>
+              TRAVELAI EXCLUSIVE MEMBER CARD
+            </Text>
+            <View style={{ backgroundColor: "#fef3c7", paddingHorizontal: 12, paddingVertical: 4, borderRadius: 999 }}>
+              <Text style={{ color: "#78350f", fontSize: 12, fontWeight: "900" }}>
+                {membership.badge} · {membership.planName}
+              </Text>
+            </View>
+          </View>
+          <Text style={{ color: "#fff", fontSize: 24, fontWeight: "900" }}>
+            {user?.name || user?.email}
           </Text>
-        )}
-      </Card>
+          {membership.expiresAt && (
+            <Text style={{ color: "#cbd5e1", fontSize: 13 }}>
+              Hiệu lực đặc quyền đến: {serviceTime(membership.expiresAt)}
+            </Text>
+          )}
+          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
+            <View style={{ flexGrow: 1, flexBasis: 130, backgroundColor: "rgba(255,255,255,0.08)", borderRadius: 14, padding: 12 }}>
+              <Text style={{ color: "#94a3b8", fontSize: 11, fontWeight: "700" }}>CHIẾT KHẤU CỐ ĐỊNH</Text>
+              <Text style={{ color: "#fde68a", fontSize: 20, fontWeight: "900", marginTop: 2 }}>
+                -{membership.discountPercent}%
+              </Text>
+            </View>
+            <View style={{ flexGrow: 1, flexBasis: 150, backgroundColor: "rgba(255,255,255,0.08)", borderRadius: 14, padding: 12 }}>
+              <Text style={{ color: "#94a3b8", fontSize: 11, fontWeight: "700" }}>ĐÃ TIẾT KIỆM ĐẶT CHỖ</Text>
+              <Text style={{ color: "#34d399", fontSize: 20, fontWeight: "900", marginTop: 2 }}>
+                {money(membership.totalSavedVnd)}
+              </Text>
+            </View>
+            <View style={{ flexGrow: 1, flexBasis: 130, backgroundColor: "rgba(255,255,255,0.08)", borderRadius: 14, padding: 12 }}>
+              <Text style={{ color: "#94a3b8", fontSize: 11, fontWeight: "700" }}>AI & VIP CONCIERGE</Text>
+              <Text style={{ color: "#fff", fontSize: 16, fontWeight: "800", marginTop: 4 }}>
+                Không giới hạn
+              </Text>
+            </View>
+          </View>
+        </View>
+      ) : (
+        <Card section="profile-intro">
+          <Text style={ui.heading}>
+            {user?.name ? `Xin chào, ${user.name}` : "Góc hành trình của bạn"} · Hạng Cơ Bản (Free)
+          </Text>
+          <Text style={ui.text}>
+            AI hôm nay: {monetization.data ? `${monetization.data.aiQuota.usedToday}/${monetization.data.aiQuota.dailyLimit} lượt miễn phí` : "Giới hạn 10 lượt/ngày"}. Nâng cấp lên TravelAI Plus hoặc Explorer VIP để sở hữu Thẻ Đen, giảm trực tiếp 5%–10% mọi chuyến đi và mở khóa AI VIP Concierge!
+          </Text>
+          <Nav href="/subscriptions">✨ Xem đặc quyền & Nâng cấp Hội viên VIP →</Nav>
+        </Card>
+      )}
       <Card section="profile-tools"><Text style={ui.heading}>Tài khoản và tiện ích</Text><View style={ui.row}>
         <Nav href="/subscriptions">Gói VIP & Quảng cáo</Nav>
         <Nav href="/messages">Tin nhắn</Nav><Nav href="/notifications">Thông báo</Nav><Nav href="/settings">Cài đặt</Nav>

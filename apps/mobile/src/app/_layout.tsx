@@ -28,6 +28,7 @@ import {
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
 import { AuthProvider, useAuth } from "@/context/auth";
+import { MembershipProvider, useMembership } from "@/context/membership";
 import { Support } from "@/components/support";
 import { Nav, ui } from "@/components/ui";
 import { useRealtime } from "@/hooks/use-realtime";
@@ -93,6 +94,7 @@ function NotificationBell() {
 
 function AppShell() {
   const { user, loading: authLoading } = useAuth();
+  const membership = useMembership();
   const insets = useSafeAreaInsets();
   const pathname = usePathname();
   const { width } = useWindowDimensions();
@@ -159,8 +161,22 @@ function AppShell() {
                 ))}
                 {user && (
                   <Link href={"/subscriptions" as Href} asChild>
-                    <Pressable style={styles.navItem}>
-                      <Text style={styles.navText}>Gói VIP & QC</Text>
+                    <Pressable
+                      style={[
+                        styles.navItem,
+                        membership.isPremium ? styles.navVipActive : styles.navUpgradePill,
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.navText,
+                          membership.isPremium ? styles.navVipText : styles.navUpgradeText,
+                        ]}
+                      >
+                        {membership.isPremium
+                          ? `${membership.badge} (-${membership.discountPercent}%)`
+                          : "✨ Nâng cấp VIP"}
+                      </Text>
                     </Pressable>
                   </Link>
                 )}
@@ -202,12 +218,49 @@ function AppShell() {
                 <Pressable
                   accessibilityRole="link"
                   accessibilityLabel={user ? "Hồ sơ" : "Đăng nhập"}
-                  style={styles.profileButton}
+                  style={[
+                    styles.profileButton,
+                    membership.isPremium &&
+                      (membership.isVip ? styles.profileButtonVip : styles.profileButtonPlus),
+                  ]}
                 >
-                  {user?.avatar ? <Image key={user.avatar} source={{ uri: user.avatar }} contentFit="cover" style={{ width: 28, height: 28, borderRadius: 14 }} accessibilityLabel="Ảnh đại diện của bạn" /> : <Ionicons name="person-outline" size={19} color="#087fba" />}
+                  {user?.avatar ? (
+                    <Image
+                      key={user.avatar}
+                      source={{ uri: user.avatar }}
+                      contentFit="cover"
+                      style={[
+                        { width: 28, height: 28, borderRadius: 14 },
+                        membership.isPremium && { borderWidth: 2, borderColor: "#f59e0b" },
+                      ]}
+                      accessibilityLabel="Ảnh đại diện của bạn"
+                    />
+                  ) : (
+                    <Ionicons
+                      name={membership.isPremium ? "diamond" : "person-outline"}
+                      size={19}
+                      color={
+                        membership.isVip
+                          ? "#fbbf24"
+                          : membership.isPremium
+                            ? "#b45309"
+                            : "#087fba"
+                      }
+                    />
+                  )}
                   {!compact && (
-                    <Text style={styles.profileText}>
-                      {user ? "Hồ sơ" : "Đăng nhập"}
+                    <Text
+                      style={[
+                        styles.profileText,
+                        membership.isPremium &&
+                          (membership.isVip ? styles.profileTextVip : styles.profileTextPlus),
+                      ]}
+                    >
+                      {user
+                        ? membership.isPremium
+                          ? `${membership.badge} · ${user.name || "Hồ sơ"}`
+                          : "Hồ sơ"
+                        : "Đăng nhập"}
                     </Text>
                   )}
                 </Pressable>
@@ -245,7 +298,9 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <AuthProvider>
-        <AppShell />
+        <MembershipProvider>
+          <AppShell />
+        </MembershipProvider>
       </AuthProvider>
     </SafeAreaProvider>
   );
@@ -299,6 +354,18 @@ const styles = StyleSheet.create({
   navActive: { backgroundColor: "#e2f3fc" },
   navText: { fontSize: 14, fontWeight: "600", color: "#65718a" },
   navTextActive: { color: "#087fba" },
+  navUpgradePill: {
+    backgroundColor: "#fef3c7",
+    borderWidth: 1,
+    borderColor: "#f59e0b",
+  },
+  navUpgradeText: { color: "#92400e", fontWeight: "800" },
+  navVipActive: {
+    backgroundColor: "#1e1b4b",
+    borderWidth: 1.5,
+    borderColor: "#f59e0b",
+  },
+  navVipText: { color: "#fde68a", fontWeight: "900" },
   headerActions: { flexDirection: "row", alignItems: "center", gap: 5 },
   iconButton: {
     width: 43,
@@ -319,6 +386,18 @@ const styles = StyleSheet.create({
     backgroundColor: "#e2f3fc",
   },
   profileText: { color: "#087fba", fontWeight: "700", fontSize: 13 },
+  profileButtonPlus: {
+    backgroundColor: "#fef3c7",
+    borderWidth: 1.5,
+    borderColor: "#d97706",
+  },
+  profileTextPlus: { color: "#92400e", fontWeight: "900" },
+  profileButtonVip: {
+    backgroundColor: "#1e1b4b",
+    borderWidth: 1.5,
+    borderColor: "#f59e0b",
+  },
+  profileTextVip: { color: "#fde68a", fontWeight: "900" },
   badge: {
     position: "absolute",
     right: 2,

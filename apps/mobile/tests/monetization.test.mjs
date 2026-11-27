@@ -2,8 +2,10 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   calculateCtrPercent,
+  computeMemberPrice,
   prioritizeSponsoredCatalog,
   subscriptionBadgeLabel,
+  vipTeaserPrice,
 } from "../src/services/monetization-helpers.ts";
 
 test("subscriptionBadgeLabel returns badge for PLUS and VIP tiers only", () => {
@@ -44,3 +46,31 @@ test("prioritizeSponsoredCatalog pins active sponsored items first without dupli
     ],
   );
 });
+
+test("computeMemberPrice calculates exact discounted VND and savings for Plus and VIP", () => {
+  assert.deepEqual(computeMemberPrice(500_000, 0), {
+    originalPrice: 500_000,
+    memberPrice: 500_000,
+    savedAmount: 0,
+    hasDiscount: false,
+  });
+  assert.deepEqual(computeMemberPrice(500_000, 5), {
+    originalPrice: 500_000,
+    memberPrice: 475_000,
+    savedAmount: 25_000,
+    hasDiscount: true,
+  });
+  assert.deepEqual(computeMemberPrice(500_000, 10), {
+    originalPrice: 500_000,
+    memberPrice: 450_000,
+    savedAmount: 50_000,
+    hasDiscount: true,
+  });
+});
+
+test("vipTeaserPrice shows 10% Explorer VIP savings to free users", () => {
+  const teaser = vipTeaserPrice(1_200_000);
+  assert.equal(teaser.vipPrice, 1_080_000);
+  assert.equal(teaser.savedAmount, 120_000);
+});
+

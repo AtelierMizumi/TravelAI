@@ -16,7 +16,9 @@ import {
   useAction,
 } from "@/components/ui";
 import { api, operationKey } from "@/services/api";
+import { useMembership } from "@/context/membership";
 import { useResource } from "@/hooks/use-resource";
+import { computeMemberPrice } from "@/services/monetization-helpers";
 import type { Booking, Offer, Review, Selection } from "@/services/types";
 
 export function BookingForm({
@@ -26,6 +28,7 @@ export function BookingForm({
   offer: Offer;
   current?: Booking;
 }) {
+  const membership = useMembership();
   const old = current?.itinerary.selection;
   const [now] = useState(() => Date.now());
   const [departure, setDeparture] = useState(old?.departure || "");
@@ -93,9 +96,17 @@ export function BookingForm({
       {current && (
         <Text style={ui.text}>
           Lịch hiện tại {serviceTime(current.itinerary.start)}. Số người được
-          giữ nguyên {old?.guests}. Phí đổi lịch bằng 20% số tiền đặt ban đầu.
+          giữ nguyên {old?.guests}.{" "}
+          {membership.waiveFirstRescheduleFee && current.revision === 1
+            ? "💎 Đặc quyền Explorer VIP: Bạn được MIỄN PHÍ 100% phí đổi lịch lần đầu!"
+            : "Phí đổi lịch bằng 20% số tiền đặt ban đầu."}{" "}
           Chênh lệch dương chỉ áp dụng ngày lễ Việt Nam. Chênh lệch âm không
           được hoàn.
+        </Text>
+      )}
+      {!current && membership.isPremium && (
+        <Text style={{ color: "#047857", fontWeight: "800" }}>
+          {membership.badge} Đặc quyền {membership.planName}: Giá bên dưới sẽ tự động giảm thêm {membership.discountPercent}% khi sang bước thanh toán!
         </Text>
       )}
       <Field
@@ -109,17 +120,23 @@ export function BookingForm({
         <>
           <Text style={ui.label}>Lịch khởi hành có thể chọn</Text>
           <Text style={ui.text}>Chọn một ngày để xem giá và tình trạng giữ chỗ. Giá dưới đây là SIMULATED VND.</Text>
-          {offer.departures?.filter(item => new Date(item.start).getTime() > now).map((item) => (
-            <Action
-              key={item.start}
-              secondary={departure !== item.start}
-              title={`${departure === item.start ? "✓ " : ""}${serviceTime(item.start)} · ${money(item.price)}/khách`}
-              onPress={() => {
-                setDeparture(item.start);
-                setSeats([]);
-              }}
-            />
-          ))}
+          {offer.departures?.filter(item => new Date(item.start).getTime() > now).map((item) => {
+            const mp = computeMemberPrice(item.price, current ? 0 : membership.discountPercent);
+            const priceLabel = mp.hasDiscount
+              ? `${money(mp.memberPrice)}/khách (Giá ${membership.badge} -${membership.discountPercent}%, gốc ${money(item.price)})`
+              : `${money(item.price)}/khách`;
+            return (
+              <Action
+                key={item.start}
+                secondary={departure !== item.start}
+                title={`${departure === item.start ? "✓ " : ""}${serviceTime(item.start)} · ${priceLabel}`}
+                onPress={() => {
+                  setDeparture(item.start);
+                  setSeats([]);
+                }}
+              />
+            );
+          })}
           {!!selectedDeparture?.seats?.length && (
             <View style={ui.row}>
               {selectedDeparture.seats.map((seat) => {
@@ -193,7 +210,10 @@ export function BookingForm({
                 />
                 <Text style={ui.text}>
                   Phòng {room.number} · tối đa {room.maxGuests} khách ·{" "}
-                  {money(room.price)}/đêm ·{" "}
+                  {!current && membership.isPremium
+                    ? `${money(computeMemberPrice(room.price, membership.discountPercent).memberPrice)}/đêm (${membership.badge} -${membership.discountPercent}%, gốc ${money(room.price)})`
+                    : `${money(room.price)}/đêm`}{" "}
+                  ·{" "}
                   {roomOccupied(room.id)
                     ? "Đã có phòng được giữ trong khoảng ngày chọn"
                     : "Server chưa ghi nhận xung đột phòng với khoảng ngày chọn"}

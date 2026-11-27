@@ -14,13 +14,19 @@ import {
   money,
   ui,
 } from "@/components/ui";
+import { useMembership } from "@/context/membership";
 import { useResource } from "@/hooks/use-resource";
 import { api } from "@/services/api";
-import { prioritizeSponsoredCatalog } from "@/services/monetization-helpers";
+import {
+  computeMemberPrice,
+  prioritizeSponsoredCatalog,
+  vipTeaserPrice,
+} from "@/services/monetization-helpers";
 import { provinceFor, provinces } from "@/services/provinces";
 import type { CatalogItem, Place, SponsoredCampaign } from "@/services/types";
 
 export function Catalog({ kind }: { kind: "tours" | "hotels" }) {
+  const membership = useMembership();
   const resource = useResource<CatalogItem[]>(`/${kind}`);
   const sponsored = useResource<SponsoredCampaign[]>("/monetization/sponsored?placement=EXPLORE");
   const places = useResource<Place[]>(kind === "tours" ? "/places" : null);
@@ -242,11 +248,43 @@ export function Catalog({ kind }: { kind: "tours" | "hotels" }) {
                         Điểm danh mục: {item.rating} ★
                       </Text>
                     )}
-                    {item.price != null && (
-                      <Text style={styles.price}>
-                        Giá tham khảo: {money(item.price)}
-                      </Text>
-                    )}
+                    {item.price != null && (() => {
+                      const memberPricing = computeMemberPrice(
+                        item.price,
+                        membership.discountPercent,
+                      );
+                      const teaser = vipTeaserPrice(item.price);
+                      if (membership.isPremium && memberPricing.hasDiscount) {
+                        return (
+                          <View style={styles.vipPriceBox}>
+                            <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 6 }}>
+                              <Text style={styles.strikePrice}>
+                                Giá gốc: {money(memberPricing.originalPrice)}
+                              </Text>
+                              <Text style={styles.saveBadge}>
+                                Tiết kiệm {money(memberPricing.savedAmount)}
+                              </Text>
+                            </View>
+                            <Text style={styles.vipPriceText}>
+                              {membership.badge} (-{membership.discountPercent}%):{" "}
+                              {money(memberPricing.memberPrice)}
+                            </Text>
+                          </View>
+                        );
+                      }
+                      return (
+                        <View style={{ gap: 6 }}>
+                          <Text style={styles.price}>
+                            Giá tham khảo: {money(item.price)}
+                          </Text>
+                          {teaser.savedAmount > 0 && (
+                            <Nav href="/subscriptions">
+                              {`🔒 Giá VIP chỉ ${money(teaser.vipPrice)} (-10%) →`}
+                            </Nav>
+                          )}
+                        </View>
+                      );
+                    })()}
                     <Text style={styles.hint}>
                       Giá và chỗ trống được xác nhận khi chọn lịch.
                     </Text>
@@ -284,4 +322,27 @@ const styles = StyleSheet.create({
   chipSelected: { backgroundColor: "#e0ebce", borderColor: "#9dbdff" },
   chipText: { color: "#334155", fontSize: 13 },
   price: { color: "#075782", fontWeight: "700" },
+  vipPriceBox: {
+    backgroundColor: "#f0fdf4",
+    borderWidth: 1,
+    borderColor: "#86efac",
+    borderRadius: 12,
+    padding: 10,
+    gap: 4,
+  },
+  strikePrice: {
+    color: "#64748b",
+    fontSize: 12,
+    textDecorationLine: "line-through",
+  },
+  saveBadge: {
+    backgroundColor: "#fef3c7",
+    color: "#92400e",
+    fontSize: 11,
+    fontWeight: "800",
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 999,
+  },
+  vipPriceText: { color: "#047857", fontSize: 16, fontWeight: "900" },
 });

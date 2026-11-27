@@ -41,3 +41,34 @@ export function prioritizeSponsoredCatalog<T extends { id: number }>(
   }
   return [...promoted, ...regular];
 }
+
+export function computeMemberPrice(price: number, discountPercent = 0) {
+  const safePrice = Number.isFinite(price) && price > 0 ? Math.round(price) : 0;
+  const pct = Number.isFinite(discountPercent) && discountPercent > 0 ? discountPercent : 0;
+  if (safePrice === 0 || pct === 0) {
+    return {
+      originalPrice: safePrice,
+      memberPrice: safePrice,
+      savedAmount: 0,
+      hasDiscount: false,
+    };
+  }
+  const savedAmount = Math.floor((safePrice * pct + 50) / 100);
+  const memberPrice = Math.max(0, safePrice - savedAmount);
+  return {
+    originalPrice: safePrice,
+    memberPrice,
+    savedAmount,
+    hasDiscount: savedAmount > 0,
+  };
+}
+
+export function vipTeaserPrice(price: number, vipPercent = 10) {
+  const result = computeMemberPrice(price, vipPercent);
+  return {
+    vipPrice: result.memberPrice,
+    savedAmount: result.savedAmount,
+    vipPercent,
+  };
+}
+

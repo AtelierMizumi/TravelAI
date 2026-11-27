@@ -66,6 +66,26 @@ function PostCard({
     reload();
   }
   return (
+    <View
+      style={
+        post.authorTier === "VIP"
+          ? {
+              borderWidth: 2,
+              borderColor: "#f59e0b",
+              borderRadius: 26,
+              backgroundColor: "#fffdf5",
+              padding: 3,
+            }
+          : post.authorTier === "PLUS"
+            ? {
+                borderWidth: 1.5,
+                borderColor: "#087fba",
+                borderRadius: 26,
+                padding: 2,
+              }
+            : undefined
+      }
+    >
     <Card>
       <View style={feedStyles.postHeader}>
         <View style={feedStyles.author}>
@@ -90,10 +110,12 @@ function PostCard({
                 <Text
                   style={{
                     fontSize: 11,
-                    fontWeight: "800",
-                    color: "#087fba",
-                    backgroundColor: "#e2f3fc",
-                    paddingHorizontal: 8,
+                    fontWeight: "900",
+                    color: post.authorTier === "VIP" ? "#fde68a" : "#92400e",
+                    backgroundColor: post.authorTier === "VIP" ? "#1e1b4b" : "#fef3c7",
+                    borderWidth: 1,
+                    borderColor: "#f59e0b",
+                    paddingHorizontal: 9,
                     paddingVertical: 2,
                     borderRadius: 999,
                   }}
@@ -102,7 +124,13 @@ function PostCard({
                 </Text>
               )}
             </View>
-            <Text style={feedStyles.meta}>Thành viên TravelAI</Text>
+            <Text style={feedStyles.meta}>
+              {post.authorTier === "VIP"
+                ? "Hội viên Đặc quyền Explorer VIP"
+                : post.authorTier === "PLUS"
+                  ? "Hội viên TravelAI Plus"
+                  : "Thành viên TravelAI"}
+            </Text>
           </View>
         </View>
         {post.authorId !== user.id && (
@@ -277,6 +305,7 @@ function PostCard({
         </View>
       )}
     </Card>
+    </View>
   );
 }
 const feedStyles = StyleSheet.create({

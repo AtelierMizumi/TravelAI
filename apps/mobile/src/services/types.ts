@@ -298,9 +298,64 @@ export interface MonetizationCatalog {
 }
 export interface MonetizationSummary {
   currentSubscription: UserSubscriptionRecord;
+  totalBookingSavedVnd?: number;
   aiQuota: AiQuotaStatus;
   subscriptionHistory: UserSubscriptionRecord[];
   campaigns: SponsoredCampaign[];
+}
+export interface VipDealItem {
+  kind: "TOUR" | "HOTEL";
+  id: number;
+  name: string;
+  location?: string | null;
+  province?: string | null;
+  rating?: number | null;
+  image?: string | null;
+  originalPrice: number;
+  memberPrice: number;
+  savedAmount: number;
+}
+export interface VipDealsResponse {
+  tier: string;
+  planName: string;
+  badge: string;
+  discountPercent: number;
+  waiveFirstRescheduleFee: boolean;
+  deals: VipDealItem[];
+}
+export interface VipItineraryDay {
+  day: number;
+  title: string;
+  morning: string;
+  afternoon: string;
+  evening: string;
+}
+export interface VipItineraryResponse {
+  tier: string;
+  badge: string;
+  discountPercent: number;
+  province: string;
+  style: string;
+  styleLabel: string;
+  days: VipItineraryDay[];
+  estimatedOriginalVnd: number;
+  estimatedMemberVnd: number;
+  estimatedSavedVnd: number;
+  conciergeSummary: string;
+  recommendedTours: {
+    id: number;
+    name: string;
+    originalPrice: number;
+    memberPrice: number;
+    savedAmount: number;
+  }[];
+  recommendedHotels: {
+    id: number;
+    name: string;
+    originalPrice: number;
+    memberPrice: number;
+    savedAmount: number;
+  }[];
 }
 export interface AdminMonetizationOverview {
   activeSubscribers: number;
