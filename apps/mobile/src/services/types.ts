@@ -143,6 +143,9 @@ export interface Review {
     nights: NightCharge[];
     holiday: boolean;
     calendarVersions: Record<string, string>;
+    memberDiscountPercent?: number;
+    memberDiscount?: number;
+    memberTier?: string;
   };
 }
 export interface Bank {
@@ -177,6 +180,8 @@ export interface Post {
   authorId: number;
   authorName: string;
   authorAvatar?: string;
+  authorTier?: string;
+  authorBadge?: string | null;
   content: string;
   image?: string;
   status?: string;
@@ -211,4 +216,101 @@ export interface Settings {
   maintenanceMode: boolean;
   emailNotify: boolean;
   systemNotify: boolean;
+}
+export interface SubscriptionPlanItem {
+  code: string;
+  name: string;
+  priceVnd: number;
+  durationDays: number;
+  discountPercent: number;
+  waiveFirstRescheduleFee: boolean;
+  unlimitedAi: boolean;
+  badge: string;
+  description: string;
+  active: boolean;
+}
+export interface AdPackageItem {
+  code: string;
+  name: string;
+  priceVnd: number;
+  durationDays: number;
+  placement: "EXPLORE_DESTINATION" | "HOME_FEED" | "ALL";
+  description: string;
+  active: boolean;
+}
+export interface UserSubscriptionRecord {
+  id?: string;
+  userId?: number;
+  userName?: string;
+  userEmail?: string;
+  planCode: string;
+  planName: string;
+  discountPercent: number;
+  waiveFirstRescheduleFee: boolean;
+  unlimitedAi: boolean;
+  badge: string | null;
+  status: string;
+  paidAmount?: number;
+  startsAt?: string | null;
+  expiresAt?: string | null;
+  createdAt?: string | null;
+}
+export interface SponsoredCampaign {
+  id: string;
+  ownerId: number;
+  ownerName?: string;
+  ownerEmail?: string;
+  packageCode: string;
+  packageName: string;
+  placement: string;
+  targetKind: "TOUR" | "HOTEL";
+  targetId: number;
+  targetName: string;
+  targetLocation?: string | null;
+  targetProvince?: string | null;
+  targetPrice?: number | null;
+  targetRating?: number | null;
+  targetImage?: string | null;
+  headline: string;
+  sponsoredLabel: string;
+  durationDays: number;
+  status: string;
+  paidAmount: number;
+  impressions: number;
+  clicks: number;
+  adminNote?: string | null;
+  startsAt?: string | null;
+  endsAt?: string | null;
+  createdAt?: string | null;
+}
+export interface AiQuotaStatus {
+  tier: string;
+  badge: string | null;
+  unlimited: boolean;
+  usedToday: number;
+  dailyLimit: number | null;
+  remaining: number | null;
+}
+export interface MonetizationCatalog {
+  freeDailyAiLimit: number;
+  subscriptionPlans: SubscriptionPlanItem[];
+  adPackages: AdPackageItem[];
+}
+export interface MonetizationSummary {
+  currentSubscription: UserSubscriptionRecord;
+  aiQuota: AiQuotaStatus;
+  subscriptionHistory: UserSubscriptionRecord[];
+  campaigns: SponsoredCampaign[];
+}
+export interface AdminMonetizationOverview {
+  activeSubscribers: number;
+  activeCampaigns: number;
+  pendingCampaigns: number;
+  subscriptionRevenue: number;
+  adRevenue: number;
+  totalMonetizationRevenue: number;
+  subscriptionPlans: SubscriptionPlanItem[];
+  adPackages: AdPackageItem[];
+  campaigns: SponsoredCampaign[];
+  subscriptions: UserSubscriptionRecord[];
 }
