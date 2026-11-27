@@ -1,5 +1,8 @@
 import assert from "node:assert/strict";
+import fs from "node:fs";
+import path from "node:path";
 import test from "node:test";
+import { fileURLToPath } from "node:url";
 import {
   calculateCtrPercent,
   computeMemberPrice,
@@ -73,4 +76,19 @@ test("vipTeaserPrice shows 10% Explorer VIP savings to free users", () => {
   assert.equal(teaser.vipPrice, 1_080_000);
   assert.equal(teaser.savedAmount, 120_000);
 });
+
+test("_layout Link asChild children flatten array styles for Expo Router Slot", () => {
+  const dir = path.dirname(fileURLToPath(import.meta.url));
+  const layoutSrc = fs.readFileSync(path.join(dir, "../src/app/_layout.tsx"), "utf8");
+  const asChildBlocks = layoutSrc.match(/<Link[^>]*asChild[^>]*>\s*<Pressable[\s\S]*?>/g) ?? [];
+  assert.ok(asChildBlocks.length >= 2);
+  for (const block of asChildBlocks) {
+    assert.equal(
+      /style=\{\s*\[/.test(block),
+      false,
+      `Found unflattened array style on Link asChild child:\n${block}`,
+    );
+  }
+});
+
 

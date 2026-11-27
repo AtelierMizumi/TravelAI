@@ -162,10 +162,10 @@ function AppShell() {
                 {user && (
                   <Link href={"/subscriptions" as Href} asChild>
                     <Pressable
-                      style={[
+                      style={StyleSheet.flatten([
                         styles.navItem,
                         membership.isPremium ? styles.navVipActive : styles.navUpgradePill,
-                      ]}
+                      ])}
                     >
                       <Text
                         style={[
@@ -218,11 +218,11 @@ function AppShell() {
                 <Pressable
                   accessibilityRole="link"
                   accessibilityLabel={user ? "Hồ sơ" : "Đăng nhập"}
-                  style={[
+                  style={StyleSheet.flatten([
                     styles.profileButton,
                     membership.isPremium &&
                       (membership.isVip ? styles.profileButtonVip : styles.profileButtonPlus),
-                  ]}
+                  ])}
                 >
                   {user?.avatar ? (
                     <Image
