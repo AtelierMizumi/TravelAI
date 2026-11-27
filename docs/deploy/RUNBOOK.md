@@ -59,7 +59,7 @@ Compose project: `travelai-prod` (separate from the dev stack). Nothing publishe
 ## Rotate a secret
 - `POSTGRES_PASSWORD`: change it in `.env` AND inside Postgres (`ALTER USER`); otherwise the backend cannot connect.
 - Resend API key: create a new sending-only key, revoke the old one, update `TRAVELAI_SMTP_PASSWORD`, run `scripts/prod-apply.sh`. `TRAVELAI_RESET_SECRET` must stay stable (changing it only invalidates codes in flight).
-- Message key: it also protects bank card identifiers (BankDataCipher uses the same key file). Rotating it makes existing chat messages unreadable AND makes encrypted bank cards fail with a server error on `/booking/bank`, bank linking and payment; do not rotate it while chat or encrypted cards exist. The backend refuses to start without the key.
+- Message key: rotating it makes existing chat messages unreadable; only do it on an empty chat table.
 - Tunnel token: Cloudflare -> Tunnel -> Refresh token, update `.env`, then `scripts/prod-apply.sh cloudflared`.
 
 ## Survive a reboot
@@ -77,3 +77,29 @@ Known limitation: schema is managed by `ddl-auto=update` (no migration tool).
 ## Abuse controls
 `/ai/detect` is unauthenticated by design. The edge rejects uploads over 10 MB. No hard Vision quota is set (owner decision, to avoid
 self-throttling in a demo); consider a budget ALERT in Google Cloud so a spike is noticed.
+
+
+## Android APK Release CI/CD
+
+Workflow: `.github/workflows/release-android.yml` (`Release Android APK`).
+
+### Required GitHub Actions Secrets
+
+Configure these under **Settings -> Secrets and variables -> Actions**:
+
+| Secret | Value |
+|---|---|
+| `ANDROID_KEYSTORE_BASE64` | Base64-encoded release `.keystore`/`.jks` (`base64 -w 0 <keystore>`) |
+| `ANDROID_KEYSTORE_PASSWORD` | Keystore password |
+| `ANDROID_KEY_ALIAS` | Key alias inside the keystore |
+| `ANDROID_KEY_PASSWORD` | Key password |
+
+Optional repository variable: `PUBLIC_ORIGIN` (defaults to `https://travelai.minhthuan.dev`).
+
+### Triggering a Release
+
+- **One-click SemVer bump (GitHub Actions -> Release Android APK -> Run workflow):**
+  - Choose `bump`: `patch`, `minor`, `major`, or `custom` (with `custom_version`, e.g. `2.2.0`).
+  - `scripts/compute-release-version.sh` computes the next SemVer tag and monotonic `versionCode = major * 10000 + minor * 100 + patch`.
+  - Runs lint, unit tests, TypeScript check, Expo Android prebuild, Gradle signed release APK build, `apksigner verify`, SHA-256 checksum, and publishes a GitHub Release with `TravelAI-v<version>-android.apk` + `SHA256SUMS.txt`.
+- **Tag push:** pushing any SemVer tag `vX.Y.Z` (or `vX.Y.Z-rc.1`) triggers the same pipeline automatically.
