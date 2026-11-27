@@ -1,7 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
 import { useRef, useState } from "react";
 import { Pressable, StyleSheet, Switch, Text, View } from "react-native";
 import { PinTabs } from "@/components/pin-ui";
+import { VipConcierge } from "@/components/vip-concierge";
 import {
   Action,
   Card,
@@ -15,6 +17,7 @@ import {
   useAction,
 } from "@/components/ui";
 import { useAuth } from "@/context/auth";
+import { useMembership } from "@/context/membership";
 import { useResource } from "@/hooks/use-resource";
 import { api, operationKey } from "@/services/api";
 import { operationAttempt } from "@/services/attempt";
@@ -24,6 +27,7 @@ import type {
   CatalogItem,
   MonetizationCatalog,
   MonetizationSummary,
+  VipDealsResponse,
 } from "@/services/types";
 
 const PLACEMENT_LABELS: Record<string, string> = {
@@ -34,9 +38,16 @@ const PLACEMENT_LABELS: Record<string, string> = {
 
 export default function SubscriptionsScreen() {
   const { user } = useAuth();
+  const membership = useMembership();
   const [tab, setTab] = useState("plans");
   const catalog = useResource<MonetizationCatalog>("/monetization/catalog");
   const summary = useResource<MonetizationSummary>(user ? "/monetization/me" : null);
+  const vipDeals = useResource<VipDealsResponse>(
+    user && membership.isPremium ? "/monetization/vip/deals" : null,
+    0,
+    true,
+    membership.tier,
+  );
   const bank = useResource<Bank>(user ? "/booking/bank" : null);
   const tours = useResource<CatalogItem[]>("/tours");
   const hotels = useResource<CatalogItem[]>("/hotels");
@@ -82,8 +93,9 @@ export default function SubscriptionsScreen() {
     subAttempt.current = null;
     setCvv("");
     setConfirmed(false);
-    setNotice(`Đã kích hoạt thành công gói ${chosenPlan.name} (SIMULATED).`);
+    setNotice(`Đã kích hoạt thành công gói ${chosenPlan.name} (SIMULATED). Toàn bộ giao diện & bảng giá đã chuyển sang chế độ Đặc quyền!`);
     summary.reload();
+    membership.reloadMembership();
     bank.reload();
   }
 
@@ -159,6 +171,7 @@ export default function SubscriptionsScreen() {
                 });
                 setNotice("Đã hủy gói thành viên hiện tại.");
                 summary.reload();
+                membership.reloadMembership();
               })
             }
           />
@@ -174,6 +187,7 @@ export default function SubscriptionsScreen() {
         }}
         tabs={[
           { id: "plans", label: "Gói thành viên (B2C)", icon: "sparkles-outline" },
+          { id: "lounge", label: "👑 Đặc quyền VIP Lounge", icon: "diamond-outline" },
           { id: "ads", label: "Gói quảng cáo (Sponsored)", icon: "megaphone-outline" },
         ]}
       />
@@ -275,6 +289,70 @@ export default function SubscriptionsScreen() {
                 disabled={action.busy || !confirmed || !cardId || !cvv.trim()}
                 onPress={() => action.run(handleBuySubscription)}
               />
+            </Card>
+          )}
+        </>
+      )}
+
+      {tab === "lounge" && (
+        <>
+          <VipConcierge />
+          {!membership.isPremium ? (
+            <Card>
+              <Text style={ui.heading}>
+                🔒 Kho Deal Bí Mật Chỉ Dành Cho Hội Viên Plus / Explorer VIP
+              </Text>
+              <Text style={ui.text}>
+                Nâng cấp ở tab Gói thành viên để mở khóa ngay bảng giá ưu đãi riêng (-5% đến -10%) trên mọi Tour & Khách sạn cùng đặc quyền miễn phí đổi lịch lần đầu!
+              </Text>
+              <Action
+                title="Chuyển sang chọn gói nâng cấp →"
+                onPress={() => setTab("plans")}
+              />
+            </Card>
+          ) : (
+            <Card>
+              <Text style={ui.heading}>
+                👑 Bảng Giá Đặc Quyền Của Riêng Bạn ({membership.badge} · Giảm {membership.discountPercent}%)
+              </Text>
+              <Text style={ui.text}>
+                Mọi mức giá bên dưới đã áp dụng chiết khấu cố định {membership.discountPercent}% dành riêng cho thẻ {membership.planName}.
+              </Text>
+              {!vipDeals.data?.deals.length && (
+                <Text style={ui.text}>Chưa có Tour hoặc Khách sạn đang mở bán để tính ưu đãi.</Text>
+              )}
+              {vipDeals.data?.deals.map((deal) => (
+                <Card key={`${deal.kind}-${deal.id}`}>
+                  <View style={styles.cardHeaderRow}>
+                    <Text style={ui.heading}>
+                      {deal.kind === "TOUR" ? "🧭" : "🏨"} {deal.name}
+                    </Text>
+                    <Text style={styles.discountPill}>
+                      Tiết kiệm {money(deal.savedAmount)}
+                    </Text>
+                  </View>
+                  {!!deal.location && <Text style={ui.text}>{deal.location}</Text>}
+                  <Text style={{ color: "#94a3b8", textDecorationLine: "line-through", fontSize: 13 }}>
+                    Giá người thường: {money(deal.originalPrice)}
+                  </Text>
+                  <Text style={styles.bigPrice}>
+                    Giá {membership.badge}: {money(deal.memberPrice)}
+                  </Text>
+                  <Action
+                    secondary
+                    title="Đặt ngay với giá Hội viên →"
+                    onPress={() =>
+                      router.push({
+                        pathname:
+                          deal.kind === "TOUR"
+                            ? "/booking/tours/[id]"
+                            : "/booking/hotels/[id]",
+                        params: { id: String(deal.id) },
+                      })
+                    }
+                  />
+                </Card>
+              ))}
             </Card>
           )}
         </>

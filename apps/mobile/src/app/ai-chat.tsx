@@ -12,12 +12,15 @@ import {
   useAction,
 } from "@/components/ui";
 import { useAuth } from "@/context/auth";
+import { useMembership } from "@/context/membership";
 import { api } from "@/services/api";
+import { VipConcierge } from "@/components/vip-concierge";
 import { VoiceRecorder } from "@/components/voice";
 
 type Turn = { role: "user" | "model"; text: string };
 export default function AiChat() {
   const { user } = useAuth();
+  const membership = useMembership();
   const [message, setMessage] = useState("");
   const [turns, setTurns] = useState<Turn[]>([]);
   const action = useAction();
@@ -30,10 +33,11 @@ export default function AiChat() {
   }
   return (
     <Screen title="Trợ lý du lịch AI" protected>
+      <VipConcierge />
       <Text style={ui.text}>
-        Tin nhắn bạn gửi ở đây được chuyển tới Google Gemini để trả lời. Không
-        gửi mật khẩu, thông tin thẻ hoặc dữ liệu riêng tư. Nội dung trả lời có
-        thể không chính xác.
+        {membership.isPremium
+          ? `${membership.badge} Bạn đang dùng Trợ lý AI không giới hạn lượt trong ngày.`
+          : "Tài khoản Free có 10 lượt hỏi đáp AI/ngày. Tin nhắn gửi ở đây được chuyển tới Google Gemini (không gửi mật khẩu hoặc thông tin thẻ)."}
       </Text>
       <Card>
         {turns.length === 0 && (
