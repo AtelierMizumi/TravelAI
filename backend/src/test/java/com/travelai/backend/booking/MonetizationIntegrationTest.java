@@ -194,6 +194,55 @@ class MonetizationIntegrationTest {
         JsonNode reschedQuote = json.valueToTree(rescheduleReview.get("quote"));
         assertEquals(0L, reschedQuote.get("fee").asLong());
         assertEquals(0L, reschedQuote.get("total").asLong());
+
+        // 6. Summary tracks cumulative booking savings for the VIP member (50,000 VND saved)
+        mvc.perform(get("/api/monetization/me").header("Authorization", travelerBearer))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalBookingSavedVnd").value(50_000));
+    }
+
+    @Test
+    void premiumExclusiveEndpointsRejectFreeUsersAndUnlockConciergeAndDealsForMembers() throws Exception {
+        // 1. Free user is strictly blocked (403 FORBIDDEN) from VIP-exclusive features
+        mvc.perform(get("/api/monetization/vip/deals").header("Authorization", travelerBearer))
+                .andExpect(status().isForbidden());
+        mvc.perform(post("/api/monetization/vip/itinerary")
+                        .header("Authorization", travelerBearer)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"province\":\"Đà Nẵng\",\"days\":2,\"style\":\"LUXURY\"}"))
+                .andExpect(status().isForbidden());
+
+        // 2. Upgrade to PLUS (99,000 VND, 5% discount) -> unlocks both VIP Lounge Deals and VIP AI Concierge
+        String subPayload = json.writeValueAsString(Map.of(
+                "planCode", "PLUS",
+                "cardId", card.get("cardId"),
+                "testCvv", card.get("testCvv"),
+                "confirmed", true
+        ));
+        mvc.perform(post("/api/monetization/subscriptions/purchase")
+                        .header("Authorization", travelerBearer)
+                        .header("Idempotency-Key", key())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(subPayload))
+                .andExpect(status().isOk());
+
+        mvc.perform(get("/api/monetization/vip/deals").header("Authorization", travelerBearer))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.tier").value("PLUS"))
+                .andExpect(jsonPath("$.discountPercent").value(5))
+                .andExpect(jsonPath("$.deals[0].originalPrice").value(500_000))
+                .andExpect(jsonPath("$.deals[0].memberPrice").value(475_000))
+                .andExpect(jsonPath("$.deals[0].savedAmount").value(25_000));
+
+        mvc.perform(post("/api/monetization/vip/itinerary")
+                        .header("Authorization", travelerBearer)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"province\":\"Đà Nẵng\",\"days\":2,\"style\":\"LUXURY\"}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.tier").value("PLUS"))
+                .andExpect(jsonPath("$.province").value("Đà Nẵng"))
+                .andExpect(jsonPath("$.days.length()").value(2))
+                .andExpect(jsonPath("$.estimatedSavedVnd").value(25_000));
     }
 
     @Test
