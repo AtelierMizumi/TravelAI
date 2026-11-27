@@ -34,6 +34,7 @@ public class PostController {
     private final ShareRepository shareRepository;
     private final NotificationPublisher notificationPublisher;
     private final com.travelai.backend.community.PostAccessPolicy policy;
+    private final com.travelai.backend.booking.MonetizationService monetization;
 
     public PostController(
             UserRepository users,
@@ -44,6 +45,20 @@ public class PostController {
             NotificationPublisher notificationPublisher,
             com.travelai.backend.community.PostAccessPolicy policy
     ) {
+        this(users, postRepository, likeRepository, commentRepository, shareRepository, notificationPublisher, policy, null);
+    }
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public PostController(
+            UserRepository users,
+            PostRepository postRepository,
+            PostLikeRepository likeRepository,
+            CommentRepository commentRepository,
+            ShareRepository shareRepository,
+            NotificationPublisher notificationPublisher,
+            com.travelai.backend.community.PostAccessPolicy policy,
+            @org.springframework.beans.factory.annotation.Autowired(required = false) com.travelai.backend.booking.MonetizationService monetization
+    ) {
         this.users = users;
         this.postRepository = postRepository;
         this.likeRepository = likeRepository;
@@ -51,6 +66,7 @@ public class PostController {
         this.shareRepository = shareRepository;
         this.notificationPublisher = notificationPublisher;
         this.policy = policy;
+        this.monetization = monetization;
     }
 
     @GetMapping
@@ -414,6 +430,11 @@ public class PostController {
         data.put("authorId", post.getAuthorId());
         data.put("authorName", post.getAuthorName());
         data.put("authorAvatar", post.getAuthorAvatar());
+        if (monetization != null && post.getAuthorId() != null) {
+            var badgeInfo = monetization.badgeForUser(post.getAuthorId());
+            data.put("authorTier", badgeInfo.get("tier"));
+            data.put("authorBadge", badgeInfo.get("badge").isEmpty() ? null : badgeInfo.get("badge"));
+        }
         data.put("content", post.getContent());
         data.put("image", post.getImage());
         data.put("status", post.getStatus());

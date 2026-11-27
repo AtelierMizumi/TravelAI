@@ -48,8 +48,8 @@ public class ApiSecurity implements WebMvcConfigurer {
         registry.addInterceptor(new HandlerInterceptor() {
             @Override public boolean preHandle(HttpServletRequest request, HttpServletResponse response,Object handler) {
                 String path=normalizedPath(request), method=request.getMethod();
-                if (method.equals("OPTIONS") || path.equals("/api/auth/login") || path.equals("/api/auth/register") || (method.equals("POST") && (path.equals("/api/auth/password-reset/request") || path.equals("/api/auth/password-reset/verify") || path.equals("/api/auth/password-reset/confirm")))) return true;
-                if (method.equals("GET") && (path.matches("/api/(places|tours|hotels)(/.*)?") || path.matches("/api/ratings/(TOUR|HOTEL)/[0-9]+") || path.equals("/api/booking/offers") || path.equals("/api/system-settings"))) return true;
+                if (method.equals("OPTIONS") || path.equals("/api/auth/login") || path.equals("/api/auth/register") || (method.equals("POST") && (path.equals("/api/auth/password-reset/request") || path.equals("/api/auth/password-reset/verify") || path.equals("/api/auth/password-reset/confirm") || path.matches("/api/monetization/sponsored/[a-zA-Z0-9-]+/(impression|click)")))) return true;
+                if (method.equals("GET") && (path.matches("/api/(places|tours|hotels)(/.*)?") || path.matches("/api/ratings/(TOUR|HOTEL)/[0-9]+") || path.equals("/api/booking/offers") || path.equals("/api/system-settings") || path.equals("/api/monetization/catalog") || path.equals("/api/monetization/sponsored"))) return true;
                 SessionService.Actor actor=sessions.authenticate(request.getHeader("Authorization"));
                 request.setAttribute("travelai.actor",actor);
                 if ((!method.equals("GET") && path.equals("/api/system-settings")) || path.matches("/api/(admin|users|settings)(/.*)?")) actor.requireAdmin();
@@ -59,7 +59,7 @@ public class ApiSecurity implements WebMvcConfigurer {
                     if (path.matches("/api/(tour|hotel)-bookings")) actor.requireAdmin();
                 }
                 if (!method.equals("GET") && path.matches("/api/(places|tours|hotels)(/.*)?")) actor.requireAdmin();
-                if (maintenancePolicy != null && method.equals("POST") && path.matches("/api/booking/reviews(/[^/]+/pay)?")) {
+                if (maintenancePolicy != null && method.equals("POST") && (path.matches("/api/booking/reviews(/[^/]+/pay)?") || path.matches("/api/monetization/(subscriptions|ads)/purchase"))) {
                     boolean enabled = settingsService != null
                             && Boolean.TRUE.equals(settingsService.current().getMaintenanceMode());
                     if (maintenancePolicy.shouldBlock(enabled, actor,
