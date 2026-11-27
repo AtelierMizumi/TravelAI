@@ -38,5 +38,20 @@ public final class BookingContracts {
                             Instant start, Instant end, String timezone, Policy policy, Map<String,List<Long>> roomPrices,
                             List<Resource> resources, long itineraryPrice, int changeHours) {}
     public record Quote(Itinerary itinerary, long originalAmount, long fee, long holidayDifference,
-                        long total, List<NightCharge> nights, boolean holiday, Map<Integer,String> calendarVersions) {}
+                        long total, List<NightCharge> nights, boolean holiday, Map<Integer,String> calendarVersions,
+                        int memberDiscountPercent, long memberDiscount, String memberTier) {
+        public Quote(Itinerary itinerary, long originalAmount, long fee, long holidayDifference,
+                     long total, List<NightCharge> nights, boolean holiday, Map<Integer,String> calendarVersions) {
+            this(itinerary, originalAmount, fee, holidayDifference, total, nights, holiday, calendarVersions, 0, 0L, "FREE");
+        }
+    }
+    public record SubscriptionPurchaseInput(String planCode, String cardId, String testCvv, boolean confirmed) {}
+    public record AdPurchaseInput(String packageCode, String targetKind, Long targetId, String headline,
+                                  String cardId, String testCvv, boolean confirmed) {}
+    public record AdDecisionInput(String action, String reason) {}
+    public record PlanUpdateInput(String name, Long priceVnd, Integer durationDays, Integer discountPercent,
+                                  Boolean waiveFirstRescheduleFee, Boolean unlimitedAi, String badge,
+                                  String description, Boolean active) {}
+    public record PackageUpdateInput(String name, Long priceVnd, Integer durationDays, String placement,
+                                     String description, Boolean active) {}
 }
