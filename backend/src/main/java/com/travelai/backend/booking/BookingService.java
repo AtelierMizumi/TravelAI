@@ -184,7 +184,7 @@ public class BookingService {
             BookingOffering offer=find(BookingOffering.class,input.offeringId()); require(offer.active && catalogActive(offer),"Service is unavailable");
             if(current!=null) require(current.offeringId.equals(offer.id),"Rescheduling stays within the same tour or hotel");
             Itinerary target=itinerary(offer,input,now);
-            Quote quote=quote(target,current,current!=null);
+            Quote quote=quote(actor.id(),target,current,current!=null,now);
             checkCutoffs(now,current,target);
             supersede(actor,input);
             availability(target.resources(),current==null?null:current.id,now);
@@ -242,7 +242,18 @@ public class BookingService {
         if (promotion==null || serviceDate.isBefore(promotion.from()) || serviceDate.isAfter(promotion.through())) return price;
         return BigInteger.valueOf(price).multiply(BigInteger.valueOf(100L-promotion.percent())).add(BigInteger.valueOf(50)).divide(BigInteger.valueOf(100)).longValueExact();
     }
-    private Quote quote(Itinerary target,Reservation current,boolean requireCalendar) {
+    private UserSubscription activeSubscription(long userId, Instant now) {
+        return em.createQuery(
+                        "select s from UserSubscription s where s.userId=:uid and s.status='ACTIVE' and s.expiresAt>:now order by s.discountPercent desc, s.expiresAt desc",
+                        UserSubscription.class)
+                .setParameter("uid", userId)
+                .setParameter("now", now)
+                .setMaxResults(1)
+                .getResultStream()
+                .findFirst()
+                .orElse(null);
+    }
+    private Quote quote(long ownerId,Itinerary target,Reservation current,boolean requireCalendar,Instant now) {
         Itinerary old=current==null?null:read(current.itinerary,Itinerary.class);
         if(old!=null) require(old.selection().guests()==target.selection().guests(),"Rescheduling must preserve total guests");
         Map<Integer,String> versions=new TreeMap<>(); Set<LocalDate> holidays=new HashSet<>();
@@ -274,10 +285,17 @@ public class BookingService {
                 }
             }
         }
+        UserSubscription sub=activeSubscription(ownerId,now);
+        String tier=sub==null?"FREE":sub.planCode;
+        int discountPct=(current==null && sub!=null)?Math.max(0,sub.discountPercent):0;
+        long memberDiscount=discountPct>0
+                ? BigInteger.valueOf(target.itineraryPrice()).multiply(BigInteger.valueOf(discountPct)).add(BigInteger.valueOf(50)).divide(BigInteger.valueOf(100)).longValueExact()
+                : 0L;
         long original=current==null?target.itineraryPrice():current.originalAmount;
-        long fee=current==null?0:reschedulingFee(original);
-        long total=current==null?target.itineraryPrice():Math.addExact(fee,difference);
-        return new Quote(target,original,fee,difference,total,charges,holidays.contains(target.start().atZone(VIETNAM).toLocalDate()),versions);
+        boolean waiveFee=current!=null && current.revision==1 && sub!=null && sub.waiveFirstRescheduleFee;
+        long fee=current==null?0:(waiveFee?0:reschedulingFee(original));
+        long total=current==null?Math.max(0L,Math.subtractExact(target.itineraryPrice(),memberDiscount)):Math.addExact(fee,difference);
+        return new Quote(target,original,fee,difference,total,charges,holidays.contains(target.start().atZone(VIETNAM).toLocalDate()),versions,discountPct,memberDiscount,tier);
     }
     private void checkCutoffs(Instant now,Reservation current,Itinerary target) {
         if(current==null) return;
@@ -299,7 +317,7 @@ public class BookingService {
             Quote quoted=read(review.quote,Quote.class); Itinerary target=quoted.itinerary();
             BookingOffering liveOffer=find(BookingOffering.class,target.selection().offeringId()); require(liveOffer.active && catalogActive(liveOffer),"Service cannot be provided");
             checkCutoffs(now,current,target); require(target.start().isAfter(now),"Service has started");
-            Quote latest=quote(target,current,current!=null);
+            Quote latest=quote(actor.id(),target,current,current!=null,now);
             conflict(quoted.total()==latest.total()&&write(quoted.nights()).equals(write(latest.nights()))
                     &&tourClassificationEquivalent(quoted,latest),"Holiday classification or payment changed; review and confirm again");
             availability(target.resources(),current==null?null:current.id,now,review.id);
@@ -562,6 +580,50 @@ public class BookingService {
     private String write(Object value) { try { return json.writeValueAsString(value); } catch(Exception e) { throw new IllegalArgumentException("Invalid request structure"); } }
     private <T> T read(String value,Class<T> type) { try { return json.readValue(value,type); } catch(Exception e) { throw new IllegalStateException("Invalid persisted booking state",e); } }
     private Map<String,Object> readMap(String value) { try { return json.readValue(value,new TypeReference<LinkedHashMap<String,Object>>(){}); } catch(Exception e) { throw new IllegalStateException("Invalid persisted response",e); } }
+    void lockForMonetization() {
+        lock();
+    }
+    Map<String,Object> executeIdempotent(SessionService.Actor actor, String action, String key, Object payload, Supplier<Map<String,Object>> work) {
+        return once(actor, action, key, payload, work);
+    }
+    String chargeLinkedCard(SessionService.Actor actor, String cardId, String testCvv, long amount,
+                            String ledgerKind, String referenceId, String reasonLabel, String action, String key, Instant now) {
+        require(amount >= 0, "Invalid SIMULATED amount");
+        BankCard c = card(cardId);
+        if (c == null || !c.linked || testCvv == null || c.cvvHash == null
+                || !codeMatches(c, testCvv) || !cardPayable(now, c.expiryMonth, c.expiryYear, c.status)) {
+            throw bad("Thông tin thẻ ngân hàng SIMULATED không hợp lệ hoặc chưa liên kết.");
+        }
+        BankAccount account = find(BankAccount.class, c.accountId);
+        if (account.ownerId != actor.id()) {
+            throw bad("Thẻ ngân hàng SIMULATED không thuộc tài khoản của bạn.");
+        }
+        if (account.balance < amount) {
+            throw bad("Số dư ngân hàng SIMULATED không đủ để thanh toán.");
+        }
+        account.balance = Math.subtractExact(account.balance, amount);
+        String opId = operationId(actor, action, key);
+        ledger(account.id, referenceId, ledgerKind, amount, opId, now);
+        PaymentAttempt attempt = new PaymentAttempt();
+        attempt.id = id();
+        attempt.operationId = opId;
+        attempt.ownerId = actor.id();
+        attempt.reviewId = referenceId;
+        attempt.reservationId = null;
+        attempt.status = "SUCCEEDED";
+        attempt.reason = reasonLabel + " (SIMULATED)";
+        attempt.amount = amount;
+        attempt.createdAt = now;
+        em.persist(attempt);
+        return account.id;
+    }
+    void refundLinkedAccount(SessionService.Actor actor, String accountId, String referenceId, String ledgerKind,
+                             long amount, String action, String key, Instant now) {
+        if (accountId == null || amount <= 0) return;
+        BankAccount account = find(BankAccount.class, accountId);
+        account.balance = Math.addExact(account.balance, amount);
+        ledger(account.id, referenceId, ledgerKind, amount, operationId(actor, action, key), now);
+    }
     private void conflict(boolean condition,String message) { if(!condition) throw new ResponseStatusException(HttpStatus.CONFLICT,message); }
     private ResponseStatusException bad(String message) { return new ResponseStatusException(HttpStatus.BAD_REQUEST,message); }
 }
