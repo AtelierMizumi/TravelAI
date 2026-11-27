@@ -19,9 +19,11 @@ import {
   ui,
   useAction,
 } from "@/components/ui";
+import { SponsoredStrip } from "@/components/sponsored-strip";
 import { useAuth } from "@/context/auth";
 import { useResource } from "@/hooks/use-resource";
 import { api } from "@/services/api";
+import { getTierPalette } from "@/services/monetization-helpers";
 import type { Post, User } from "@/services/types";
 function PostCard({
   post,
@@ -64,7 +66,21 @@ function PostCard({
     await api(path, { method, body });
     reload();
   }
+  const authorPalette = getTierPalette(post.authorTier);
   return (
+    <View
+      style={
+        post.authorTier === "VIP" || post.authorTier === "PLUS"
+          ? {
+              borderWidth: post.authorTier === "VIP" ? 2 : 1.5,
+              borderColor: authorPalette.cardBorder,
+              borderRadius: 26,
+              backgroundColor: authorPalette.cardBg,
+              padding: 3,
+            }
+          : undefined
+      }
+    >
     <Card>
       <View style={feedStyles.postHeader}>
         <View style={feedStyles.author}>
@@ -79,12 +95,42 @@ function PostCard({
             </View>
           )}
           <View>
-            <Nav
-              href={{ pathname: "/people/[id]", params: { id: post.authorId } }}
-            >
-              {post.authorName}
-            </Nav>
-            <Text style={feedStyles.meta}>Thành viên TravelAI</Text>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+              <Nav
+                href={{ pathname: "/people/[id]", params: { id: post.authorId } }}
+              >
+                {post.authorName}
+              </Nav>
+              {!!post.authorBadge && (
+                <View
+                  style={{
+                    backgroundColor: authorPalette.badgeBg,
+                    borderWidth: 1,
+                    borderColor: authorPalette.badgeBorder,
+                    paddingHorizontal: 9,
+                    paddingVertical: 3,
+                    borderRadius: 999,
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontSize: 11,
+                      fontWeight: "900",
+                      color: authorPalette.badgeText,
+                    }}
+                  >
+                    {post.authorBadge}
+                  </Text>
+                </View>
+              )}
+            </View>
+            <Text style={feedStyles.meta}>
+              {post.authorTier === "VIP"
+                ? "Hội viên Đặc quyền Explorer VIP"
+                : post.authorTier === "PLUS"
+                  ? "Hội viên TravelAI Plus"
+                  : "Thành viên TravelAI"}
+            </Text>
           </View>
         </View>
         {post.authorId !== user.id && (
@@ -259,6 +305,7 @@ function PostCard({
         </View>
       )}
     </Card>
+    </View>
   );
 }
 const feedStyles = StyleSheet.create({
@@ -408,6 +455,7 @@ export default function Feed() {
               }
             />
           </Card>
+          <SponsoredStrip placement="FEED" title="Đề xuất được tài trợ trên bảng tin" />
           <MotionEntry section="feed-stories"><Text style={ui.heading}>Câu chuyện cộng đồng</Text></MotionEntry>
           <ErrorText message={feed.error || own.error} />
           {edit && <Nav href="/feed">Xem tất cả bài viết</Nav>}

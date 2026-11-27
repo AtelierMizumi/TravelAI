@@ -8,6 +8,8 @@ import { useEffect, useState } from "react";
 import * as Linking from "expo-linking";
 import { Text, View } from "react-native";
 import { MapsLink } from "@/components/maps-link";
+import { SponsoredStrip } from "@/components/sponsored-strip";
+import { VipConcierge } from "@/components/vip-concierge";
 import { Card, ErrorText, Nav, Screen, ui } from "@/components/ui";
 import { useResource } from "@/hooks/use-resource";
 import type { CatalogItem, Place } from "@/services/types";
@@ -95,6 +97,16 @@ export default function Destination() {
           <Nav href="/booking/hotels">Tìm khách sạn →</Nav>
         </View>
       </Card>
+      {!!(place.data?.province || related.data?.province) && (
+        <VipConcierge defaultProvince={(place.data?.province || related.data?.province)!} />
+      )}
+      {!!related.data?.province && (
+        <SponsoredStrip
+          placement="DESTINATION"
+          province={related.data.province}
+          title={`Đề xuất tài trợ tại ${related.data.province}`}
+        />
+      )}
       {related.data && relatedTours?.length === 0 && relatedHotels?.length === 0 && <Text style={ui.text}>Chưa có tour hoặc khách sạn phù hợp trong danh mục của tỉnh này.</Text>}
       {!!relatedTours?.length && (
         <Card>

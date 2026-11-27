@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { Link } from 'expo-router';
 import { Text, View } from 'react-native';
 import { Card, ErrorText, SearchBar, Nav, Screen, ui } from '@/components/ui';
+import { SponsoredStrip } from '@/components/sponsored-strip';
 import { useResource } from '@/hooks/use-resource';
 import { searchPlaces } from '@/services/place-search';
 import type { Place } from '@/services/types';
@@ -14,8 +15,10 @@ export default function Explore() {
   return <Screen title="Khám phá">
     <Card section="explore-intro"><Text style={ui.heading}>Chọn hành trình của bạn</Text><View style={ui.row}>
       <Nav href="/booking/tours">Khám phá tour</Nav><Nav href="/booking/hotels">Tìm khách sạn</Nav>
+      <Nav href="/subscriptions">Gói VIP & Quảng cáo</Nav>
       <Nav href="/ai-chat">Trợ lý du lịch AI</Nav><Nav href="/policy">Chính sách</Nav>
     </View></Card>
+    <SponsoredStrip placement="EXPLORE" title="Dịch vụ nổi bật được tài trợ" />
     <SearchBar loading={places.loading} label="Tìm điểm đến" value={query} onChangeText={setQuery} placeholder="Tên địa danh hoặc tỉnh/thành" />
     <MotionEntry section="explore-destinations"><Text style={ui.heading}>Điểm đến dành cho bạn</Text></MotionEntry>
     <ErrorText message={places.error} />

@@ -5,6 +5,7 @@ import { MotionIcon } from "@/components/motion-icon";
 import { DestinationDeck } from "@/components/destination-deck";
 import { ImageCredit } from "@/components/image-credit";
 import { PinTaskCard } from "@/components/pin-ui";
+import { SponsoredStrip } from "@/components/sponsored-strip";
 import { landmarkCredit, landmarkImage } from "@/services/landmark-media";
 import { useHydrated } from "@/hooks/use-hydrated";
 import { HydrationSafeIonicon as Ionicons } from "@/components/hydration-safe-icon";
@@ -21,10 +22,16 @@ import {
 
 import { Footer } from "@/components/footer";
 import { ErrorText } from "@/components/ui";
+import { useAuth } from "@/context/auth";
+import { useMembership } from "@/context/membership";
 import { useResource } from "@/hooks/use-resource";
+import { getTierPalette } from "@/services/monetization-helpers";
 import type { CatalogItem, Offer, Place } from "@/services/types";
 
 export default function Home() {
+  const { user } = useAuth();
+  const membership = useMembership();
+  const palette = getTierPalette(membership.tier);
   const places = useResource<Place[]>("/places", 0, true);
   const offers = useResource<Offer[]>("/booking/offers", 0, true);
   const tours = useResource<CatalogItem[]>("/tours", 0, true);
@@ -61,6 +68,61 @@ export default function Home() {
       style={styles.page}
       contentContainerStyle={styles.container}
     >
+      {membership.isPremium && (
+        <View
+          style={{
+            backgroundColor: palette.heroBg,
+            borderRadius: 24,
+            borderWidth: 2,
+            borderColor: palette.heroBorder,
+            padding: 20,
+            marginBottom: 18,
+            gap: 8,
+          }}
+        >
+          <Text style={{ color: palette.heroEyebrow, fontSize: 12, fontWeight: "900", letterSpacing: 0.6 }}>
+            👑 ĐẶC QUYỀN HỘI VIÊN ĐANG KÍCH HOẠT · {membership.planName.toUpperCase()}
+          </Text>
+          <Text style={{ color: palette.heroTitle, fontSize: 19, fontWeight: "800", lineHeight: 27 }}>
+            Xin chào {user?.name || "Hội viên"}, mọi Tour & Khách sạn trên hệ thống đều đang giảm trực tiếp {membership.discountPercent}% cho riêng bạn!
+          </Text>
+          <Text style={{ color: palette.heroBody, fontSize: 14, lineHeight: 21 }}>
+            Không giới hạn lượt nhận diện & hỏi đáp AI · Đã mở khóa Lập lịch trình AI VIP Concierge & Phòng chờ Ưu đãi VIP.
+          </Text>
+          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10, marginTop: 4 }}>
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => router.push("/ai-chat")}
+              style={{
+                backgroundColor: palette.heroCtaBg,
+                paddingHorizontal: 15,
+                paddingVertical: 11,
+                borderRadius: 12,
+              }}
+            >
+              <Text style={{ color: palette.heroCtaText, fontWeight: "900", fontSize: 13 }}>
+                ✨ Mở AI VIP Concierge →
+              </Text>
+            </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => router.push("/subscriptions")}
+              style={{
+                backgroundColor: palette.heroSubBg,
+                borderWidth: 1,
+                borderColor: palette.heroBorder,
+                paddingHorizontal: 15,
+                paddingVertical: 11,
+                borderRadius: 12,
+              }}
+            >
+              <Text style={{ color: palette.heroTitle, fontWeight: "800", fontSize: 13 }}>
+                👑 Vào Phòng chờ VIP →
+              </Text>
+            </Pressable>
+          </View>
+        </View>
+      )}
       <MotionEntry kind="hero"><View style={[styles.hero, compact && styles.heroCompact]}>
         <View
 
@@ -135,7 +197,7 @@ export default function Home() {
         <PinTaskCard eyebrow="02 · TRẢI NGHIỆM" title="Đi theo cảm hứng" description="Tìm một hành trình phù hợp với điểm đến và khoảng thời gian của bạn." icon="compass-outline" action="Chọn tour cho bạn" onPress={() => router.push("/booking/tours")} />
         <PinTaskCard eyebrow="03 · NGHỈ NGƠI" title="Một nơi để trở về" description="Khám phá nơi lưu trú, tìm căn phòng yêu thích và chọn lịch nghỉ." icon="bed-outline" action="Tìm nơi lưu trú" onPress={() => router.push("/booking/hotels")} />
       </View>
-      </MotionEntry>{featured.length > 0 && (
+      </MotionEntry><View style={{ marginTop: 28 }}><SponsoredStrip placement="HOME" title="Đề xuất nổi bật được tài trợ" /></View>{featured.length > 0 && (
         <>
       <MotionEntry section="home-offers"><View style={styles.destinationHeader}>
             <View>

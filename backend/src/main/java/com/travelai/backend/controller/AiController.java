@@ -24,17 +24,24 @@ public class AiController {
     private final HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
     private final String key;
     private final String model;
+    private final com.travelai.backend.booking.MonetizationService monetization;
     private final Map<Long, Long> lastRequest = new ConcurrentHashMap<>();
+    public AiController(ObjectMapper json, String key, String model) {
+        this(json, key, model, null);
+    }
+    @org.springframework.beans.factory.annotation.Autowired
     public AiController(ObjectMapper json, @Value("${GEMINI_API_KEY:}") String key,
-                        @Value("${GEMINI_MODEL:gemini-3.5-flash-lite}") String model) {
-        this.json = json; this.key = key.trim(); this.model = model.trim();
+                        @Value("${GEMINI_MODEL:gemini-3.5-flash-lite}") String model,
+                        @org.springframework.beans.factory.annotation.Autowired(required = false) com.travelai.backend.booking.MonetizationService monetization) {
+        this.json = json; this.key = key.trim(); this.model = model.trim(); this.monetization = monetization;
     }
     public record Turn(String role, String text) {}
     public record ChatInput(List<Turn> messages) {}
 
     @PostMapping("/chat")
     public Map<String, String> chat(@RequestBody ChatInput input, HttpServletRequest request) {
-        long userId = ApiSecurity.actor(request).id();
+        var actor = ApiSecurity.actor(request);
+        long userId = actor.id();
         if (input == null || input.messages() == null || input.messages().isEmpty() || input.messages().size() > 12)
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Hội thoại không hợp lệ.");
         List<Map<String, Object>> contents = new ArrayList<>();
@@ -44,14 +51,17 @@ public class AiController {
             contents.add(Map.of("role", turn.role(), "parts", List.of(Map.of("text", turn.text()))));
         }
         if (!"user".equals(input.messages().getLast().role())) throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Thiếu câu hỏi.");
+        if (monetization != null) monetization.consumeAiQuota(actor);
         return generate(userId, contents);
     }
     public record VoiceInput(String audio) {}
     @PostMapping("/voice")
     public Map<String,String> voice(@RequestBody VoiceInput input, HttpServletRequest request) {
-        long userId=ApiSecurity.actor(request).id();
+        var actor = ApiSecurity.actor(request);
+        long userId = actor.id();
         VoiceFormat.Audio audio=VoiceFormat.parse(input == null ? null : input.audio());
         List<Map<String,Object>> contents=voiceContents(audio);
+        if (monetization != null) monetization.consumeAiQuota(actor);
         return generate(userId, contents);
     }
     /** Audio first, then the instruction: Gemini answers the spoken question directly this way. */

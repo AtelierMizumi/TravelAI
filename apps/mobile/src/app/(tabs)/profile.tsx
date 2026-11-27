@@ -20,9 +20,14 @@ import {
   useAction,
 } from "@/components/ui";
 import { useAuth } from "@/context/auth";
+import { useMembership } from "@/context/membership";
 import { useResource } from "@/hooks/use-resource";
 import { api } from "@/services/api";
-import type { Bank, Booking, Post, User } from "@/services/types";
+import {
+  MONETIZATION_ACCENTS,
+  getTierPalette,
+} from "@/services/monetization-helpers";
+import type { Bank, Booking, MonetizationSummary, Post, User } from "@/services/types";
 function ProfileEditor({ user }: { user: User }) {
   const auth = useAuth();
   const action = useAction();
@@ -100,6 +105,8 @@ interface LegacyBooking {
 }
 export default function Profile() {
   const { user, signOut } = useAuth();
+  const membership = useMembership();
+  const palette = getTierPalette(membership.tier);
   const [tab, setTab] = useState("trips");
   const bookings = useResource<Booking[]>(user ? "/booking/bookings" : null, 0, true, user?.id);
   const bank = useResource<Bank>(user ? "/booking/bank" : null, 0, true, user?.id);
@@ -111,6 +118,12 @@ export default function Profile() {
   const follows = useResource<{ followers: number; following: number }>(
     user ? `/follows/stats/${user.id}` : null,
   );
+  const monetization = useResource<MonetizationSummary>(
+    user ? "/monetization/me" : null,
+    0,
+    true,
+    user?.id,
+  );
   const action = useAction();
   useRealtime(() => {
     bookings.reload();
@@ -119,8 +132,114 @@ export default function Profile() {
   });
   return (
     <Screen title="Hồ sơ của bạn" protected>
-      <Card section="profile-intro"><Text style={ui.heading}>{user?.name ? `Xin chào, ${user.name}` : "Góc hành trình của bạn"}</Text><Text style={ui.text}>Lịch trình, thông tin cá nhân và những kỷ niệm chuyến đi — tất cả ở đây.</Text></Card>
+      {membership.isPremium ? (
+        <View
+          style={{
+            backgroundColor: palette.heroBg,
+            borderRadius: 24,
+            borderWidth: 2,
+            borderColor: palette.heroBorder,
+            padding: 22,
+            gap: 12,
+          }}
+        >
+          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
+            <Text style={{ color: palette.heroEyebrow, fontSize: 12, fontWeight: "900", letterSpacing: 1 }}>
+              TRAVELAI EXCLUSIVE MEMBER CARD
+            </Text>
+            <View
+              style={{
+                backgroundColor: palette.ctaSecondaryBg,
+                borderWidth: 1,
+                borderColor: palette.ctaSecondaryBorder,
+                paddingHorizontal: 12,
+                paddingVertical: 4,
+                borderRadius: 999,
+              }}
+            >
+              <Text style={{ color: palette.ctaSecondaryText, fontSize: 12, fontWeight: "900" }}>
+                {membership.badge} · {membership.planName}
+              </Text>
+            </View>
+          </View>
+          <Text style={{ color: palette.heroTitle, fontSize: 24, fontWeight: "900" }}>
+            {user?.name || user?.email}
+          </Text>
+          {membership.expiresAt && (
+            <Text style={{ color: palette.heroBody, fontSize: 14 }}>
+              Hiệu lực đặc quyền đến: {serviceTime(membership.expiresAt)}
+            </Text>
+          )}
+          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
+            <View
+              style={{
+                flexGrow: 1,
+                flexBasis: 130,
+                backgroundColor: palette.heroSubBg,
+                borderWidth: 1,
+                borderColor: palette.heroBorder,
+                borderRadius: 14,
+                padding: 12,
+              }}
+            >
+              <Text style={{ color: palette.heroStatLabel, fontSize: 11, fontWeight: "800" }}>
+                CHIẾT KHẤU CỐ ĐỊNH
+              </Text>
+              <Text style={{ color: palette.heroStatValue, fontSize: 20, fontWeight: "900", marginTop: 3 }}>
+                -{membership.discountPercent}%
+              </Text>
+            </View>
+            <View
+              style={{
+                flexGrow: 1,
+                flexBasis: 150,
+                backgroundColor: palette.heroSubBg,
+                borderWidth: 1,
+                borderColor: palette.heroBorder,
+                borderRadius: 14,
+                padding: 12,
+              }}
+            >
+              <Text style={{ color: palette.heroStatLabel, fontSize: 11, fontWeight: "800" }}>
+                ĐÃ TIẾT KIỆM ĐẶT CHỖ
+              </Text>
+              <Text style={{ color: MONETIZATION_ACCENTS.savingsOnDark, fontSize: 18, fontWeight: "900", marginTop: 3 }}>
+                {money(membership.totalSavedVnd)}
+              </Text>
+            </View>
+            <View
+              style={{
+                flexGrow: 1,
+                flexBasis: 130,
+                backgroundColor: palette.heroSubBg,
+                borderWidth: 1,
+                borderColor: palette.heroBorder,
+                borderRadius: 14,
+                padding: 12,
+              }}
+            >
+              <Text style={{ color: palette.heroStatLabel, fontSize: 11, fontWeight: "800" }}>
+                AI & VIP CONCIERGE
+              </Text>
+              <Text style={{ color: palette.heroTitle, fontSize: 16, fontWeight: "800", marginTop: 4 }}>
+                Không giới hạn
+              </Text>
+            </View>
+          </View>
+        </View>
+      ) : (
+        <Card section="profile-intro">
+          <Text style={ui.heading}>
+            {user?.name ? `Xin chào, ${user.name}` : "Góc hành trình của bạn"} · Hạng Cơ Bản (Free)
+          </Text>
+          <Text style={ui.text}>
+            AI hôm nay: {monetization.data ? `${monetization.data.aiQuota.usedToday}/${monetization.data.aiQuota.dailyLimit} lượt miễn phí` : "Giới hạn 10 lượt/ngày"}. Nâng cấp lên TravelAI Plus hoặc Explorer VIP để sở hữu Thẻ Đen, giảm trực tiếp 5%–10% mọi chuyến đi và mở khóa AI VIP Concierge!
+          </Text>
+          <Nav href="/subscriptions">✨ Xem đặc quyền & Nâng cấp Hội viên VIP →</Nav>
+        </Card>
+      )}
       <Card section="profile-tools"><Text style={ui.heading}>Tài khoản và tiện ích</Text><View style={ui.row}>
+        <Nav href="/subscriptions">Gói VIP & Quảng cáo</Nav>
         <Nav href="/messages">Tin nhắn</Nav><Nav href="/notifications">Thông báo</Nav><Nav href="/settings">Cài đặt</Nav>
         <Nav href="/ai-chat">Trợ lý AI</Nav><Nav href="/policy">Chính sách</Nav>
         {user?.role === "ADMIN" && <Nav href="/admin">Quản trị</Nav>}

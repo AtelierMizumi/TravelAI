@@ -28,10 +28,12 @@ import {
   useSafeAreaInsets,
 } from "react-native-safe-area-context";
 import { AuthProvider, useAuth } from "@/context/auth";
+import { MembershipProvider, useMembership } from "@/context/membership";
 import { Support } from "@/components/support";
 import { Nav, ui } from "@/components/ui";
 import { useRealtime } from "@/hooks/use-realtime";
 import { useResource } from "@/hooks/use-resource";
+import { TIER_PALETTES } from "@/services/monetization-helpers";
 import type { Settings } from "@/services/types";
 
 const navigation = primaryTabs.map(tab => ({ title: tab.label, href: tab.route }));
@@ -93,6 +95,7 @@ function NotificationBell() {
 
 function AppShell() {
   const { user, loading: authLoading } = useAuth();
+  const membership = useMembership();
   const insets = useSafeAreaInsets();
   const pathname = usePathname();
   const { width } = useWindowDimensions();
@@ -158,6 +161,35 @@ function AppShell() {
                   </Link>
                 ))}
                 {user && (
+                  <Link href={"/subscriptions" as Href} asChild>
+                    <Pressable
+                      style={StyleSheet.flatten([
+                        styles.navItem,
+                        membership.isVip
+                          ? styles.navVipActive
+                          : membership.isPremium
+                            ? styles.navPlusActive
+                            : styles.navUpgradePill,
+                      ])}
+                    >
+                      <Text
+                        style={[
+                          styles.navText,
+                          membership.isVip
+                            ? styles.navVipText
+                            : membership.isPremium
+                              ? styles.navPlusText
+                              : styles.navUpgradeText,
+                        ]}
+                      >
+                        {membership.isPremium
+                          ? `${membership.badge} (-${membership.discountPercent}%)`
+                          : "✨ Nâng cấp VIP"}
+                      </Text>
+                    </Pressable>
+                  </Link>
+                )}
+                {user && (
                   <Link href="/settings" asChild>
                     <Pressable style={styles.navItem}>
                       <Text style={styles.navText}>Cài đặt</Text>
@@ -195,12 +227,54 @@ function AppShell() {
                 <Pressable
                   accessibilityRole="link"
                   accessibilityLabel={user ? "Hồ sơ" : "Đăng nhập"}
-                  style={styles.profileButton}
+                  style={StyleSheet.flatten([
+                    styles.profileButton,
+                    membership.isPremium &&
+                      (membership.isVip ? styles.profileButtonVip : styles.profileButtonPlus),
+                  ])}
                 >
-                  {user?.avatar ? <Image key={user.avatar} source={{ uri: user.avatar }} contentFit="cover" style={{ width: 28, height: 28, borderRadius: 14 }} accessibilityLabel="Ảnh đại diện của bạn" /> : <Ionicons name="person-outline" size={19} color="#087fba" />}
+                  {user?.avatar ? (
+                      <Image
+                      key={user.avatar}
+                      source={{ uri: user.avatar }}
+                      contentFit="cover"
+                      style={[
+                        { width: 28, height: 28, borderRadius: 14 },
+                        membership.isPremium && {
+                          borderWidth: 2,
+                          borderColor: membership.isVip
+                            ? TIER_PALETTES.VIP.heroBorder
+                            : TIER_PALETTES.PLUS.heroBorder,
+                        },
+                      ]}
+                      accessibilityLabel="Ảnh đại diện của bạn"
+                    />
+                  ) : (
+                    <Ionicons
+                      name={membership.isPremium ? "diamond" : "person-outline"}
+                      size={19}
+                      color={
+                        membership.isVip
+                          ? TIER_PALETTES.VIP.badgeText
+                          : membership.isPremium
+                            ? TIER_PALETTES.PLUS.heroEyebrow
+                            : "#087fba"
+                      }
+                    />
+                  )}
                   {!compact && (
-                    <Text style={styles.profileText}>
-                      {user ? "Hồ sơ" : "Đăng nhập"}
+                    <Text
+                      style={[
+                        styles.profileText,
+                        membership.isPremium &&
+                          (membership.isVip ? styles.profileTextVip : styles.profileTextPlus),
+                      ]}
+                    >
+                      {user
+                        ? membership.isPremium
+                          ? `${membership.badge} · ${user.name || "Hồ sơ"}`
+                          : "Hồ sơ"
+                        : "Đăng nhập"}
                     </Text>
                   )}
                 </Pressable>
@@ -238,7 +312,9 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <AuthProvider>
-        <AppShell />
+        <MembershipProvider>
+          <AppShell />
+        </MembershipProvider>
       </AuthProvider>
     </SafeAreaProvider>
   );
@@ -292,6 +368,24 @@ const styles = StyleSheet.create({
   navActive: { backgroundColor: "#e2f3fc" },
   navText: { fontSize: 14, fontWeight: "600", color: "#65718a" },
   navTextActive: { color: "#087fba" },
+  navUpgradePill: {
+    backgroundColor: TIER_PALETTES.FREE.ctaSecondaryBg,
+    borderWidth: 1.5,
+    borderColor: TIER_PALETTES.FREE.ctaSecondaryBorder,
+  },
+  navUpgradeText: { color: TIER_PALETTES.FREE.ctaSecondaryText, fontWeight: "800" },
+  navPlusActive: {
+    backgroundColor: TIER_PALETTES.PLUS.heroBg,
+    borderWidth: 1.5,
+    borderColor: TIER_PALETTES.PLUS.heroBorder,
+  },
+  navPlusText: { color: TIER_PALETTES.PLUS.heroTitle, fontWeight: "900" },
+  navVipActive: {
+    backgroundColor: TIER_PALETTES.VIP.heroBg,
+    borderWidth: 1.5,
+    borderColor: TIER_PALETTES.VIP.heroBorder,
+  },
+  navVipText: { color: TIER_PALETTES.VIP.badgeText, fontWeight: "900" },
   headerActions: { flexDirection: "row", alignItems: "center", gap: 5 },
   iconButton: {
     width: 43,
@@ -311,7 +405,19 @@ const styles = StyleSheet.create({
     gap: 7,
     backgroundColor: "#e2f3fc",
   },
-  profileText: { color: "#087fba", fontWeight: "700", fontSize: 13 },
+  profileText: { color: "#075782", fontWeight: "700", fontSize: 13 },
+  profileButtonPlus: {
+    backgroundColor: TIER_PALETTES.PLUS.heroBg,
+    borderWidth: 1.5,
+    borderColor: TIER_PALETTES.PLUS.heroBorder,
+  },
+  profileTextPlus: { color: TIER_PALETTES.PLUS.heroTitle, fontWeight: "900" },
+  profileButtonVip: {
+    backgroundColor: TIER_PALETTES.VIP.heroBg,
+    borderWidth: 1.5,
+    borderColor: TIER_PALETTES.VIP.heroBorder,
+  },
+  profileTextVip: { color: TIER_PALETTES.VIP.badgeText, fontWeight: "900" },
   badge: {
     position: "absolute",
     right: 2,

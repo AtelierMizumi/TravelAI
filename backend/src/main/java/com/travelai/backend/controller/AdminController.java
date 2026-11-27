@@ -65,18 +65,28 @@ public class AdminController {
         long tourBookings = canonicalCount("TOUR");
         long hotelBookings = canonicalCount("HOTEL");
         long places = placeRepository.count();
+        long activeSubscribers = countSafe("select count(distinct user_id) from user_subscriptions where status='ACTIVE' and expires_at > now()");
+        long activeCampaigns = countSafe("select count(*) from ad_campaigns where status='ACTIVE' and ends_at > now()");
 
-        return ResponseEntity.ok(
-                Map.of(
-                        "users", users,
-                        "posts", posts,
-                        "canonicalBookings", canonicalBookings,
-                        "totalBookings", canonicalBookings,
-                        "tourBookings", tourBookings,
-                        "hotelBookings", hotelBookings,
-                        "places", places
-                )
-        );
+        Map<String, Object> stats = new LinkedHashMap<>();
+        stats.put("users", users);
+        stats.put("posts", posts);
+        stats.put("canonicalBookings", canonicalBookings);
+        stats.put("totalBookings", canonicalBookings);
+        stats.put("tourBookings", tourBookings);
+        stats.put("hotelBookings", hotelBookings);
+        stats.put("places", places);
+        stats.put("activeSubscribers", activeSubscribers);
+        stats.put("activeCampaigns", activeCampaigns);
+        return ResponseEntity.ok(stats);
+    }
+
+    private long countSafe(String sql) {
+        try {
+            return ((Number) em.createNativeQuery(sql).getSingleResult()).longValue();
+        } catch (Exception ignored) {
+            return 0L;
+        }
     }
 
     /** Confirmed canonical reservations of one kind; same filter as the total so the split adds up. */
