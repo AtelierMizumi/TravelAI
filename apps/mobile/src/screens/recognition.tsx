@@ -3,8 +3,8 @@ import { MotionScroll } from "@/components/motion-scroll";
 import { Image } from "expo-image";
 import { Ionicons } from "@expo/vector-icons";
 import { Link, useFocusEffect } from "expo-router";
-import { api } from "@/services/api";
-import type { Place } from "@/services/types";
+import { api, sessionToken } from "@/services/api";
+import type { AiQuotaStatus, Place } from "@/services/types";
 import * as Linking from "expo-linking";
 import * as ImagePicker from "expo-image-picker";
 import { ImageManipulator, SaveFormat } from "expo-image-manipulator";
@@ -107,6 +107,12 @@ export default function RecognitionScreen() {
     setPlaceQuery("");
     const timeout = setTimeout(() => controller.abort(), 90_000);
     try {
+      if (sessionToken()) {
+        await api<AiQuotaStatus>("/monetization/ai-quota/consume", {
+          method: "POST",
+          signal: controller.signal,
+        });
+      }
       const response = await recognizeImage(uri, controller.signal);
       if (!controller.signal.aborted) {
         setResult(response);

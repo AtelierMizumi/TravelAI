@@ -158,6 +158,13 @@ function AppShell() {
                   </Link>
                 ))}
                 {user && (
+                  <Link href={"/subscriptions" as Href} asChild>
+                    <Pressable style={styles.navItem}>
+                      <Text style={styles.navText}>Gói VIP & QC</Text>
+                    </Pressable>
+                  </Link>
+                )}
+                {user && (
                   <Link href="/settings" asChild>
                     <Pressable style={styles.navItem}>
                       <Text style={styles.navText}>Cài đặt</Text>

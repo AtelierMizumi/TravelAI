@@ -22,7 +22,7 @@ import {
 import { useAuth } from "@/context/auth";
 import { useResource } from "@/hooks/use-resource";
 import { api } from "@/services/api";
-import type { Bank, Booking, Post, User } from "@/services/types";
+import type { Bank, Booking, MonetizationSummary, Post, User } from "@/services/types";
 function ProfileEditor({ user }: { user: User }) {
   const auth = useAuth();
   const action = useAction();
@@ -111,6 +111,12 @@ export default function Profile() {
   const follows = useResource<{ followers: number; following: number }>(
     user ? `/follows/stats/${user.id}` : null,
   );
+  const monetization = useResource<MonetizationSummary>(
+    user ? "/monetization/me" : null,
+    0,
+    true,
+    user?.id,
+  );
   const action = useAction();
   useRealtime(() => {
     bookings.reload();
@@ -119,8 +125,27 @@ export default function Profile() {
   });
   return (
     <Screen title="Hồ sơ của bạn" protected>
-      <Card section="profile-intro"><Text style={ui.heading}>{user?.name ? `Xin chào, ${user.name}` : "Góc hành trình của bạn"}</Text><Text style={ui.text}>Lịch trình, thông tin cá nhân và những kỷ niệm chuyến đi — tất cả ở đây.</Text></Card>
+      <Card section="profile-intro">
+        <Text style={ui.heading}>
+          {user?.name ? `Xin chào, ${user.name}` : "Góc hành trình của bạn"}{" "}
+          {monetization.data?.currentSubscription?.badge
+            ? `· ${monetization.data.currentSubscription.badge}`
+            : ""}
+        </Text>
+        <Text style={ui.text}>
+          Lịch trình, thông tin cá nhân và những kỷ niệm chuyến đi — tất cả ở đây.
+        </Text>
+        {monetization.data && (
+          <Text style={ui.text}>
+            Hạng thẻ: {monetization.data.currentSubscription.planName} · AI hôm nay:{" "}
+            {monetization.data.aiQuota.unlimited
+              ? "Không giới hạn"
+              : `${monetization.data.aiQuota.usedToday}/${monetization.data.aiQuota.dailyLimit} lượt`}
+          </Text>
+        )}
+      </Card>
       <Card section="profile-tools"><Text style={ui.heading}>Tài khoản và tiện ích</Text><View style={ui.row}>
+        <Nav href="/subscriptions">Gói VIP & Quảng cáo</Nav>
         <Nav href="/messages">Tin nhắn</Nav><Nav href="/notifications">Thông báo</Nav><Nav href="/settings">Cài đặt</Nav>
         <Nav href="/ai-chat">Trợ lý AI</Nav><Nav href="/policy">Chính sách</Nav>
         {user?.role === "ADMIN" && <Nav href="/admin">Quản trị</Nav>}

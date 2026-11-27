@@ -206,8 +206,20 @@ export default function Payment() {
               <Text style={ui.text}>
                 Giá đặt ban đầu {money(data.quote.originalAmount)}
               </Text>
+              {!!data.quote.memberDiscount && data.quote.memberDiscount > 0 && (
+                <Text style={[ui.text, { color: "#047857", fontWeight: "700" }]}>
+                  Ưu đãi hội viên {data.quote.memberTier} (-
+                  {data.quote.memberDiscountPercent}%): -
+                  {money(data.quote.memberDiscount)}
+                </Text>
+              )}
               <Text style={ui.text}>
                 Phí đổi lịch 20% giá ban đầu {money(data.quote.fee)}
+                {data.originalItinerary &&
+                data.quote.fee === 0 &&
+                data.quote.memberTier === "VIP"
+                  ? " (Đã miễn phí đổi lịch lần đầu cho VIP)"
+                  : ""}
               </Text>
               <Text style={ui.text}>
                 Phân loại ngày đến{" "}

@@ -5,6 +5,7 @@ import { MotionIcon } from "@/components/motion-icon";
 import { DestinationDeck } from "@/components/destination-deck";
 import { ImageCredit } from "@/components/image-credit";
 import { PinTaskCard } from "@/components/pin-ui";
+import { SponsoredStrip } from "@/components/sponsored-strip";
 import { landmarkCredit, landmarkImage } from "@/services/landmark-media";
 import { useHydrated } from "@/hooks/use-hydrated";
 import { HydrationSafeIonicon as Ionicons } from "@/components/hydration-safe-icon";
@@ -135,7 +136,7 @@ export default function Home() {
         <PinTaskCard eyebrow="02 · TRẢI NGHIỆM" title="Đi theo cảm hứng" description="Tìm một hành trình phù hợp với điểm đến và khoảng thời gian của bạn." icon="compass-outline" action="Chọn tour cho bạn" onPress={() => router.push("/booking/tours")} />
         <PinTaskCard eyebrow="03 · NGHỈ NGƠI" title="Một nơi để trở về" description="Khám phá nơi lưu trú, tìm căn phòng yêu thích và chọn lịch nghỉ." icon="bed-outline" action="Tìm nơi lưu trú" onPress={() => router.push("/booking/hotels")} />
       </View>
-      </MotionEntry>{featured.length > 0 && (
+      </MotionEntry><View style={{ marginTop: 28 }}><SponsoredStrip placement="HOME" title="Đề xuất nổi bật được tài trợ" /></View>{featured.length > 0 && (
         <>
       <MotionEntry section="home-offers"><View style={styles.destinationHeader}>
             <View>

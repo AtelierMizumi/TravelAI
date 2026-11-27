@@ -19,6 +19,7 @@ import {
   ui,
   useAction,
 } from "@/components/ui";
+import { SponsoredStrip } from "@/components/sponsored-strip";
 import { useAuth } from "@/context/auth";
 import { useResource } from "@/hooks/use-resource";
 import { api } from "@/services/api";
@@ -79,11 +80,28 @@ function PostCard({
             </View>
           )}
           <View>
-            <Nav
-              href={{ pathname: "/people/[id]", params: { id: post.authorId } }}
-            >
-              {post.authorName}
-            </Nav>
+            <View style={{ flexDirection: "row", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+              <Nav
+                href={{ pathname: "/people/[id]", params: { id: post.authorId } }}
+              >
+                {post.authorName}
+              </Nav>
+              {!!post.authorBadge && (
+                <Text
+                  style={{
+                    fontSize: 11,
+                    fontWeight: "800",
+                    color: "#087fba",
+                    backgroundColor: "#e2f3fc",
+                    paddingHorizontal: 8,
+                    paddingVertical: 2,
+                    borderRadius: 999,
+                  }}
+                >
+                  {post.authorBadge}
+                </Text>
+              )}
+            </View>
             <Text style={feedStyles.meta}>Thành viên TravelAI</Text>
           </View>
         </View>
@@ -408,6 +426,7 @@ export default function Feed() {
               }
             />
           </Card>
+          <SponsoredStrip placement="FEED" title="Đề xuất được tài trợ trên bảng tin" />
           <MotionEntry section="feed-stories"><Text style={ui.heading}>Câu chuyện cộng đồng</Text></MotionEntry>
           <ErrorText message={feed.error || own.error} />
           {edit && <Nav href="/feed">Xem tất cả bài viết</Nav>}

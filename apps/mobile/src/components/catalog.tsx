@@ -15,11 +15,14 @@ import {
   ui,
 } from "@/components/ui";
 import { useResource } from "@/hooks/use-resource";
+import { api } from "@/services/api";
+import { prioritizeSponsoredCatalog } from "@/services/monetization-helpers";
 import { provinceFor, provinces } from "@/services/provinces";
-import type { CatalogItem, Place } from "@/services/types";
+import type { CatalogItem, Place, SponsoredCampaign } from "@/services/types";
 
 export function Catalog({ kind }: { kind: "tours" | "hotels" }) {
   const resource = useResource<CatalogItem[]>(`/${kind}`);
+  const sponsored = useResource<SponsoredCampaign[]>("/monetization/sponsored?placement=EXPLORE");
   const places = useResource<Place[]>(kind === "tours" ? "/places" : null);
   const [query, setQuery] = useState("");
   const [searchOpen, setSearchOpen] = useState(true);
@@ -192,27 +195,47 @@ export function Catalog({ kind }: { kind: "tours" | "hotels" }) {
         <View key={group || "all"} style={{ gap: 14 }}>
           {!!group && <Text style={ui.heading}>{group}</Text>}
           <View style={[ui.row, { alignItems: "stretch" }]}>
-            {matches
-              ?.filter(
+            {prioritizeSponsoredCatalog(
+              matches?.filter(
                 (item) =>
                   !group ||
                   (itemProvince(item) || "Chưa xác định tỉnh/thành") === group,
-              )
-              .map((item) => (
+              ) || [],
+              sponsored.data,
+              kind === "tours" ? "TOUR" : "HOTEL",
+            ).map(({ item, campaign }) => (
                 <View key={item.id} style={{ flexBasis: 280, flexGrow: 1, minWidth: 0, maxWidth: 540 }}>
                   <Card hoverSurface>
+                    {campaign && (
+                      <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 6 }}>
+                        <Text style={{ fontSize: 12, fontWeight: "800", color: "#92400e", backgroundColor: "#fef3c7", paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999 }}>
+                          ✦ {campaign.sponsoredLabel}
+                        </Text>
+                        <Text style={{ fontSize: 12, color: "#087fba", fontWeight: "700", flexShrink: 1 }} numberOfLines={1}>
+                          {campaign.headline}
+                        </Text>
+                      </View>
+                    )}
                     <CatalogPhoto key={`${item.id}:${item.image || ""}`} source={item.image} fallback={kind === "tours" ? destinationFor(item.location, places.data || [])?.imageUrl : undefined} label={item.name} />
-                    <Nav
-                      href={{
-                        pathname:
-                          kind === "tours"
-                            ? "/booking/tours/[id]"
-                            : "/booking/hotels/[id]",
-                        params: { id: item.id },
+                    <Pressable
+                      onPress={() => {
+                        if (campaign) {
+                          void api(`/monetization/sponsored/${encodeURIComponent(campaign.id)}/click`, { method: "POST" }).catch(() => {});
+                        }
                       }}
                     >
-                      {item.name}
-                    </Nav>
+                      <Nav
+                        href={{
+                          pathname:
+                            kind === "tours"
+                              ? "/booking/tours/[id]"
+                              : "/booking/hotels/[id]",
+                          params: { id: item.id },
+                        }}
+                      >
+                        {item.name}
+                      </Nav>
+                    </Pressable>
                     <Text style={ui.text}>{item.location}</Text>
                     {item.rating != null && (
                       <Text style={ui.text}>
