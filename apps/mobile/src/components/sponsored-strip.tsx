@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { Card, money, ui } from "@/components/ui";
 import { useResource } from "@/hooks/use-resource";
 import { api } from "@/services/api";
+import { MONETIZATION_ACCENTS } from "@/services/monetization-helpers";
 import type { SponsoredCampaign } from "@/services/types";
 
 export function SponsoredStrip({
@@ -103,14 +104,14 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   badge: {
-    backgroundColor: "#fef3c7",
-    borderColor: "#f59e0b",
+    backgroundColor: MONETIZATION_ACCENTS.sponsoredBg,
+    borderColor: MONETIZATION_ACCENTS.sponsoredBorder,
     borderWidth: 1,
     borderRadius: 999,
     paddingHorizontal: 10,
     paddingVertical: 4,
   },
-  badgeText: { color: "#92400e", fontSize: 12, fontWeight: "800" },
+  badgeText: { color: MONETIZATION_ACCENTS.sponsoredText, fontSize: 12, fontWeight: "800" },
   kindTag: { color: "#475569", fontSize: 12, fontWeight: "600" },
   headline: { color: "#087fba", fontSize: 13, fontWeight: "700" },
   price: { color: "#075782", fontWeight: "700" },

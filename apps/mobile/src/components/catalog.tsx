@@ -18,7 +18,9 @@ import { useMembership } from "@/context/membership";
 import { useResource } from "@/hooks/use-resource";
 import { api } from "@/services/api";
 import {
+  MONETIZATION_ACCENTS,
   computeMemberPrice,
+  getTierPalette,
   prioritizeSponsoredCatalog,
   vipTeaserPrice,
 } from "@/services/monetization-helpers";
@@ -27,6 +29,7 @@ import type { CatalogItem, Place, SponsoredCampaign } from "@/services/types";
 
 export function Catalog({ kind }: { kind: "tours" | "hotels" }) {
   const membership = useMembership();
+  const palette = getTierPalette(membership.tier);
   const resource = useResource<CatalogItem[]>(`/${kind}`);
   const sponsored = useResource<SponsoredCampaign[]>("/monetization/sponsored?placement=EXPLORE");
   const places = useResource<Place[]>(kind === "tours" ? "/places" : null);
@@ -214,10 +217,21 @@ export function Catalog({ kind }: { kind: "tours" | "hotels" }) {
                   <Card hoverSurface>
                     {campaign && (
                       <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 6 }}>
-                        <Text style={{ fontSize: 12, fontWeight: "800", color: "#92400e", backgroundColor: "#fef3c7", paddingHorizontal: 10, paddingVertical: 4, borderRadius: 999 }}>
-                          ✦ {campaign.sponsoredLabel}
-                        </Text>
-                        <Text style={{ fontSize: 12, color: "#087fba", fontWeight: "700", flexShrink: 1 }} numberOfLines={1}>
+                        <View
+                          style={{
+                            backgroundColor: MONETIZATION_ACCENTS.sponsoredBg,
+                            borderColor: MONETIZATION_ACCENTS.sponsoredBorder,
+                            borderWidth: 1,
+                            paddingHorizontal: 10,
+                            paddingVertical: 4,
+                            borderRadius: 999,
+                          }}
+                        >
+                          <Text style={{ fontSize: 12, fontWeight: "800", color: MONETIZATION_ACCENTS.sponsoredText }}>
+                            ✦ {campaign.sponsoredLabel}
+                          </Text>
+                        </View>
+                        <Text style={{ fontSize: 12, color: "#075985", fontWeight: "700", flexShrink: 1 }} numberOfLines={1}>
                           {campaign.headline}
                         </Text>
                       </View>
@@ -256,16 +270,26 @@ export function Catalog({ kind }: { kind: "tours" | "hotels" }) {
                       const teaser = vipTeaserPrice(item.price);
                       if (membership.isPremium && memberPricing.hasDiscount) {
                         return (
-                          <View style={styles.vipPriceBox}>
+                          <View
+                            style={[
+                              styles.vipPriceBox,
+                              {
+                                backgroundColor: palette.cardBg,
+                                borderColor: palette.cardBorder,
+                              },
+                            ]}
+                          >
                             <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 6 }}>
                               <Text style={styles.strikePrice}>
                                 Giá gốc: {money(memberPricing.originalPrice)}
                               </Text>
-                              <Text style={styles.saveBadge}>
-                                Tiết kiệm {money(memberPricing.savedAmount)}
-                              </Text>
+                              <View style={styles.saveBadge}>
+                                <Text style={styles.saveBadgeText}>
+                                  Tiết kiệm {money(memberPricing.savedAmount)}
+                                </Text>
+                              </View>
                             </View>
-                            <Text style={styles.vipPriceText}>
+                            <Text style={[styles.vipPriceText, { color: palette.priceText }]}>
                               {membership.badge} (-{membership.discountPercent}%):{" "}
                               {money(memberPricing.memberPrice)}
                             </Text>
@@ -323,26 +347,29 @@ const styles = StyleSheet.create({
   chipText: { color: "#334155", fontSize: 13 },
   price: { color: "#075782", fontWeight: "700" },
   vipPriceBox: {
-    backgroundColor: "#f0fdf4",
-    borderWidth: 1,
-    borderColor: "#86efac",
-    borderRadius: 12,
-    padding: 10,
-    gap: 4,
+    borderWidth: 1.5,
+    borderRadius: 14,
+    padding: 12,
+    gap: 6,
   },
   strikePrice: {
     color: "#64748b",
     fontSize: 12,
+    fontWeight: "600",
     textDecorationLine: "line-through",
   },
   saveBadge: {
-    backgroundColor: "#fef3c7",
-    color: "#92400e",
-    fontSize: 11,
-    fontWeight: "800",
+    backgroundColor: MONETIZATION_ACCENTS.savingsBg,
+    borderColor: MONETIZATION_ACCENTS.savingsBorder,
+    borderWidth: 1,
     paddingHorizontal: 8,
-    paddingVertical: 2,
+    paddingVertical: 3,
     borderRadius: 999,
   },
-  vipPriceText: { color: "#047857", fontSize: 16, fontWeight: "900" },
+  saveBadgeText: {
+    color: MONETIZATION_ACCENTS.savingsText,
+    fontSize: 11,
+    fontWeight: "800",
+  },
+  vipPriceText: { fontSize: 16, fontWeight: "900" },
 });

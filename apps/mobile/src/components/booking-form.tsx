@@ -18,7 +18,7 @@ import {
 import { api, operationKey } from "@/services/api";
 import { useMembership } from "@/context/membership";
 import { useResource } from "@/hooks/use-resource";
-import { computeMemberPrice } from "@/services/monetization-helpers";
+import { computeMemberPrice, getTierPalette } from "@/services/monetization-helpers";
 import type { Booking, Offer, Review, Selection } from "@/services/types";
 
 export function BookingForm({
@@ -29,6 +29,7 @@ export function BookingForm({
   current?: Booking;
 }) {
   const membership = useMembership();
+  const palette = getTierPalette(membership.tier);
   const old = current?.itinerary.selection;
   const [now] = useState(() => Date.now());
   const [departure, setDeparture] = useState(old?.departure || "");
@@ -105,9 +106,19 @@ export function BookingForm({
         </Text>
       )}
       {!current && membership.isPremium && (
-        <Text style={{ color: "#047857", fontWeight: "800" }}>
-          {membership.badge} Đặc quyền {membership.planName}: Giá bên dưới sẽ tự động giảm thêm {membership.discountPercent}% khi sang bước thanh toán!
-        </Text>
+        <View
+          style={{
+            backgroundColor: palette.cardBg,
+            borderColor: palette.cardBorder,
+            borderWidth: 1.5,
+            borderRadius: 14,
+            padding: 12,
+          }}
+        >
+          <Text style={{ color: palette.priceText, fontWeight: "800", fontSize: 14, lineHeight: 21 }}>
+            {membership.badge} Đặc quyền {membership.planName}: Giá bên dưới sẽ tự động giảm thêm {membership.discountPercent}% khi sang bước thanh toán!
+          </Text>
+        </View>
       )}
       <Field
         label="Số khách"

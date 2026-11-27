@@ -23,6 +23,10 @@ import { useAuth } from "@/context/auth";
 import { useMembership } from "@/context/membership";
 import { useResource } from "@/hooks/use-resource";
 import { api } from "@/services/api";
+import {
+  MONETIZATION_ACCENTS,
+  getTierPalette,
+} from "@/services/monetization-helpers";
 import type { Bank, Booking, MonetizationSummary, Post, User } from "@/services/types";
 function ProfileEditor({ user }: { user: User }) {
   const auth = useAuth();
@@ -102,6 +106,7 @@ interface LegacyBooking {
 export default function Profile() {
   const { user, signOut } = useAuth();
   const membership = useMembership();
+  const palette = getTierPalette(membership.tier);
   const [tab, setTab] = useState("trips");
   const bookings = useResource<Booking[]>(user ? "/booking/bookings" : null, 0, true, user?.id);
   const bank = useResource<Bank>(user ? "/booking/bank" : null, 0, true, user?.id);
@@ -130,48 +135,93 @@ export default function Profile() {
       {membership.isPremium ? (
         <View
           style={{
-            backgroundColor: membership.isVip ? "#1e1b4b" : "#0f172a",
+            backgroundColor: palette.heroBg,
             borderRadius: 24,
             borderWidth: 2,
-            borderColor: "#f59e0b",
+            borderColor: palette.heroBorder,
             padding: 22,
             gap: 12,
           }}
         >
           <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
-            <Text style={{ color: "#fbbf24", fontSize: 12, fontWeight: "900", letterSpacing: 1 }}>
+            <Text style={{ color: palette.heroEyebrow, fontSize: 12, fontWeight: "900", letterSpacing: 1 }}>
               TRAVELAI EXCLUSIVE MEMBER CARD
             </Text>
-            <View style={{ backgroundColor: "#fef3c7", paddingHorizontal: 12, paddingVertical: 4, borderRadius: 999 }}>
-              <Text style={{ color: "#78350f", fontSize: 12, fontWeight: "900" }}>
+            <View
+              style={{
+                backgroundColor: palette.ctaSecondaryBg,
+                borderWidth: 1,
+                borderColor: palette.ctaSecondaryBorder,
+                paddingHorizontal: 12,
+                paddingVertical: 4,
+                borderRadius: 999,
+              }}
+            >
+              <Text style={{ color: palette.ctaSecondaryText, fontSize: 12, fontWeight: "900" }}>
                 {membership.badge} · {membership.planName}
               </Text>
             </View>
           </View>
-          <Text style={{ color: "#fff", fontSize: 24, fontWeight: "900" }}>
+          <Text style={{ color: palette.heroTitle, fontSize: 24, fontWeight: "900" }}>
             {user?.name || user?.email}
           </Text>
           {membership.expiresAt && (
-            <Text style={{ color: "#cbd5e1", fontSize: 13 }}>
+            <Text style={{ color: palette.heroBody, fontSize: 14 }}>
               Hiệu lực đặc quyền đến: {serviceTime(membership.expiresAt)}
             </Text>
           )}
           <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 10 }}>
-            <View style={{ flexGrow: 1, flexBasis: 130, backgroundColor: "rgba(255,255,255,0.08)", borderRadius: 14, padding: 12 }}>
-              <Text style={{ color: "#94a3b8", fontSize: 11, fontWeight: "700" }}>CHIẾT KHẤU CỐ ĐỊNH</Text>
-              <Text style={{ color: "#fde68a", fontSize: 20, fontWeight: "900", marginTop: 2 }}>
+            <View
+              style={{
+                flexGrow: 1,
+                flexBasis: 130,
+                backgroundColor: palette.heroSubBg,
+                borderWidth: 1,
+                borderColor: palette.heroBorder,
+                borderRadius: 14,
+                padding: 12,
+              }}
+            >
+              <Text style={{ color: palette.heroStatLabel, fontSize: 11, fontWeight: "800" }}>
+                CHIẾT KHẤU CỐ ĐỊNH
+              </Text>
+              <Text style={{ color: palette.heroStatValue, fontSize: 20, fontWeight: "900", marginTop: 3 }}>
                 -{membership.discountPercent}%
               </Text>
             </View>
-            <View style={{ flexGrow: 1, flexBasis: 150, backgroundColor: "rgba(255,255,255,0.08)", borderRadius: 14, padding: 12 }}>
-              <Text style={{ color: "#94a3b8", fontSize: 11, fontWeight: "700" }}>ĐÃ TIẾT KIỆM ĐẶT CHỖ</Text>
-              <Text style={{ color: "#34d399", fontSize: 20, fontWeight: "900", marginTop: 2 }}>
+            <View
+              style={{
+                flexGrow: 1,
+                flexBasis: 150,
+                backgroundColor: palette.heroSubBg,
+                borderWidth: 1,
+                borderColor: palette.heroBorder,
+                borderRadius: 14,
+                padding: 12,
+              }}
+            >
+              <Text style={{ color: palette.heroStatLabel, fontSize: 11, fontWeight: "800" }}>
+                ĐÃ TIẾT KIỆM ĐẶT CHỖ
+              </Text>
+              <Text style={{ color: MONETIZATION_ACCENTS.savingsOnDark, fontSize: 18, fontWeight: "900", marginTop: 3 }}>
                 {money(membership.totalSavedVnd)}
               </Text>
             </View>
-            <View style={{ flexGrow: 1, flexBasis: 130, backgroundColor: "rgba(255,255,255,0.08)", borderRadius: 14, padding: 12 }}>
-              <Text style={{ color: "#94a3b8", fontSize: 11, fontWeight: "700" }}>AI & VIP CONCIERGE</Text>
-              <Text style={{ color: "#fff", fontSize: 16, fontWeight: "800", marginTop: 4 }}>
+            <View
+              style={{
+                flexGrow: 1,
+                flexBasis: 130,
+                backgroundColor: palette.heroSubBg,
+                borderWidth: 1,
+                borderColor: palette.heroBorder,
+                borderRadius: 14,
+                padding: 12,
+              }}
+            >
+              <Text style={{ color: palette.heroStatLabel, fontSize: 11, fontWeight: "800" }}>
+                AI & VIP CONCIERGE
+              </Text>
+              <Text style={{ color: palette.heroTitle, fontSize: 16, fontWeight: "800", marginTop: 4 }}>
                 Không giới hạn
               </Text>
             </View>

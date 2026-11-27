@@ -33,6 +33,7 @@ import { Support } from "@/components/support";
 import { Nav, ui } from "@/components/ui";
 import { useRealtime } from "@/hooks/use-realtime";
 import { useResource } from "@/hooks/use-resource";
+import { TIER_PALETTES } from "@/services/monetization-helpers";
 import type { Settings } from "@/services/types";
 
 const navigation = primaryTabs.map(tab => ({ title: tab.label, href: tab.route }));
@@ -164,13 +165,21 @@ function AppShell() {
                     <Pressable
                       style={StyleSheet.flatten([
                         styles.navItem,
-                        membership.isPremium ? styles.navVipActive : styles.navUpgradePill,
+                        membership.isVip
+                          ? styles.navVipActive
+                          : membership.isPremium
+                            ? styles.navPlusActive
+                            : styles.navUpgradePill,
                       ])}
                     >
                       <Text
                         style={[
                           styles.navText,
-                          membership.isPremium ? styles.navVipText : styles.navUpgradeText,
+                          membership.isVip
+                            ? styles.navVipText
+                            : membership.isPremium
+                              ? styles.navPlusText
+                              : styles.navUpgradeText,
                         ]}
                       >
                         {membership.isPremium
@@ -225,13 +234,18 @@ function AppShell() {
                   ])}
                 >
                   {user?.avatar ? (
-                    <Image
+                      <Image
                       key={user.avatar}
                       source={{ uri: user.avatar }}
                       contentFit="cover"
                       style={[
                         { width: 28, height: 28, borderRadius: 14 },
-                        membership.isPremium && { borderWidth: 2, borderColor: "#f59e0b" },
+                        membership.isPremium && {
+                          borderWidth: 2,
+                          borderColor: membership.isVip
+                            ? TIER_PALETTES.VIP.heroBorder
+                            : TIER_PALETTES.PLUS.heroBorder,
+                        },
                       ]}
                       accessibilityLabel="Ảnh đại diện của bạn"
                     />
@@ -241,9 +255,9 @@ function AppShell() {
                       size={19}
                       color={
                         membership.isVip
-                          ? "#fbbf24"
+                          ? TIER_PALETTES.VIP.badgeText
                           : membership.isPremium
-                            ? "#b45309"
+                            ? TIER_PALETTES.PLUS.heroEyebrow
                             : "#087fba"
                       }
                     />
@@ -355,17 +369,23 @@ const styles = StyleSheet.create({
   navText: { fontSize: 14, fontWeight: "600", color: "#65718a" },
   navTextActive: { color: "#087fba" },
   navUpgradePill: {
-    backgroundColor: "#fef3c7",
-    borderWidth: 1,
-    borderColor: "#f59e0b",
-  },
-  navUpgradeText: { color: "#92400e", fontWeight: "800" },
-  navVipActive: {
-    backgroundColor: "#1e1b4b",
+    backgroundColor: TIER_PALETTES.FREE.ctaSecondaryBg,
     borderWidth: 1.5,
-    borderColor: "#f59e0b",
+    borderColor: TIER_PALETTES.FREE.ctaSecondaryBorder,
   },
-  navVipText: { color: "#fde68a", fontWeight: "900" },
+  navUpgradeText: { color: TIER_PALETTES.FREE.ctaSecondaryText, fontWeight: "800" },
+  navPlusActive: {
+    backgroundColor: TIER_PALETTES.PLUS.heroBg,
+    borderWidth: 1.5,
+    borderColor: TIER_PALETTES.PLUS.heroBorder,
+  },
+  navPlusText: { color: TIER_PALETTES.PLUS.heroTitle, fontWeight: "900" },
+  navVipActive: {
+    backgroundColor: TIER_PALETTES.VIP.heroBg,
+    borderWidth: 1.5,
+    borderColor: TIER_PALETTES.VIP.heroBorder,
+  },
+  navVipText: { color: TIER_PALETTES.VIP.badgeText, fontWeight: "900" },
   headerActions: { flexDirection: "row", alignItems: "center", gap: 5 },
   iconButton: {
     width: 43,
@@ -385,19 +405,19 @@ const styles = StyleSheet.create({
     gap: 7,
     backgroundColor: "#e2f3fc",
   },
-  profileText: { color: "#087fba", fontWeight: "700", fontSize: 13 },
+  profileText: { color: "#075782", fontWeight: "700", fontSize: 13 },
   profileButtonPlus: {
-    backgroundColor: "#fef3c7",
+    backgroundColor: TIER_PALETTES.PLUS.heroBg,
     borderWidth: 1.5,
-    borderColor: "#d97706",
+    borderColor: TIER_PALETTES.PLUS.heroBorder,
   },
-  profileTextPlus: { color: "#92400e", fontWeight: "900" },
+  profileTextPlus: { color: TIER_PALETTES.PLUS.heroTitle, fontWeight: "900" },
   profileButtonVip: {
-    backgroundColor: "#1e1b4b",
+    backgroundColor: TIER_PALETTES.VIP.heroBg,
     borderWidth: 1.5,
-    borderColor: "#f59e0b",
+    borderColor: TIER_PALETTES.VIP.heroBorder,
   },
-  profileTextVip: { color: "#fde68a", fontWeight: "900" },
+  profileTextVip: { color: TIER_PALETTES.VIP.badgeText, fontWeight: "900" },
   badge: {
     position: "absolute",
     right: 2,

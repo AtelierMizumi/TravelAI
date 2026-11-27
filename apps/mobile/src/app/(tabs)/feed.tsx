@@ -23,6 +23,7 @@ import { SponsoredStrip } from "@/components/sponsored-strip";
 import { useAuth } from "@/context/auth";
 import { useResource } from "@/hooks/use-resource";
 import { api } from "@/services/api";
+import { getTierPalette } from "@/services/monetization-helpers";
 import type { Post, User } from "@/services/types";
 function PostCard({
   post,
@@ -65,25 +66,19 @@ function PostCard({
     await api(path, { method, body });
     reload();
   }
+  const authorPalette = getTierPalette(post.authorTier);
   return (
     <View
       style={
-        post.authorTier === "VIP"
+        post.authorTier === "VIP" || post.authorTier === "PLUS"
           ? {
-              borderWidth: 2,
-              borderColor: "#f59e0b",
+              borderWidth: post.authorTier === "VIP" ? 2 : 1.5,
+              borderColor: authorPalette.cardBorder,
               borderRadius: 26,
-              backgroundColor: "#fffdf5",
+              backgroundColor: authorPalette.cardBg,
               padding: 3,
             }
-          : post.authorTier === "PLUS"
-            ? {
-                borderWidth: 1.5,
-                borderColor: "#087fba",
-                borderRadius: 26,
-                padding: 2,
-              }
-            : undefined
+          : undefined
       }
     >
     <Card>
@@ -107,21 +102,26 @@ function PostCard({
                 {post.authorName}
               </Nav>
               {!!post.authorBadge && (
-                <Text
+                <View
                   style={{
-                    fontSize: 11,
-                    fontWeight: "900",
-                    color: post.authorTier === "VIP" ? "#fde68a" : "#92400e",
-                    backgroundColor: post.authorTier === "VIP" ? "#1e1b4b" : "#fef3c7",
+                    backgroundColor: authorPalette.badgeBg,
                     borderWidth: 1,
-                    borderColor: "#f59e0b",
+                    borderColor: authorPalette.badgeBorder,
                     paddingHorizontal: 9,
-                    paddingVertical: 2,
+                    paddingVertical: 3,
                     borderRadius: 999,
                   }}
                 >
-                  {post.authorBadge}
-                </Text>
+                  <Text
+                    style={{
+                      fontSize: 11,
+                      fontWeight: "900",
+                      color: authorPalette.badgeText,
+                    }}
+                  >
+                    {post.authorBadge}
+                  </Text>
+                </View>
               )}
             </View>
             <Text style={feedStyles.meta}>

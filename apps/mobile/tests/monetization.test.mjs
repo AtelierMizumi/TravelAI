@@ -4,11 +4,15 @@ import path from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 import {
+  MONETIZATION_ACCENTS,
+  TIER_PALETTES,
   calculateCtrPercent,
   computeMemberPrice,
+  getTierPalette,
   prioritizeSponsoredCatalog,
   subscriptionBadgeLabel,
   vipTeaserPrice,
+  wcagContrastRatio,
 } from "../src/services/monetization-helpers.ts";
 
 test("subscriptionBadgeLabel returns badge for PLUS and VIP tiers only", () => {
@@ -90,5 +94,42 @@ test("_layout Link asChild children flatten array styles for Expo Router Slot", 
     );
   }
 });
+
+test("every subscription tier palette and monetization pill meets WCAG AA contrast (>= 4.5:1)", () => {
+  assert.equal(getTierPalette("VIP").code, "VIP");
+  assert.equal(getTierPalette("plus").code, "PLUS");
+  assert.equal(getTierPalette(undefined).code, "FREE");
+
+  for (const [tier, p] of Object.entries(TIER_PALETTES)) {
+    const pairs = [
+      ["card heading", p.headingText, p.cardBg],
+      ["card body", p.bodyText, p.cardBg],
+      ["card price", p.priceText, p.cardBg],
+      ["card muted", p.mutedText, p.cardBg],
+      ["badge", p.badgeText, p.badgeBg],
+      ["hero eyebrow", p.heroEyebrow, p.heroBg],
+      ["hero title", p.heroTitle, p.heroBg],
+      ["hero body", p.heroBody, p.heroBg],
+      ["hero stat label", p.heroStatLabel, p.heroSubBg],
+      ["hero stat value", p.heroStatValue, p.heroSubBg],
+      ["light cta", p.ctaText, p.ctaBg],
+      ["hero cta", p.heroCtaText, p.heroCtaBg],
+      ["secondary cta", p.ctaSecondaryText, p.ctaSecondaryBg],
+    ];
+    for (const [name, fg, bg] of pairs) {
+      const ratio = wcagContrastRatio(fg, bg);
+      assert.ok(
+        ratio >= 4.5,
+        `${tier} ${name} (${fg} on ${bg}) contrast ${ratio}:1 is below WCAG AA 4.5:1`,
+      );
+    }
+  }
+
+  assert.ok(wcagContrastRatio(MONETIZATION_ACCENTS.savingsText, MONETIZATION_ACCENTS.savingsBg) >= 4.5);
+  assert.ok(wcagContrastRatio(MONETIZATION_ACCENTS.sponsoredText, MONETIZATION_ACCENTS.sponsoredBg) >= 4.5);
+  assert.ok(wcagContrastRatio(MONETIZATION_ACCENTS.savingsOnDark, TIER_PALETTES.VIP.heroSubBg) >= 4.5);
+  assert.ok(wcagContrastRatio(MONETIZATION_ACCENTS.savingsOnDark, TIER_PALETTES.PLUS.heroSubBg) >= 4.5);
+});
+
 
 

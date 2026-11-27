@@ -21,7 +21,12 @@ import { useMembership } from "@/context/membership";
 import { useResource } from "@/hooks/use-resource";
 import { api, operationKey } from "@/services/api";
 import { operationAttempt } from "@/services/attempt";
-import { calculateCtrPercent } from "@/services/monetization-helpers";
+import {
+  MONETIZATION_ACCENTS,
+  TIER_PALETTES,
+  calculateCtrPercent,
+  getTierPalette,
+} from "@/services/monetization-helpers";
 import type {
   Bank,
   CatalogItem,
@@ -39,6 +44,7 @@ const PLACEMENT_LABELS: Record<string, string> = {
 export default function SubscriptionsScreen() {
   const { user } = useAuth();
   const membership = useMembership();
+  const activePalette = getTierPalette(membership.tier);
   const [tab, setTab] = useState("plans");
   const catalog = useResource<MonetizationCatalog>("/monetization/catalog");
   const summary = useResource<MonetizationSummary>(user ? "/monetization/me" : null);
@@ -52,7 +58,7 @@ export default function SubscriptionsScreen() {
   const tours = useResource<CatalogItem[]>("/tours");
   const hotels = useResource<CatalogItem[]>("/hotels");
 
-  const [selectedPlan, setSelectedPlan] = useState("PLUS");
+  const [selectedPlan, setSelectedPlan] = useState("VIP");
   const [selectedPackage, setSelectedPackage] = useState("SPOTLIGHT");
   const [targetKind, setTargetKind] = useState<"TOUR" | "HOTEL">("TOUR");
   const [targetId, setTargetId] = useState<number | null>(null);
@@ -70,6 +76,7 @@ export default function SubscriptionsScreen() {
   const quota = summary.data?.aiQuota;
   const targetOptions = (targetKind === "TOUR" ? tours.data : hotels.data) || [];
   const chosenPlan = catalog.data?.subscriptionPlans.find((p) => p.code === selectedPlan);
+  const chosenPlanPalette = getTierPalette(chosenPlan?.code);
   const chosenPkg = catalog.data?.adPackages.find((p) => p.code === selectedPackage);
 
   async function handleBuySubscription() {
@@ -93,7 +100,9 @@ export default function SubscriptionsScreen() {
     subAttempt.current = null;
     setCvv("");
     setConfirmed(false);
-    setNotice(`Đã kích hoạt thành công gói ${chosenPlan.name} (SIMULATED). Toàn bộ giao diện & bảng giá đã chuyển sang chế độ Đặc quyền!`);
+    setNotice(
+      `Đã kích hoạt thành công gói ${chosenPlan.name} (SIMULATED). Toàn bộ giao diện & bảng giá đã đồng bộ sang chế độ Đặc quyền!`,
+    );
     summary.reload();
     membership.reloadMembership();
     bank.reload();
@@ -131,52 +140,137 @@ export default function SubscriptionsScreen() {
 
   return (
     <Screen title="Gói thành viên & Quảng cáo SIMULATED" protected>
-      <Card>
-        <View style={styles.bannerTop}>
-          <View style={{ flex: 1, gap: 4 }}>
-            <Text style={ui.heading}>
-              Hạng hiện tại: {current?.planName || "Cơ Bản (Free)"}{" "}
-              {current?.badge ? `(${current.badge})` : ""}
-            </Text>
-            <Text style={ui.text}>
-              {current?.status === "ACTIVE" && current.expiresAt
-                ? `Có hiệu lực đến ${serviceTime(current.expiresAt)} · Giảm tự động ${current.discountPercent}% khi đặt Tour/Khách sạn.`
-                : "Đang sử dụng gói miễn phí. Nâng cấp để giảm 5%–10% chi phí đặt chỗ và mở không giới hạn AI."}
-            </Text>
-            {quota && (
-              <Text style={styles.quotaText}>
-                Hạn mức AI hôm nay:{" "}
-                {quota.unlimited
-                  ? "Không giới hạn (Hội viên Plus/VIP)"
-                  : `Đã dùng ${quota.usedToday}/${quota.dailyLimit} lượt miễn phí (còn ${quota.remaining} lượt)`}
+      {membership.isPremium ? (
+        <View
+          style={[
+            styles.heroStatusCard,
+            {
+              backgroundColor: activePalette.heroBg,
+              borderColor: activePalette.heroBorder,
+            },
+          ]}
+        >
+          <View style={styles.bannerTop}>
+            <View style={{ flex: 1, gap: 6 }}>
+              <View style={styles.cardHeaderRow}>
+                <Text style={[styles.heroEyebrow, { color: activePalette.heroEyebrow }]}>
+                  ĐẶC QUYỀN ĐANG HOẠT ĐỘNG
+                </Text>
+                <View
+                  style={[
+                    styles.tierBadgePill,
+                    {
+                      backgroundColor: activePalette.ctaSecondaryBg,
+                      borderColor: activePalette.ctaSecondaryBorder,
+                    },
+                  ]}
+                >
+                  <Text style={[styles.tierBadgeText, { color: activePalette.ctaSecondaryText }]}>
+                    {current?.badge || membership.badge} · Giảm {membership.discountPercent}%
+                  </Text>
+                </View>
+              </View>
+              <Text style={[styles.heroTitle, { color: activePalette.heroTitle }]}>
+                {current?.planName || membership.planName}
               </Text>
+              <Text style={[styles.heroBody, { color: activePalette.heroBody }]}>
+                {current?.status === "ACTIVE" && current.expiresAt
+                  ? `Có hiệu lực đến ${serviceTime(current.expiresAt)} · Tự động giảm ${current.discountPercent}% trên mọi đơn đặt Tour & Khách sạn.`
+                  : `Đang áp dụng chiết khấu hội viên ${membership.discountPercent}% và mở khóa toàn bộ đặc quyền AI.`}
+              </Text>
+              {quota && (
+                <Text style={[styles.heroQuota, { color: activePalette.heroEyebrow }]}>
+                  ✦ Hạn mức AI hôm nay: Không giới hạn lượt nhận diện & AI VIP Concierge
+                </Text>
+              )}
+            </View>
+            {bank.data && (
+              <View
+                style={[
+                  styles.heroBalanceBox,
+                  {
+                    backgroundColor: activePalette.heroSubBg,
+                    borderColor: activePalette.heroBorder,
+                  },
+                ]}
+              >
+                <Text style={[styles.heroBalanceLabel, { color: activePalette.heroStatLabel }]}>
+                  Số dư SIMULATED
+                </Text>
+                <Text style={[styles.heroBalanceValue, { color: activePalette.heroStatValue }]}>
+                  {money(bank.data.balance)}
+                </Text>
+              </View>
             )}
           </View>
-          {bank.data && (
-            <View style={styles.balanceBox}>
-              <Text style={styles.balanceLabel}>Số dư SIMULATED</Text>
-              <Text style={styles.balanceValue}>{money(bank.data.balance)}</Text>
-            </View>
+          {current?.status === "ACTIVE" && current.id && (
+            <Pressable
+              accessibilityRole="button"
+              disabled={action.busy}
+              onPress={() =>
+                action.run(async () => {
+                  await api(`/monetization/subscriptions/${encodeURIComponent(current.id!)}/cancel`, {
+                    method: "POST",
+                  });
+                  setNotice("Đã hủy gói thành viên hiện tại.");
+                  summary.reload();
+                  membership.reloadMembership();
+                })
+              }
+              style={[
+                styles.heroCancelBtn,
+                {
+                  backgroundColor: activePalette.heroSubBg,
+                  borderColor: activePalette.heroBody,
+                },
+                action.busy && { opacity: 0.5 },
+              ]}
+            >
+              <Text style={[styles.heroCancelText, { color: activePalette.heroTitle }]}>
+                Hủy gói hiện tại
+              </Text>
+            </Pressable>
           )}
         </View>
-        {current?.status === "ACTIVE" && current.id && (
-          <Action
-            secondary
-            title="Hủy gói hiện tại"
-            disabled={action.busy}
-            onPress={() =>
-              action.run(async () => {
-                await api(`/monetization/subscriptions/${encodeURIComponent(current.id!)}/cancel`, {
-                  method: "POST",
-                });
-                setNotice("Đã hủy gói thành viên hiện tại.");
-                summary.reload();
-                membership.reloadMembership();
-              })
-            }
-          />
-        )}
-      </Card>
+      ) : (
+        <Card>
+          <View style={styles.bannerTop}>
+            <View style={{ flex: 1, gap: 6 }}>
+              <View style={styles.cardHeaderRow}>
+                <Text style={ui.heading}>Hạng hiện tại: Cơ Bản (Free)</Text>
+                <View
+                  style={[
+                    styles.tierBadgePill,
+                    {
+                      backgroundColor: TIER_PALETTES.FREE.badgeBg,
+                      borderColor: TIER_PALETTES.FREE.badgeBorder,
+                    },
+                  ]}
+                >
+                  <Text style={[styles.tierBadgeText, { color: TIER_PALETTES.FREE.badgeText }]}>
+                    GÓI MẶC ĐỊNH
+                  </Text>
+                </View>
+              </View>
+              <Text style={ui.text}>
+                Nâng cấp lên TravelAI Plus (-5%) hoặc Explorer VIP (-10%) để sở hữu giao diện Hội viên riêng biệt, trừ thẳng tiền khi đặt Tour/Khách sạn và mở khóa AI VIP Concierge.
+              </Text>
+              {quota && (
+                <Text style={styles.quotaText}>
+                  Hạn mức AI hôm nay: Đã dùng {quota.usedToday}/{quota.dailyLimit} lượt miễn phí (còn{" "}
+                  {quota.remaining} lượt)
+                </Text>
+              )}
+            </View>
+            {bank.data && (
+              <View style={styles.balanceBox}>
+                <Text style={styles.balanceLabel}>Số dư SIMULATED</Text>
+                <Text style={styles.balanceValue}>{money(bank.data.balance)}</Text>
+              </View>
+            )}
+          </View>
+        </Card>
+      )}
 
       <PinTabs
         value={tab}
@@ -194,26 +288,60 @@ export default function SubscriptionsScreen() {
 
       <ErrorText message={catalog.error || summary.error || bank.error || action.error} />
       {!!notice && (
-        <Card>
+        <View style={styles.successBanner}>
           <Text style={styles.successText}>✓ {notice}</Text>
-        </Card>
+        </View>
       )}
 
       {tab === "plans" && (
         <>
           <View style={[ui.row, { alignItems: "stretch" }]}>
+            {/* FREE TIER CARD */}
             <View style={styles.planCol}>
-              <Card>
-                <Text style={styles.tierTag}>MẶC ĐỊNH</Text>
-                <Text style={ui.heading}>Cơ Bản (Free)</Text>
-                <Text style={styles.bigPrice}>0 ₫</Text>
-                <Text style={ui.text}>
-                  • {catalog.data?.freeDailyAiLimit ?? 10} lượt AI miễn phí / ngày{"\n"}• Đặt chỗ Tour & Khách sạn tiêu chuẩn{"\n"}• Tham gia cộng đồng du lịch
+              <View
+                style={[
+                  styles.planCardBase,
+                  {
+                    backgroundColor: TIER_PALETTES.FREE.cardBg,
+                    borderColor: TIER_PALETTES.FREE.cardBorder,
+                  },
+                ]}
+              >
+                <View style={styles.cardHeaderRow}>
+                  <View
+                    style={[
+                      styles.tierBadgePill,
+                      {
+                        backgroundColor: TIER_PALETTES.FREE.badgeBg,
+                        borderColor: TIER_PALETTES.FREE.badgeBorder,
+                      },
+                    ]}
+                  >
+                    <Text style={[styles.tierBadgeText, { color: TIER_PALETTES.FREE.badgeText }]}>
+                      MẶC ĐỊNH
+                    </Text>
+                  </View>
+                  {!membership.isPremium && (
+                    <Text style={[styles.currentPlanLabel, { color: TIER_PALETTES.FREE.mutedText }]}>
+                      Đang dùng
+                    </Text>
+                  )}
+                </View>
+                <Text style={[styles.planTitle, { color: TIER_PALETTES.FREE.headingText }]}>
+                  Cơ Bản (Free)
                 </Text>
-              </Card>
+                <Text style={[styles.bigPrice, { color: TIER_PALETTES.FREE.priceText }]}>0 ₫</Text>
+                <Text style={[styles.planDesc, { color: TIER_PALETTES.FREE.bodyText }]}>
+                  • {catalog.data?.freeDailyAiLimit ?? 10} lượt AI miễn phí / ngày{"\n"}• Đặt chỗ Tour & Khách sạn giá niêm yết{"\n"}• Tham gia cộng đồng du lịch{"\n"}• Không bao gồm AI VIP Concierge
+                </Text>
+              </View>
             </View>
+
+            {/* PLUS & VIP TIER CARDS */}
             {catalog.data?.subscriptionPlans.map((plan) => {
               const isSelected = selectedPlan === plan.code;
+              const p = getTierPalette(plan.code);
+              const isCurrentTier = membership.tier === plan.code;
               return (
                 <View key={plan.code} style={styles.planCol}>
                   <Pressable
@@ -222,20 +350,64 @@ export default function SubscriptionsScreen() {
                       setSelectedPlan(plan.code);
                       setConfirmed(false);
                     }}
-                    style={[styles.selectableCard, isSelected && styles.selectableActive]}
+                    style={[
+                      styles.planCardBase,
+                      {
+                        backgroundColor: p.cardBg,
+                        borderColor: isSelected ? p.cardBorderSelected : p.cardBorder,
+                        borderWidth: isSelected ? 2.5 : 1.5,
+                      },
+                    ]}
                   >
                     <View style={styles.cardHeaderRow}>
-                      <Text style={styles.tierTag}>{plan.badge}</Text>
-                      <Text style={styles.discountPill}>Giảm {plan.discountPercent}% đặt chỗ</Text>
+                      <View
+                        style={[
+                          styles.tierBadgePill,
+                          { backgroundColor: p.badgeBg, borderColor: p.badgeBorder },
+                        ]}
+                      >
+                        <Text style={[styles.tierBadgeText, { color: p.badgeText }]}>
+                          {plan.badge}
+                          {plan.code === "VIP" ? " · ĐẶC QUYỀN CAO NHẤT" : ""}
+                        </Text>
+                      </View>
+                      <View style={styles.savingsPill}>
+                        <Text style={styles.savingsPillText}>
+                          Giảm {plan.discountPercent}% đặt chỗ
+                        </Text>
+                      </View>
                     </View>
-                    <Text style={ui.heading}>{plan.name}</Text>
-                    <Text style={styles.bigPrice}>
+
+                    <Text style={[styles.planTitle, { color: p.headingText }]}>{plan.name}</Text>
+                    <Text style={[styles.bigPrice, { color: p.priceText }]}>
                       {money(plan.priceVnd)} / {plan.durationDays} ngày
                     </Text>
-                    <Text style={ui.text}>{plan.description}</Text>
-                    <Text style={styles.selectHint}>
-                      {isSelected ? "● Đang chọn gói này" : "Chạm để chọn gói này"}
-                    </Text>
+                    <Text style={[styles.planDesc, { color: p.bodyText }]}>{plan.description}</Text>
+
+                    <View
+                      style={[
+                        styles.planSelectFooter,
+                        isSelected
+                          ? { backgroundColor: p.ctaBg, borderColor: p.ctaBg }
+                          : {
+                              backgroundColor: p.ctaSecondaryBg,
+                              borderColor: p.ctaSecondaryBorder,
+                            },
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.planSelectFooterText,
+                          { color: isSelected ? p.ctaText : p.ctaSecondaryText },
+                        ]}
+                      >
+                        {isCurrentTier
+                          ? `✓ Đang sở hữu · ${isSelected ? "Gia hạn thêm" : "Chạm để gia hạn"}`
+                          : isSelected
+                            ? "✓ Đang chọn gói này"
+                            : "Chạm để chọn gói này"}
+                      </Text>
+                    </View>
                   </Pressable>
                 </View>
               );
@@ -243,10 +415,33 @@ export default function SubscriptionsScreen() {
           </View>
 
           {chosenPlan && (
-            <Card>
-              <Text style={ui.heading}>
-                Thanh toán nâng cấp · {chosenPlan.name} ({money(chosenPlan.priceVnd)})
-              </Text>
+            <View
+              style={[
+                styles.checkoutCard,
+                {
+                  backgroundColor: "#ffffff",
+                  borderColor: chosenPlanPalette.cardBorderSelected,
+                },
+              ]}
+            >
+              <View style={styles.cardHeaderRow}>
+                <Text style={ui.heading}>
+                  Thanh toán nâng cấp · {chosenPlan.name}
+                </Text>
+                <View
+                  style={[
+                    styles.tierBadgePill,
+                    {
+                      backgroundColor: chosenPlanPalette.badgeBg,
+                      borderColor: chosenPlanPalette.badgeBorder,
+                    },
+                  ]}
+                >
+                  <Text style={[styles.tierBadgeText, { color: chosenPlanPalette.badgeText }]}>
+                    {chosenPlan.badge} · {money(chosenPlan.priceVnd)}
+                  </Text>
+                </View>
+              </View>
               <Text style={ui.text}>
                 Mọi giao dịch đều là SIMULATED VND trừ trên thẻ mô phỏng đã liên kết. Nếu đang còn hạn cùng gói, hệ thống tự cộng dồn thêm {chosenPlan.durationDays} ngày.
               </Text>
@@ -284,12 +479,21 @@ export default function SubscriptionsScreen() {
                   {chosenPlan.name}.
                 </Text>
               </View>
-              <Action
-                title={`Kích hoạt ${chosenPlan.name} (SIMULATED)`}
+              <Pressable
+                accessibilityRole="button"
                 disabled={action.busy || !confirmed || !cardId || !cvv.trim()}
                 onPress={() => action.run(handleBuySubscription)}
-              />
-            </Card>
+                style={[
+                  styles.primaryTierButton,
+                  { backgroundColor: chosenPlanPalette.ctaBg },
+                  (action.busy || !confirmed || !cardId || !cvv.trim()) && { opacity: 0.45 },
+                ]}
+              >
+                <Text style={[styles.primaryTierButtonText, { color: chosenPlanPalette.ctaText }]}>
+                  {`Kích hoạt ${chosenPlan.name} · ${money(chosenPlan.priceVnd)}`}
+                </Text>
+              </Pressable>
+            </View>
           )}
         </>
       )}
@@ -300,7 +504,7 @@ export default function SubscriptionsScreen() {
           {!membership.isPremium ? (
             <Card>
               <Text style={ui.heading}>
-                🔒 Kho Deal Bí Mật Chỉ Dành Cho Hội Viên Plus / Explorer VIP
+                🔒 Kho Deal Hội Viên Dành Riêng Cho Plus & Explorer VIP
               </Text>
               <Text style={ui.text}>
                 Nâng cấp ở tab Gói thành viên để mở khóa ngay bảng giá ưu đãi riêng (-5% đến -10%) trên mọi Tour & Khách sạn cùng đặc quyền miễn phí đổi lịch lần đầu!
@@ -312,9 +516,24 @@ export default function SubscriptionsScreen() {
             </Card>
           ) : (
             <Card>
-              <Text style={ui.heading}>
-                👑 Bảng Giá Đặc Quyền Của Riêng Bạn ({membership.badge} · Giảm {membership.discountPercent}%)
-              </Text>
+              <View style={styles.cardHeaderRow}>
+                <Text style={ui.heading}>
+                  👑 Bảng Giá Đặc Quyền Của Riêng Bạn
+                </Text>
+                <View
+                  style={[
+                    styles.tierBadgePill,
+                    {
+                      backgroundColor: activePalette.badgeBg,
+                      borderColor: activePalette.badgeBorder,
+                    },
+                  ]}
+                >
+                  <Text style={[styles.tierBadgeText, { color: activePalette.badgeText }]}>
+                    {membership.badge} · Giảm {membership.discountPercent}%
+                  </Text>
+                </View>
+              </View>
               <Text style={ui.text}>
                 Mọi mức giá bên dưới đã áp dụng chiết khấu cố định {membership.discountPercent}% dành riêng cho thẻ {membership.planName}.
               </Text>
@@ -322,20 +541,35 @@ export default function SubscriptionsScreen() {
                 <Text style={ui.text}>Chưa có Tour hoặc Khách sạn đang mở bán để tính ưu đãi.</Text>
               )}
               {vipDeals.data?.deals.map((deal) => (
-                <Card key={`${deal.kind}-${deal.id}`}>
+                <View
+                  key={`${deal.kind}-${deal.id}`}
+                  style={[
+                    styles.dealItemCard,
+                    {
+                      backgroundColor: activePalette.cardBg,
+                      borderColor: activePalette.cardBorder,
+                    },
+                  ]}
+                >
                   <View style={styles.cardHeaderRow}>
-                    <Text style={ui.heading}>
+                    <Text style={[styles.planTitle, { color: activePalette.headingText }]}>
                       {deal.kind === "TOUR" ? "🧭" : "🏨"} {deal.name}
                     </Text>
-                    <Text style={styles.discountPill}>
-                      Tiết kiệm {money(deal.savedAmount)}
-                    </Text>
+                    <View style={styles.savingsPill}>
+                      <Text style={styles.savingsPillText}>
+                        Tiết kiệm {money(deal.savedAmount)}
+                      </Text>
+                    </View>
                   </View>
-                  {!!deal.location && <Text style={ui.text}>{deal.location}</Text>}
-                  <Text style={{ color: "#94a3b8", textDecorationLine: "line-through", fontSize: 13 }}>
-                    Giá người thường: {money(deal.originalPrice)}
+                  {!!deal.location && (
+                    <Text style={[styles.planDesc, { color: activePalette.bodyText }]}>
+                      {deal.location}
+                    </Text>
+                  )}
+                  <Text style={styles.strikeText}>
+                    Giá niêm yết: {money(deal.originalPrice)}
                   </Text>
-                  <Text style={styles.bigPrice}>
+                  <Text style={[styles.bigPrice, { color: activePalette.priceText }]}>
                     Giá {membership.badge}: {money(deal.memberPrice)}
                   </Text>
                   <Action
@@ -351,7 +585,7 @@ export default function SubscriptionsScreen() {
                       })
                     }
                   />
-                </Card>
+                </View>
               ))}
             </Card>
           )}
@@ -524,6 +758,47 @@ export default function SubscriptionsScreen() {
 }
 
 const styles = StyleSheet.create({
+  heroStatusCard: {
+    borderRadius: 22,
+    borderWidth: 2,
+    padding: 22,
+    gap: 14,
+  },
+  heroEyebrow: {
+    fontSize: 12,
+    fontWeight: "900",
+    letterSpacing: 0.8,
+  },
+  heroTitle: {
+    fontSize: 24,
+    fontWeight: "900",
+  },
+  heroBody: {
+    fontSize: 15,
+    lineHeight: 23,
+  },
+  heroQuota: {
+    fontSize: 13,
+    fontWeight: "800",
+    marginTop: 2,
+  },
+  heroBalanceBox: {
+    borderRadius: 16,
+    borderWidth: 1,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    gap: 2,
+  },
+  heroBalanceLabel: { fontSize: 12, fontWeight: "700" },
+  heroBalanceValue: { fontSize: 18, fontWeight: "900" },
+  heroCancelBtn: {
+    alignSelf: "flex-start",
+    borderWidth: 1,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
+  heroCancelText: { fontSize: 14, fontWeight: "800" },
   bannerTop: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -539,9 +814,83 @@ const styles = StyleSheet.create({
   },
   balanceLabel: { fontSize: 12, color: "#075782", fontWeight: "600" },
   balanceValue: { fontSize: 18, color: "#087fba", fontWeight: "800" },
-  quotaText: { fontSize: 13, color: "#087fba", fontWeight: "700" },
-  successText: { color: "#047857", fontWeight: "700", fontSize: 14 },
-  planCol: { flexBasis: 260, flexGrow: 1, minWidth: 0 },
+  quotaText: { fontSize: 13, color: "#075985", fontWeight: "700" },
+  successBanner: {
+    backgroundColor: MONETIZATION_ACCENTS.savingsBg,
+    borderColor: MONETIZATION_ACCENTS.savingsBorder,
+    borderWidth: 1.5,
+    borderRadius: 16,
+    padding: 16,
+  },
+  successText: { color: MONETIZATION_ACCENTS.savingsText, fontWeight: "800", fontSize: 15 },
+  planCol: { flexBasis: 270, flexGrow: 1, minWidth: 0 },
+  planCardBase: {
+    borderRadius: 22,
+    padding: 20,
+    borderWidth: 1.5,
+    gap: 10,
+    flex: 1,
+    justifyContent: "space-between",
+  },
+  planTitle: { fontSize: 20, fontWeight: "800" },
+  planDesc: { fontSize: 15, lineHeight: 23 },
+  currentPlanLabel: { fontSize: 12, fontWeight: "700" },
+  tierBadgePill: {
+    borderWidth: 1,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 999,
+  },
+  tierBadgeText: { fontSize: 12, fontWeight: "900", letterSpacing: 0.3 },
+  savingsPill: {
+    backgroundColor: MONETIZATION_ACCENTS.savingsBg,
+    borderColor: MONETIZATION_ACCENTS.savingsBorder,
+    borderWidth: 1,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 999,
+  },
+  savingsPillText: {
+    fontSize: 12,
+    fontWeight: "800",
+    color: MONETIZATION_ACCENTS.savingsText,
+  },
+  planSelectFooter: {
+    marginTop: 6,
+    borderRadius: 12,
+    borderWidth: 1,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    alignItems: "center",
+  },
+  planSelectFooterText: { fontSize: 13, fontWeight: "800" },
+  checkoutCard: {
+    borderRadius: 22,
+    borderWidth: 2,
+    padding: 22,
+    gap: 12,
+  },
+  primaryTierButton: {
+    minHeight: 50,
+    borderRadius: 14,
+    paddingHorizontal: 18,
+    paddingVertical: 14,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  primaryTierButtonText: { fontSize: 15, fontWeight: "900" },
+  dealItemCard: {
+    borderRadius: 18,
+    borderWidth: 1.5,
+    padding: 18,
+    gap: 8,
+  },
+  strikeText: {
+    color: "#64748b",
+    textDecorationLine: "line-through",
+    fontSize: 13,
+    fontWeight: "600",
+  },
   selectableCard: {
     backgroundColor: "#fff",
     borderRadius: 20,
@@ -551,8 +900,8 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   selectableActive: {
-    borderColor: "#087fba",
-    backgroundColor: "#f4faff",
+    borderColor: "#0284c7",
+    backgroundColor: "#f0f9ff",
   },
   cardHeaderRow: {
     flexDirection: "row",
@@ -561,39 +910,25 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     gap: 8,
   },
-  tierTag: {
-    fontSize: 12,
-    fontWeight: "800",
-    color: "#087fba",
-    letterSpacing: 0.4,
-  },
-  discountPill: {
-    fontSize: 12,
-    fontWeight: "700",
-    color: "#047857",
-    backgroundColor: "#d1fae5",
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 999,
-  },
-  bigPrice: { fontSize: 20, fontWeight: "800", color: "#103c5b" },
-  selectHint: { fontSize: 12, fontWeight: "700", color: "#087fba", marginTop: 4 },
+  bigPrice: { fontSize: 20, fontWeight: "900", color: "#103c5b" },
   chips: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
   chip: {
     borderWidth: 1,
-    borderColor: "#dce6f4",
+    borderColor: "#cbd5e1",
     borderRadius: 14,
     paddingHorizontal: 12,
     paddingVertical: 8,
     backgroundColor: "#fff",
   },
-  chipSelected: { backgroundColor: "#e2f3fc", borderColor: "#087fba" },
-  chipText: { fontSize: 13, color: "#1e293b", fontWeight: "600" },
+  chipSelected: { backgroundColor: "#e0f2fe", borderColor: "#0284c7" },
+  chipText: { fontSize: 13, color: "#1e293b", fontWeight: "700" },
   statusPill: {
     fontSize: 12,
     fontWeight: "800",
-    color: "#1e40af",
-    backgroundColor: "#dbeafe",
+    color: MONETIZATION_ACCENTS.sponsoredText,
+    backgroundColor: MONETIZATION_ACCENTS.sponsoredBg,
+    borderColor: MONETIZATION_ACCENTS.sponsoredBorder,
+    borderWidth: 1,
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 999,
